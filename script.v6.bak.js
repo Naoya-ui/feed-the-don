@@ -69,7 +69,6 @@
     enemyStatus: $("enemyStatus"),
     battleInspector: $("battleInspector"),
     inspectorName: $("inspectorName"),
-    inspectorArt: $("inspectorArt"),
     inspectorPower: $("inspectorPower"),
     inspectorText: $("inspectorText"),
     inspectorKeywords: $("inspectorKeywords"),
@@ -88,7 +87,6 @@
     sinGluttony: $("sinGluttony"),
     clashOverlay: $("clashOverlay"),
     clashDonSkill: $("clashDonSkill"),
-    clashDonArt: $("clashDonArt"),
     clashEnemySkill: $("clashEnemySkill"),
     clashDonPower: $("clashDonPower"),
     clashEnemyPower: $("clashEnemyPower"),
@@ -104,7 +102,6 @@
     battleContinue: $("battleContinue"),
     battleFxLayer: $("battleFxLayer"),
     skillCutin: $("skillCutin"),
-    skillCutinArt: $("skillCutinArt"),
     skillCutinAffinity: $("skillCutinAffinity"),
     skillCutinName: $("skillCutinName"),
     coinBurst: $("coinBurst"),
@@ -178,28 +175,24 @@
   const donBattleSkills = {
     joust: {
       key: "joust", name: "Joust", affinity: "Lust", css: "lust", type: "Pierce",
-      art: "assets/battle/skills/joust-icon.png", badge: "assets/battle/skills/joust-badge.png",
       base: 4, coinPower: 7, coins: 1,
       effect: "[Clash Win] Gain 2 Haste next turn.",
       keywords: ["Haste", "Clash Win"], expression: "lilAngry", animation: "lc-anim-joust",
     },
     gallop: {
       key: "gallop", name: "Galloping Tilt", affinity: "Envy", css: "envy", type: "Pierce",
-      art: "assets/battle/skills/gallop-icon.png", badge: "assets/battle/skills/gallop-badge.png",
       base: 4, coinPower: 12, coins: 1,
       effect: "[Clash Win] Gain 2 Attack Power Up next turn. [Heads Hit] Inflict 2 Bleed.",
       keywords: ["Attack Power Up", "Bleed"], expression: "sup", animation: "lc-anim-gallop",
     },
     justice: {
       key: "justice", name: "For Justice!", affinity: "Gluttony", css: "gluttony", type: "Pierce",
-      art: "assets/battle/skills/justice-icon.png", badge: "assets/battle/skills/justice-badge.png",
       base: 3, coinPower: 3, coins: 3,
       effect: "3 Coins. At 10+ Speed, Coin Power +2. Hits build Bleed.",
       keywords: ["Bleed", "Multi-Coin"], expression: "angry", animation: "lc-anim-justice",
     },
     evade: {
       key: "evade", name: "Evade", affinity: "Lust", css: "defense", type: "Defense",
-      art: "assets/battle/skills/evade-icon.png", badge: "assets/battle/skills/evade-badge.png",
       base: 2, coinPower: 10, coins: 1, defense: true,
       effect: "Defense skill. Win the defensive roll to avoid the incoming attack.",
       keywords: ["Defense", "Evade"], expression: "happy", animation: "lc-anim-evade",
@@ -675,10 +668,6 @@
   function showSkillInspector(skill, slot) {
     els.battleInspector.hidden = false;
     els.inspectorName.textContent = skill.name;
-    if (els.inspectorArt && skill.badge) {
-      els.inspectorArt.src = skill.badge;
-      els.inspectorArt.alt = `${skill.name} skill art`;
-    }
     els.inspectorPower.textContent = `${skill.base} + ${getSkillCoinPower(skill, slot.speed)} · ${skill.coins} Coin${skill.coins > 1 ? "s" : ""}`;
     els.inspectorText.textContent = skill.effect;
     els.inspectorKeywords.innerHTML = skill.keywords.map((word) => `<span>${escapeHTML(word)}</span>`).join("");
@@ -697,9 +686,7 @@
 
   function skillCardHTML(skill, slot, back = false) {
     const cp = getSkillCoinPower(skill, slot.speed);
-    return `<img class="lc7-skill-art" src="${escapeHTML(skill.art || "")}" alt="" />
-      <span class="lc7-card-shade"></span>
-      <span class="lc4-skill-aff">${escapeHTML(skill.affinity)}</span>
+    return `<span class="lc4-skill-aff">${escapeHTML(skill.affinity)}</span>
       <span class="lc4-sigil">${skillSigil(skill)}</span>
       <strong>${escapeHTML(skill.name)}</strong>
       <span class="lc4-skill-power"><b>${skill.base}</b><i>+${cp}</i></span>
@@ -921,7 +908,6 @@
   async function showClash(slot, enemySlot, donCoins, enemyCoins, donRoll, enemyRoll, label = "CLASH") {
     const skill = getSelectedSkill(slot);
     els.clashDonSkill.textContent = skill.name;
-    if (els.clashDonArt && skill.art) els.clashDonArt.src = skill.art;
     els.clashEnemySkill.textContent = enemySlot.skill.name;
     els.clashResult.textContent = label;
     els.clashDonPower.textContent = String(donRoll?.power ?? maxSkillPower(skill, slot.speed, battle.don.attackUp));
@@ -1054,7 +1040,6 @@
 
   async function playSkillCutin(skill) {
     if (!els.skillCutin) return;
-    if (els.skillCutinArt && skill.badge) els.skillCutinArt.src = skill.badge;
     els.skillCutinAffinity.textContent = `${skill.affinity.toUpperCase()} · ${skill.type.toUpperCase()}`;
     els.skillCutinName.textContent = skill.name;
     els.skillCutin.className = `lc5-skill-cutin lc5-cutin-${skill.css}`;

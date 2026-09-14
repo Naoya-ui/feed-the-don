@@ -48,7 +48,6 @@
     targetLines: $("targetLines"),
     turnOrder: $("turnOrder"),
     battleDon: $("battleDon"),
-    donActionSprite: $("donActionSprite"),
     battleEnemy: $("battleEnemy"),
     battleArena: $("battleArena"),
     enemyRoster: $("enemyRoster"),
@@ -69,7 +68,6 @@
     enemyStatus: $("enemyStatus"),
     battleInspector: $("battleInspector"),
     inspectorName: $("inspectorName"),
-    inspectorArt: $("inspectorArt"),
     inspectorPower: $("inspectorPower"),
     inspectorText: $("inspectorText"),
     inspectorKeywords: $("inspectorKeywords"),
@@ -88,7 +86,6 @@
     sinGluttony: $("sinGluttony"),
     clashOverlay: $("clashOverlay"),
     clashDonSkill: $("clashDonSkill"),
-    clashDonArt: $("clashDonArt"),
     clashEnemySkill: $("clashEnemySkill"),
     clashDonPower: $("clashDonPower"),
     clashEnemyPower: $("clashEnemyPower"),
@@ -104,7 +101,6 @@
     battleContinue: $("battleContinue"),
     battleFxLayer: $("battleFxLayer"),
     skillCutin: $("skillCutin"),
-    skillCutinArt: $("skillCutinArt"),
     skillCutinAffinity: $("skillCutinAffinity"),
     skillCutinName: $("skillCutinName"),
     coinBurst: $("coinBurst"),
@@ -136,28 +132,6 @@
     },
   };
 
-  const battleDonSprites = {
-    idle: "assets/battle/don/idle-animation.gif",
-    idleStatic: "assets/battle/don/idle.png",
-    guard: "assets/battle/don/guard.png",
-    hurt: "assets/battle/don/hurt.png",
-    evade: "assets/battle/don/evade.png",
-    moving: "assets/battle/don/moving.png",
-    neutral: "assets/battle/don/neutral.png",
-    dead: "assets/battle/don/dead.png",
-  };
-
-  const battleDonAnimations = {
-    joust: { src: "assets/battle/don/skill-1.gif", duration: 800, hitTimes: [0.56], css: "skill1" },
-    gallop: { src: "assets/battle/don/skill-2.gif", duration: 720, hitTimes: [0.58], css: "skill2" },
-    justice: { src: "assets/battle/don/skill-3.gif", duration: 1400, hitTimes: [0.30, 0.58, 0.80], css: "skill3" },
-  };
-
-  Object.values({ ...battleDonSprites, ...Object.fromEntries(Object.entries(battleDonAnimations).map(([k,v]) => [k, v.src])) }).forEach((src) => {
-    const img = new Image();
-    img.src = src;
-  });
-
   const itemDB = {
     Potion: { desc: "Heals 45 SP.", icon: "assets/items/potion.webp" },
     Lunacy: { desc: "A gamble flower.", icon: "assets/items/lunacy.webp" },
@@ -174,32 +148,28 @@
 
   // Battle mechanics are rebuilt from the uploaded gameplay reference:
   // command phase -> speed/action slots -> targeting lines -> clash resolution -> attack phase.
-  // Don battle sprites/skill GIFs below are the user-supplied assets for this project.
+  // Art remains original to this project; no assets are ripped from the reference video.
   const donBattleSkills = {
     joust: {
       key: "joust", name: "Joust", affinity: "Lust", css: "lust", type: "Pierce",
-      art: "assets/battle/skills/joust-icon.png", badge: "assets/battle/skills/joust-badge.png",
       base: 4, coinPower: 7, coins: 1,
       effect: "[Clash Win] Gain 2 Haste next turn.",
       keywords: ["Haste", "Clash Win"], expression: "lilAngry", animation: "lc-anim-joust",
     },
     gallop: {
       key: "gallop", name: "Galloping Tilt", affinity: "Envy", css: "envy", type: "Pierce",
-      art: "assets/battle/skills/gallop-icon.png", badge: "assets/battle/skills/gallop-badge.png",
       base: 4, coinPower: 12, coins: 1,
       effect: "[Clash Win] Gain 2 Attack Power Up next turn. [Heads Hit] Inflict 2 Bleed.",
       keywords: ["Attack Power Up", "Bleed"], expression: "sup", animation: "lc-anim-gallop",
     },
     justice: {
       key: "justice", name: "For Justice!", affinity: "Gluttony", css: "gluttony", type: "Pierce",
-      art: "assets/battle/skills/justice-icon.png", badge: "assets/battle/skills/justice-badge.png",
       base: 3, coinPower: 3, coins: 3,
       effect: "3 Coins. At 10+ Speed, Coin Power +2. Hits build Bleed.",
       keywords: ["Bleed", "Multi-Coin"], expression: "angry", animation: "lc-anim-justice",
     },
     evade: {
       key: "evade", name: "Evade", affinity: "Lust", css: "defense", type: "Defense",
-      art: "assets/battle/skills/evade-icon.png", badge: "assets/battle/skills/evade-badge.png",
       base: 2, coinPower: 10, coins: 1, defense: true,
       effect: "Defense skill. Win the defensive roll to avoid the incoming attack.",
       keywords: ["Defense", "Evade"], expression: "happy", animation: "lc-anim-evade",
@@ -675,10 +645,6 @@
   function showSkillInspector(skill, slot) {
     els.battleInspector.hidden = false;
     els.inspectorName.textContent = skill.name;
-    if (els.inspectorArt && skill.badge) {
-      els.inspectorArt.src = skill.badge;
-      els.inspectorArt.alt = `${skill.name} skill art`;
-    }
     els.inspectorPower.textContent = `${skill.base} + ${getSkillCoinPower(skill, slot.speed)} · ${skill.coins} Coin${skill.coins > 1 ? "s" : ""}`;
     els.inspectorText.textContent = skill.effect;
     els.inspectorKeywords.innerHTML = skill.keywords.map((word) => `<span>${escapeHTML(word)}</span>`).join("");
@@ -697,9 +663,7 @@
 
   function skillCardHTML(skill, slot, back = false) {
     const cp = getSkillCoinPower(skill, slot.speed);
-    return `<img class="lc7-skill-art" src="${escapeHTML(skill.art || "")}" alt="" />
-      <span class="lc7-card-shade"></span>
-      <span class="lc4-skill-aff">${escapeHTML(skill.affinity)}</span>
+    return `<span class="lc4-skill-aff">${escapeHTML(skill.affinity)}</span>
       <span class="lc4-sigil">${skillSigil(skill)}</span>
       <strong>${escapeHTML(skill.name)}</strong>
       <span class="lc4-skill-power"><b>${skill.base}</b><i>+${cp}</i></span>
@@ -921,7 +885,6 @@
   async function showClash(slot, enemySlot, donCoins, enemyCoins, donRoll, enemyRoll, label = "CLASH") {
     const skill = getSelectedSkill(slot);
     els.clashDonSkill.textContent = skill.name;
-    if (els.clashDonArt && skill.art) els.clashDonArt.src = skill.art;
     els.clashEnemySkill.textContent = enemySlot.skill.name;
     els.clashResult.textContent = label;
     els.clashDonPower.textContent = String(donRoll?.power ?? maxSkillPower(skill, slot.speed, battle.don.attackUp));
@@ -954,16 +917,9 @@
     el.hidden = true;
   }
 
-  function setBattleDonState(state = "idle") {
-    if (!els.battleDon) return;
-    const src = battleDonSprites[state] || battleDonSprites.idle;
-    els.battleDon.src = src;
-    els.battleDon.dataset.battleState = state;
-  }
-
   function setBattleDonExpression(key = "idle") {
-    const semantic = ["hurt", "dead", "guard", "evade", "moving", "neutral"].includes(key) ? key : "idle";
-    setBattleDonState(semantic);
+    const src = assets.characters[key] || assets.characters.idle;
+    els.battleDon.src = src;
   }
 
   function addSin(skill) {
@@ -998,7 +954,6 @@
     const skill = getSelectedSkill(slot);
     const enemy = enemyById(enemySlot.enemyId);
     if (!enemy) return { winner: "don", remainingDon: skill.coins, remainingEnemy: 0 };
-    setBattleDonState("guard");
     let donCoins = skill.coins;
     let enemyCoins = enemySlot.skill.coins;
     let rounds = 0;
@@ -1008,10 +963,7 @@
       if (bleedDamage) {
         combatLog(`BLEED ${bleedDamage}`, "bleed");
         await floatDamage(enemy.id, bleedDamage, "bleed");
-        if (enemy.hp <= 0) {
-          setBattleDonState("idle");
-          return { winner: "don", remainingDon: donCoins, remainingEnemy: 0 };
-        }
+        if (enemy.hp <= 0) return { winner: "don", remainingDon: donCoins, remainingEnemy: 0 };
       }
       const dr = rollCoins(skill, donCoins, slot.speed, false);
       const er = rollCoins(enemySlot.skill, enemyCoins, enemySlot.speed, true);
@@ -1035,7 +987,6 @@
       await delay(270);
     }
     els.clashOverlay.hidden = true;
-    setBattleDonState("idle");
     return { winner: donCoins > 0 ? "don" : "enemy", remainingDon: Math.max(0, donCoins), remainingEnemy: Math.max(0, enemyCoins) };
   }
 
@@ -1054,7 +1005,6 @@
 
   async function playSkillCutin(skill) {
     if (!els.skillCutin) return;
-    if (els.skillCutinArt && skill.badge) els.skillCutinArt.src = skill.badge;
     els.skillCutinAffinity.textContent = `${skill.affinity.toUpperCase()} · ${skill.type.toUpperCase()}`;
     els.skillCutinName.textContent = skill.name;
     els.skillCutin.className = `lc5-skill-cutin lc5-cutin-${skill.css}`;
@@ -1223,54 +1173,6 @@
     els.battleScreen.classList.remove("lc5-combat-cinema");
   }
 
-  function restartBattleGif(img, src) {
-    if (!img) return;
-    img.removeAttribute("src");
-    void img.offsetWidth;
-    img.src = `${src}?play=${Date.now()}-${Math.random().toString(16).slice(2)}`;
-  }
-
-  async function playDonSkillSprite(skill, enemyId, coinCount, onHit) {
-    const meta = battleDonAnimations[skill.key];
-    if (!meta || !els.donActionSprite) {
-      for (let i = 0; i < coinCount; i += 1) {
-        await animateDonLunge(enemyId, skill, i);
-        await onHit(i);
-      }
-      return;
-    }
-
-    const target = enemyElement(enemyId);
-    target?.classList.add("lc6-targeted");
-    els.battleScreen.classList.add("lc5-combat-cinema", "lc6-sprite-combat");
-    setBattleDonState("moving");
-    els.battleDon.hidden = false;
-    await delay(90);
-    els.battleDon.hidden = true;
-    els.donActionSprite.hidden = false;
-    els.donActionSprite.className = `lc6-don-action-sprite lc6-${meta.css}`;
-    restartBattleGif(els.donActionSprite, meta.src);
-
-    const start = performance.now();
-    const hitTimes = meta.hitTimes.slice(0, Math.max(1, coinCount));
-    for (let i = 0; i < hitTimes.length; i += 1) {
-      const targetTime = start + meta.duration * hitTimes[i];
-      const wait = Math.max(0, targetTime - performance.now());
-      if (wait) await delay(wait);
-      flashBattle();
-      await onHit(i);
-    }
-    const remain = Math.max(0, start + meta.duration - performance.now());
-    if (remain) await delay(remain);
-
-    els.donActionSprite.hidden = true;
-    els.donActionSprite.removeAttribute("src");
-    els.battleDon.hidden = false;
-    setBattleDonState("idle");
-    target?.classList.remove("lc6-targeted");
-    els.battleScreen.classList.remove("lc5-combat-cinema", "lc6-sprite-combat");
-  }
-
   function spawnSlash(enemyId, affinity = "lust") {
     const enemyEl = enemyElement(enemyId);
     if (!enemyEl) return;
@@ -1286,9 +1188,8 @@
     addSin(skill);
     await playSkillCutin(skill);
     let total = 0;
-
-    const resolveHit = async (i) => {
-      if (enemy.hp <= 0) return;
+    for (let i = 0; i < coinCount && enemy.hp > 0; i += 1) {
+      await animateDonLunge(enemy.id, skill, i);
       const roll = rollCoins(skill, 1, slot.speed, false);
       const crit = roll.flips[0] && randomInt(1, 100) <= 18;
       const raw = skill.base + roll.heads * getSkillCoinPower(skill, slot.speed) + battle.don.attackUp + randomInt(1, 4);
@@ -1305,7 +1206,7 @@
       els.battleScreen.classList.remove("hit-shake");
       void els.battleScreen.offsetWidth;
       els.battleScreen.classList.add("hit-shake");
-      void floatDamage(enemy.id, damage, crit ? "critical" : "");
+      await floatDamage(enemy.id, damage, crit ? "critical" : "");
       combatLog(`${skill.name}  ${damage}${crit ? "  CRITICAL" : ""}`, crit ? "critical" : "win");
 
       if (skill.key === "gallop" && roll.flips[0]) {
@@ -1316,12 +1217,14 @@
         if (roll.flips[0]) enemy.bleedPotency += 1;
         enemy.bleedCount += 1;
       }
-      if (checkStagger(enemy)) combatLog("STAGGER", "stagger");
+      if (checkStagger(enemy)) {
+        combatLog("STAGGER", "stagger");
+        await delay(240);
+      }
       renderEnemies();
       renderBattleHUD();
-    };
-
-    await playDonSkillSprite(skill, enemy.id, Math.max(1, coinCount), resolveHit);
+      await delay(110);
+    }
     if (skill.key === "joust" && clashWon) battle.don.nextHaste += 2;
     if (skill.key === "gallop" && clashWon) battle.don.nextAttackUp += 2;
     return total;
@@ -1352,7 +1255,6 @@
     const roll = rollCoins(enemySlot.skill, coins, enemySlot.speed, true);
     const damage = Math.max(1, Math.round((roll.power + randomInt(1, 4)) * .72));
     battle.don.hp = Math.max(0, battle.don.hp - damage);
-    setBattleDonState(battle.don.hp <= 0 ? "dead" : "hurt");
     enemySlot.consumed = true;
     els.battleScreen.classList.remove("hit-shake");
     void els.battleScreen.offsetWidth;
@@ -1360,8 +1262,7 @@
     combatLog(`${enemySlot.skill.name}  ${damage}`, "lose");
     await floatDamage("don", damage, "lose");
     renderBattleHUD();
-    await delay(260);
-    if (battle.don.hp > 0) setBattleDonState("idle");
+    await delay(180);
   }
 
   async function resolveEvade(slot, enemySlot) {
@@ -1376,17 +1277,15 @@
       enemySlot.consumed = true;
       battle.don.sp = clamp(battle.don.sp + 5, -45, 45);
       combatLog("EVADE", "win");
-      setBattleDonState("evade");
       const r = els.battleDon.getBoundingClientRect();
-      spawnAfterimage(battleDonSprites.evade, r, 70, 0);
-      spawnSpeedStreaks(r.left, r.top + r.height * .45, r.left - 120, r.top + r.height * .45, 9);
+      spawnAfterimage(assets.characters.happy, r, 55, 0);
+      spawnSpeedStreaks(r.left, r.top + r.height * .45, r.left - 90, r.top + r.height * .45, 8);
       els.battleDon.classList.add("lc5-evade");
       els.battleDon.animate([
-        { transform: "translateX(0) skewX(0)" }, { transform: "translateX(-110px) skewX(10deg)", offset:.42 }, { transform: "translateX(-128px) skewX(6deg)", offset:.62 }, { transform: "translateX(0) skewX(0)" },
-      ], { duration: 520, easing:"cubic-bezier(.12,.8,.2,1)" });
-      await delay(520);
+        { transform: "translateX(0) skewX(0)" }, { transform: "translateX(-95px) skewX(10deg)", offset:.42 }, { transform: "translateX(-110px) skewX(6deg)", offset:.62 }, { transform: "translateX(0) skewX(0)" },
+      ], { duration: 480, easing:"cubic-bezier(.12,.8,.2,1)" });
+      await delay(480);
       els.battleDon.classList.remove("lc5-evade");
-      setBattleDonState("idle");
     } else {
       els.clashOverlay.hidden = true;
       await enemyAttack(enemySlot, Math.max(1, enemySlot.skill.coins));
@@ -1495,7 +1394,6 @@
   }
 
   function showBattleResult(victory) {
-    setBattleDonState(victory ? "neutral" : "dead");
     els.battleResultSmall.textContent = victory ? "ENCOUNTER COMPLETE" : "DON QUIXOTE IS DOWN";
     els.battleResultTitle.textContent = victory ? "VICTORY" : "DEFEAT";
     els.battleContinue.textContent = victory ? "CONTINUE" : "RETRY";

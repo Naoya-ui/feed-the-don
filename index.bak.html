@@ -55,132 +55,128 @@
         alt="Don Quixote"
         hidden
       />
-      <section id="battleScreen" class="battle-screen lc4-battle" hidden aria-label="Forest battle tutorial">
-        <div class="lc4-scene-bg" aria-hidden="true"></div>
-        <div class="lc4-red-wash" aria-hidden="true"></div>
-        <div class="lc4-vignette" aria-hidden="true"></div>
-        <div class="lc4-grain" aria-hidden="true"></div>
-        <div class="lc4-brush lc4-brush-a" aria-hidden="true"></div>
-        <div class="lc4-brush lc4-brush-b" aria-hidden="true"></div>
 
-        <header class="lc4-topbar">
-          <div class="lc4-wavebox">
+      <section id="battleScreen" class="battle-screen lc-battle" hidden aria-label="Forest battle tutorial">
+        <div class="lc-scene-bg" aria-hidden="true"></div>
+        <div class="lc-red-wash" aria-hidden="true"></div>
+        <div class="lc-scratch lc-scratch-top" aria-hidden="true"></div>
+        <div class="lc-scratch lc-scratch-bottom" aria-hidden="true"></div>
+        <div class="lc-grain" aria-hidden="true"></div>
+
+        <header class="lc-topbar">
+          <div class="lc-wave-box">
             <span>WAVE <b id="battleWave">1/1</b></span>
             <span>TURN <b id="battleTurn">1</b></span>
           </div>
-          <div class="lc4-phase" id="phaseLabel">COMMAND PHASE</div>
-          <div class="lc4-top-actions">
-            <button class="lc4-square" type="button" aria-label="Fast resolve">≫</button>
-            <button class="lc4-square" type="button" aria-label="Pause">Ⅱ</button>
-            <button class="lc4-square" type="button" aria-label="Settings">⚙</button>
+          <div class="lc-phase" id="phaseLabel">COMMAND PHASE</div>
+          <div class="lc-top-actions">
+            <button class="lc-square-btn" type="button" aria-label="Pause">Ⅱ</button>
+            <button class="lc-square-btn" type="button" aria-label="Battle settings">⚙</button>
           </div>
         </header>
 
-        <aside id="battleTutorial" class="lc4-guide">
+        <svg id="targetLines" class="lc-target-lines" aria-hidden="true">
+          <defs>
+            <marker id="arrowGreen" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 Z" fill="#b7dc58"/></marker>
+            <marker id="arrowGold" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 Z" fill="#e0b94f"/></marker>
+            <marker id="arrowRed" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 Z" fill="#ce554b"/></marker>
+          </defs>
+        </svg>
+
+        <div id="turnOrder" class="lc-turn-order" aria-label="Action order"></div>
+
+        <div class="lc-field">
+          <article id="donUnit" class="lc-unit lc-don-unit">
+            <div class="lc-unit-panel lc-don-panel">
+              <div class="lc-unit-name"><small>LCB SINNER</small><b>DON QUIXOTE</b></div>
+              <div class="lc-hp-line"><span>HP</span><div class="lc-meter lc-hp"><i id="donHpBar"></i></div><b id="donHpText">203/203</b></div>
+              <div class="lc-hp-line"><span>SP</span><div class="lc-meter lc-sp"><i id="donSpBar"></i></div><b id="donSpText">0</b></div>
+              <div class="lc-status-row"><span>SPD <b id="donSpeed">3</b></span><span id="donStatus">READY</span></div>
+            </div>
+            <div class="lc-fighter-wrap lc-don-wrap">
+              <div class="lc-ground-shadow"></div>
+              <img id="battleDon" class="lc-fighter lc-don" src="assets/characters/idle.png" alt="Don Quixote" />
+              <div id="donDamage" class="lc-floating-number" hidden></div>
+            </div>
+          </article>
+
+          <article id="enemyUnit" class="lc-unit lc-enemy-unit">
+            <div class="lc-unit-panel lc-enemy-panel">
+              <div class="lc-unit-name"><small>FOREST THUG</small><b>HIGHWAY BANDIT</b></div>
+              <div class="lc-hp-line"><span>HP</span><div class="lc-meter lc-hp"><i id="enemyHpBar"></i></div><b id="enemyHpText">520/520</b></div>
+              <div class="lc-hp-line"><span>STG</span><div class="lc-meter lc-stagger"><i id="enemyStaggerBar"></i></div><b id="enemyStaggerText">70%</b></div>
+              <div class="lc-status-row"><span>SPD <b id="enemySpeed">2</b></span><span id="enemyStatus">HOSTILE</span></div>
+            </div>
+            <div class="lc-fighter-wrap lc-enemy-wrap">
+              <div class="lc-ground-shadow"></div>
+              <div id="battleEnemy" class="lc-fighter lc-bandit" role="img" aria-label="Bandit">
+                <i class="bandit-head"></i><i class="bandit-body"></i><i class="bandit-arm arm-a"></i><i class="bandit-arm arm-b"></i><i class="bandit-leg leg-a"></i><i class="bandit-leg leg-b"></i>
+              </div>
+              <div id="enemyDamage" class="lc-floating-number" hidden></div>
+            </div>
+          </article>
+        </div>
+
+        <aside id="battleInspector" class="lc-inspector" hidden>
+          <div class="lc-inspector-head"><span>SKILL EFFECTS</span><b id="inspectorName">Joust</b></div>
+          <div id="inspectorPower" class="lc-inspector-power">4 + 7 · 1 Coin</div>
+          <p id="inspectorText"></p>
+          <div id="inspectorKeywords" class="lc-keywords"></div>
+        </aside>
+
+        <aside id="battleTutorial" class="lc-tutorial">
           <span>TUTORIAL</span>
           <b id="tutorialTitle">CHAIN YOUR ACTIONS</b>
-          <p id="tutorialText">Pick a skill for each speed slot, then target an enemy action.</p>
+          <p id="tutorialText">Each speed slot receives two skills. Click a card to swap skills, then press START to resolve the turn.</p>
         </aside>
 
-        <aside id="battleInspector" class="lc4-inspector" hidden>
-          <div class="lc4-inspector-head"><span>SKILL EFFECTS</span><b id="inspectorName">Joust</b></div>
-          <img id="inspectorArt" class="lc7-inspector-art" src="assets/battle/skills/joust-badge.png" alt="Joust skill art" />
-          <div id="inspectorPower" class="lc4-inspector-power">4 + 7 · 1 Coin</div>
-          <p id="inspectorText"></p>
-          <div id="inspectorKeywords" class="lc4-keywords"></div>
-        </aside>
+        <div id="enemyIntentSlots" class="lc-enemy-intents" aria-label="Enemy action slots"></div>
 
-        <aside class="lc4-left-rail" aria-hidden="true">
-          <i>Ⅰ</i><i>Ⅱ</i><i>Ⅲ</i><i>Ⅳ</i><i>Ⅴ</i><i>Ⅵ</i>
-        </aside>
-
-        <aside class="lc4-sin-panel" aria-label="Sin resources">
+        <aside class="lc-sin-panel" aria-label="Sin resources">
           <b>SIN</b>
           <span class="sin-lust">● <i id="sinLust">0</i></span>
           <span class="sin-envy">● <i id="sinEnvy">0</i></span>
           <span class="sin-gluttony">● <i id="sinGluttony">0</i></span>
         </aside>
 
-        <svg id="targetLines" class="lc4-target-lines" aria-hidden="true">
-          <defs>
-            <marker id="arrowGreen" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 Z" fill="#aee35a"/></marker>
-            <marker id="arrowGold" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 Z" fill="#ffd04d"/></marker>
-            <marker id="arrowRed" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 Z" fill="#ef4c46"/></marker>
-            <marker id="arrowBlue" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 Z" fill="#64d9ff"/></marker>
-          </defs>
-        </svg>
-
-        <div id="turnOrder" class="lc4-turn-order" aria-label="Turn order"></div>
-
-        <main id="battleArena" class="lc4-arena">
-          <article id="donUnit" class="lc4-don-unit">
-            <div class="lc4-don-plate">
-              <div class="lc4-don-title"><small>LCB SINNER</small><b>DON QUIXOTE</b></div>
-              <div class="lc4-mini-meter"><span>HP</span><i><em id="donHpBar"></em></i><b id="donHpText">203/203</b></div>
-              <div class="lc4-mini-meter"><span>SP</span><i><em id="donSpBar"></em></i><b id="donSpText">0</b></div>
-              <div class="lc4-unit-sub"><span>SPD <b id="donSpeed">3</b></span><span id="donStatus">READY</span></div>
-            </div>
-            <div class="lc4-don-stage">
-              <div class="lc4-shadow"></div>
-              <img id="battleDon" class="lc4-don lc6-don-base" src="assets/battle/don/idle-animation.gif" alt="Don Quixote" />
-              <img id="donActionSprite" class="lc6-don-action-sprite" alt="" hidden />
-              <div id="donDamage" class="lc4-float" hidden></div>
-            </div>
-          </article>
-
-          <section id="enemyRoster" class="lc4-enemy-roster" aria-label="Bandit enemies"></section>
-          <div id="enemyIntentSlots" class="lc4-intent-layer" aria-label="Enemy intent slots"></div>
-        </main>
-
-        <footer id="planningPanel" class="lc4-planning">
-          <div class="lc4-manager">
-            <div class="lc4-manager-orbit"><img src="assets/battle/don/idle.png" alt="" /></div>
+        <footer id="planningPanel" class="lc-planning-panel">
+          <div class="lc-manager-disc">
+            <div class="lc-manager-portrait"><img src="assets/characters/idle.png" alt="" /></div>
             <span>DON</span>
             <b id="managerSp">0 SP</b>
           </div>
-          <div id="actionRail" class="lc4-action-rail" aria-label="Don Quixote action chain"></div>
-          <div class="lc4-command">
-            <button id="startCombatBtn" class="lc4-start" type="button"><span>START</span><small>ENTER</small></button>
-            <div class="lc4-auto">
+          <div id="actionRail" class="lc-action-rail" aria-label="Don Quixote action slots"></div>
+          <div class="lc-command-cluster">
+            <div class="lc-auto-buttons">
               <button id="autoWinBtn" type="button">WIN RATE</button>
               <button id="autoDamageBtn" type="button">DAMAGE</button>
             </div>
+            <button id="startCombatBtn" class="lc-start-btn" type="button"><span>START</span><small>ENTER</small></button>
           </div>
         </footer>
 
-        <div id="clashOverlay" class="lc4-clash" hidden>
-          <div class="lc4-clash-side lc4-clash-don">
-            <small>DON QUIXOTE</small>
-            <img id="clashDonArt" class="lc7-clash-art" src="assets/battle/skills/joust-icon.png" alt="" />
+        <div id="clashOverlay" class="lc-clash-overlay" hidden>
+          <div class="lc-clash-side lc-clash-don">
+            <small id="clashDonLabel">DON QUIXOTE</small>
             <b id="clashDonSkill">Joust</b>
-            <div id="clashDonPower" class="lc4-clash-power">0</div>
-            <div id="clashCoinsDon" class="lc4-coins"></div>
+            <div id="clashDonPower" class="lc-clash-power">0</div>
+            <div id="clashCoinsDon" class="lc-clash-coins"></div>
           </div>
-          <div class="lc4-clash-mid"><span id="clashResult">CLASH</span><i></i></div>
-          <div class="lc4-clash-side lc4-clash-enemy">
-            <small>BANDIT</small>
-            <b id="clashEnemySkill">Dirty Swing</b>
-            <div id="clashEnemyPower" class="lc4-clash-power">0</div>
-            <div id="clashCoinsEnemy" class="lc4-coins"></div>
-          </div>
-        </div>
-
-        <div id="combatTotal" class="lc4-total" hidden><span>TOTAL</span><b>0</b></div>
-        <div id="combatLog" class="lc4-combat-log" aria-live="polite"></div>
-        <div id="enemyDamage" class="lc4-float lc4-enemy-float" hidden></div>
-
-        <div id="battleFxLayer" class="lc5-fx-layer" aria-hidden="true">
-          <div id="skillCutin" class="lc5-skill-cutin" hidden>
-            <img id="skillCutinArt" class="lc7-cutin-art" src="assets/battle/skills/joust-badge.png" alt="" />
-            <span id="skillCutinAffinity">LUST · PIERCE</span>
-            <b id="skillCutinName">JOUST</b>
+          <div class="lc-clash-center">
+            <span id="clashResult">CLASH</span>
             <i></i>
           </div>
-          <div id="coinBurst" class="lc5-coin-burst" hidden></div>
-          <div id="screenFlash" class="lc5-screen-flash" hidden></div>
+          <div class="lc-clash-side lc-clash-enemy">
+            <small>BANDIT</small>
+            <b id="clashEnemySkill">Dirty Swing</b>
+            <div id="clashEnemyPower" class="lc-clash-power">0</div>
+            <div id="clashCoinsEnemy" class="lc-clash-coins"></div>
+          </div>
         </div>
 
-        <div id="battleResult" class="battle-result lc4-result" hidden>
+        <div id="combatLog" class="lc-combat-log" aria-live="polite"></div>
+
+        <div id="battleResult" class="battle-result lc-result" hidden>
           <span id="battleResultSmall">ENCOUNTER COMPLETE</span>
           <strong id="battleResultTitle">VICTORY</strong>
           <button id="battleContinue" class="primary-btn">CONTINUE</button>
