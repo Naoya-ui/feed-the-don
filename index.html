@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#0b0d10" />
+  <title>Raise Don Quixote — HTML Edition</title>
+  <link rel="icon" href="assets/ui/window-icon.png" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <main id="game" class="game" aria-label="Raise Don Quixote visual novel">
+    <div id="background" class="background" aria-hidden="true"></div>
+    <div class="vignette" aria-hidden="true"></div>
+
+    <section id="titleScreen" class="title-screen">
+      <div class="title-card">
+        <p class="eyebrow">WEB REMAKE</p>
+        <h1>RAISE<br>DON QUIXOTE</h1>
+        <p class="title-copy">A browser remake of your Ren'Py prototype.</p>
+        <div class="title-actions">
+          <button id="newGameBtn" class="primary-btn">NEW GAME</button>
+          <button id="continueBtn" class="secondary-btn" hidden>CONTINUE</button>
+        </div>
+        <p class="title-note">Click/tap to advance · Enter/Space also works</p>
+      </div>
+    </section>
+
+    <div id="hud" class="hud" hidden>
+      <div class="hud-chip">📍 <span id="hudLocation">Bus</span></div>
+      <div class="hud-chip">⏱ <span id="hudTime">0 min</span></div>
+    </div>
+
+    <button id="backpackBtn" class="backpack-btn" aria-label="Open inventory" hidden>
+      <img src="assets/ui/backpack.webp" alt="" />
+      <span id="backpackCount" class="backpack-count">0</span>
+    </button>
+
+    <img id="character" class="character" src="assets/characters/idle.png" alt="Don Quixote" hidden />
+
+    <section id="dialogueBox" class="dialogue-box" hidden aria-live="polite">
+      <div id="speaker" class="speaker">Don Quixote</div>
+      <div id="dialogue" class="dialogue"></div>
+      <div class="advance-indicator" aria-hidden="true">▼</div>
+    </section>
+
+    <section id="choices" class="choices" hidden aria-label="Choices"></section>
+
+    <section id="nameModal" class="modal" hidden>
+      <div class="modal-card name-card">
+        <p class="eyebrow">IDENTITY REGISTRATION</p>
+        <h2>ENTER YOUR NAME</h2>
+        <input id="nameInput" type="text" maxlength="16" autocomplete="off" placeholder="Dante" />
+        <button id="nameConfirm" class="primary-btn">CONFIRM</button>
+      </div>
+    </section>
+
+    <section id="inventoryModal" class="modal" hidden>
+      <div class="modal-card inventory-card">
+        <div class="modal-head">
+          <div>
+            <p class="eyebrow">BACKPACK</p>
+            <h2>INVENTORY</h2>
+          </div>
+          <button id="inventoryClose" class="icon-btn" aria-label="Close inventory">×</button>
+        </div>
+        <div id="inventoryList" class="inventory-list"></div>
+      </div>
+    </section>
+
+    <section id="mapModal" class="modal map-modal" hidden>
+      <div class="modal-card map-card">
+        <div class="modal-head">
+          <div>
+            <p class="eyebrow">NAVIGATION</p>
+            <h2>WORLD MAP</h2>
+          </div>
+          <button id="mapClose" class="icon-btn" aria-label="Close map">×</button>
+        </div>
+        <div class="map-status">
+          <span>Time: <b id="mapTime">0 min</b></span>
+          <span>Location: <b id="mapLocation">Bus</b></span>
+        </div>
+        <div id="mapGrid" class="map-grid"></div>
+      </div>
+    </section>
+
+    <section id="systemModal" class="modal" hidden>
+      <div class="modal-card system-card">
+        <div class="modal-head">
+          <div>
+            <p class="eyebrow">SYSTEM</p>
+            <h2>GAME MENU</h2>
+          </div>
+          <button id="systemClose" class="icon-btn" aria-label="Close menu">×</button>
+        </div>
+        <label class="volume-row">Music volume
+          <input id="volumeSlider" type="range" min="0" max="100" value="35" />
+        </label>
+        <div class="system-actions">
+          <button id="saveBtn" class="secondary-btn">SAVE</button>
+          <button id="loadBtn" class="secondary-btn">LOAD</button>
+          <button id="restartBtn" class="danger-btn">RESTART</button>
+        </div>
+        <p id="saveInfo" class="save-info"></p>
+      </div>
+    </section>
+
+    <div id="notice" class="notice" hidden></div>
+
+    <nav id="quickMenu" class="quick-menu" hidden aria-label="Quick menu">
+      <button id="mapBtn" title="Map">MAP</button>
+      <button id="systemBtn" title="System menu">MENU</button>
+    </nav>
+
+    <audio id="bgm" src="assets/audio/bus-theme.mp3" loop preload="auto"></audio>
+  </main>
+
+  <script src="script.js"></script>
+</body>
+</html>
