@@ -73,27 +73,6 @@
     inspectorPower: $("inspectorPower"),
     inspectorText: $("inspectorText"),
     inspectorKeywords: $("inspectorKeywords"),
-    battleKeywordPanel: $("battleKeywordPanel"),
-    keywordName: $("keywordName"),
-    keywordText: $("keywordText"),
-    battleMatchup: $("battleMatchup"),
-    matchDonArt: $("matchDonArt"),
-    matchDonSpeed: $("matchDonSpeed"),
-    matchDonSkill: $("matchDonSkill"),
-    matchDonCoins: $("matchDonCoins"),
-    matchDonPower: $("matchDonPower"),
-    matchForecast: $("matchForecast"),
-    matchEnemyPower: $("matchEnemyPower"),
-    matchEnemySpeed: $("matchEnemySpeed"),
-    matchEnemySkill: $("matchEnemySkill"),
-    matchEnemyCoins: $("matchEnemyCoins"),
-    enemySkillInspector: $("enemySkillInspector"),
-    enemyInspectorArt: $("enemyInspectorArt"),
-    enemyInspectorName: $("enemyInspectorName"),
-    enemyInspectorType: $("enemyInspectorType"),
-    enemyInspectorCoins: $("enemyInspectorCoins"),
-    enemyInspectorPower: $("enemyInspectorPower"),
-    enemyInspectorText: $("enemyInspectorText"),
     battleTutorial: $("battleTutorial"),
     tutorialTitle: $("tutorialTitle"),
     tutorialText: $("tutorialText"),
@@ -181,39 +160,7 @@
     justice: { src: "assets/battle/don/skill-3.gif", duration: 1400, hitTimes: [0.30, 0.58, 0.80], css: "skill3" },
   };
 
-
-  const enemySprites = {
-    club: {
-      idle: "assets/battle/enemies/club-idle.png",
-      attack: "assets/battle/enemies/club-attack-a.png",
-      windup: "assets/battle/enemies/club-attack-b.png",
-      hurt: "assets/battle/enemies/club-attack-b.png",
-      dead: "assets/battle/enemies/club-dead.png",
-    },
-    knife: {
-      idle: "assets/battle/enemies/knife-idle.png",
-      attack: "assets/battle/enemies/knife-attack.png",
-      windup: "assets/battle/enemies/knife-idle-alt.png",
-      hurt: "assets/battle/enemies/knife-attack.png",
-      dead: "assets/battle/enemies/knife-idle.png",
-    },
-    leader: {
-      idle: "assets/battle/enemies/leader-idle.png",
-      attack: "assets/battle/enemies/leader-attack-a.png",
-      windup: "assets/battle/enemies/leader-attack-b.png",
-      hurt: "assets/battle/enemies/leader-attack-a.png",
-      dead: "assets/battle/enemies/leader-dead.png",
-    },
-    elite: {
-      idle: "assets/battle/enemies/elite-idle.png",
-      attack: "assets/battle/enemies/elite-attack-a.png",
-      windup: "assets/battle/enemies/elite-attack-b.png",
-      hurt: "assets/battle/enemies/elite-hurt.png",
-      dead: "assets/battle/enemies/elite-dead.png",
-    },
-  };
-
-  Object.values({ ...battleDonSprites, ...Object.fromEntries(Object.entries(battleDonAnimations).map(([k,v]) => [k, v.src])), ...Object.fromEntries(Object.entries(enemySprites).flatMap(([k, poses]) => Object.entries(poses).map(([pose, src]) => [`${k}-${pose}`, src]))) }).forEach((src) => {
+  Object.values({ ...battleDonSprites, ...Object.fromEntries(Object.entries(battleDonAnimations).map(([k,v]) => [k, v.src])) }).forEach((src) => {
     const img = new Image();
     img.src = src;
   });
@@ -266,71 +213,12 @@
     },
   };
 
-  const enemyBattleSkills = {
-    club: [
-      { key: "clumsyChop", name: "Clumsy Chop", base: 3, coinPower: 3, coins: 1, type: "Blunt", art: "assets/battle/enemy-skills/clumsy-chop.png" },
-      { key: "weakBlow", name: "Weak Blow", base: 4, coinPower: 1, coins: 1, type: "Blunt", art: "assets/battle/enemy-skills/weak-blow.png" },
-    ],
-    knife: [
-      { key: "clunkyStab", name: "Clunky Stab", base: 2, coinPower: 5, coins: 1, type: "Pierce", art: "assets/battle/enemy-skills/clunky-stab.png" },
-      { key: "weakBlow", name: "Weak Blow", base: 4, coinPower: 1, coins: 1, type: "Blunt", art: "assets/battle/enemy-skills/weak-blow.png" },
-    ],
-    leader: [
-      { key: "clumsyChop", name: "Clumsy Chop", base: 3, coinPower: 3, coins: 1, type: "Blunt", art: "assets/battle/enemy-skills/clumsy-chop.png" },
-      { key: "clunkyStab", name: "Clunky Stab", base: 2, coinPower: 5, coins: 1, type: "Pierce", art: "assets/battle/enemy-skills/clunky-stab.png" },
-      { key: "weakBlow", name: "Weak Blow", base: 4, coinPower: 1, coins: 1, type: "Blunt", art: "assets/battle/enemy-skills/weak-blow.png" },
-    ],
-    elite: [
-      { key: "hit", name: "Hit", base: 3, coinPower: 2, coins: 3, type: "Blunt", art: "assets/battle/enemy-skills/hit.png" },
-      { key: "heavyStrike", name: "Heavy Strike", base: 4, coinPower: 6, coins: 1, type: "Blunt", art: "assets/battle/enemy-skills/heavy-strike.png" },
-      { key: "block", name: "Block", base: 4, coinPower: 2, coins: 1, type: "Defense", defense: true, art: "assets/battle/enemy-skills/block.png" },
-    ],
-  };
-
-  function getEnemySkillPool(enemy) {
-    if (!enemy) return enemyBattleSkills.club;
-    return enemyBattleSkills[enemy.spriteKey] || enemyBattleSkills[enemy.role?.toLowerCase?.()] || enemyBattleSkills.club;
-  }
-
-  const keywordDescriptions = {
-    "Bleed": "When an attack Coin hits, Bleed deals fixed damage based on Potency. Its Count is then reduced as the effect is consumed.",
-    "Haste": "Raises Speed on the next turn, helping Don act earlier and redirect slower enemy actions.",
-    "Attack Power Up": "Raises the base power of Don's attack skills for the next turn.",
-    "Multi-Coin": "This skill attacks with multiple Coins. Winning a Clash preserves more Coins for the follow-up attack.",
-    "Clash Win": "This effect activates when Don wins the Clash before the attack resolves.",
-    "Defense": "A defensive action that competes against the incoming enemy action instead of dealing normal damage.",
-    "Evade": "If the defensive roll wins, Don avoids the incoming hit and takes no damage from that action."
-  };
-
-  const enemySkillText = {
-    clumsyChop: "A rough club swing with modest power. It is easy to read, but a missed Clash still hurts.",
-    clunkyStab: "A messy Pierce attack. It rolls higher on a heads flip, so contest it with a stable skill.",
-    weakBlow: "A slow, low-coin attack used by weaker bandits to fill the chain.",
-    hit: "A 3-coin combo from the elite bandit. If unopposed, it can stack up surprising damage.",
-    heavyStrike: "A single crushing blow with high coin power. It is the elite bandit's strongest attack.",
-    block: "A guarded stance. In this remake it still resolves as an enemy action, but represents the elite's defensive move."
-  };
-
-  const enemySkillEffects = {
-    clumsyChop: [
-      { tag: "[On Hit]", text: "Deal 3 Blunt damage." }
-    ],
-    clunkyStab: [
-      { tag: "[Heads Hit]", text: "Gain extra Pierce power on a successful flip." }
-    ],
-    weakBlow: [
-      { tag: "[On Hit]", text: "Deal light Blunt damage." }
-    ],
-    hit: [
-      { tag: "[On Hit]", text: "Multi-coin combo that can deal repeated Blunt hits." }
-    ],
-    heavyStrike: [
-      { tag: "[On Hit]", text: "A heavy Blunt strike with strong clash payoff." }
-    ],
-    block: [
-      { tag: "[Defense]", text: "Reduce incoming pressure if not redirected." }
-    ]
-  };
+  const enemyBattleSkills = [
+    { key: "swing", name: "Dirty Swing", base: 3, coinPower: 5, coins: 1, type: "Blunt" },
+    { key: "rush", name: "Desperate Rush", base: 4, coinPower: 4, coins: 2, type: "Blunt" },
+    { key: "feint", name: "Low Feint", base: 5, coinPower: 4, coins: 1, type: "Blunt" },
+    { key: "club", name: "Crushing Club", base: 3, coinPower: 6, coins: 2, type: "Blunt" },
+  ];
 
   const battleTutorialSteps = [
     { title: "DRAG A SKILL TO TARGET", text: "Choose one of the two skill cards in a speed slot, then drag that card onto an enemy action. No target is chosen for you at the start." },
@@ -346,12 +234,7 @@
   let interactionLocked = false;
   let battle = null;
   let battleInputResolver = null;
-  let enemyInspectorHoverTimer = null;
   let battleResultResolver = null;
-  let sfxContext = null;
-  let targetLineRaf = 0;
-  let targetLinePointer = null;
-  let dragHoverIntentId = null;
 
   function makeInitialState() {
     return {
@@ -583,45 +466,23 @@
   function randomInt(min, max) { return Math.floor(Math.random() * (max - min + 1)) + min; }
   function headsChance(sp) { return clamp(50 + sp, 5, 95); }
 
-  function mkBattleEnemy(id, name, hp, role, spriteKey) {
-    return {
+  function makeBattleState() {
+    const mkEnemy = (id, name, hp, role) => ({
       id, name, role, hp, maxHp: hp,
-      spriteKey, pose: "idle",
       bleedPotency: 0, bleedCount: 0,
       staggered: false, staggerTurns: 0, staggerLevel: 0,
       thresholds: [Math.floor(hp * .62), Math.floor(hp * .31)],
-    };
-  }
-
-  function buildWaveEnemies(wave) {
-    if (wave === 2) {
-      return [
-        mkBattleEnemy(0, "Roadside Thug", 118, "CLUB", "club"),
-        mkBattleEnemy(1, "Knife Bandit", 104, "KNIFE", "knife"),
-        mkBattleEnemy(2, "Gang Leader", 156, "LEADER", "leader"),
-        mkBattleEnemy(3, "Elite Marauder", 214, "ELITE", "elite"),
-      ];
-    }
-    return [
-      mkBattleEnemy(0, "Roadside Thug", 118, "CLUB", "club"),
-      mkBattleEnemy(1, "Knife Bandit", 104, "KNIFE", "knife"),
-      mkBattleEnemy(2, "Gang Leader", 156, "LEADER", "leader"),
-    ];
-  }
-
-  function makeBattleState() {
+    });
     return {
       active: true,
       phase: "planning",
       wave: 1,
-      totalWaves: 2,
       turn: 1,
       tutorialStep: 0,
       focusSlot: 0,
       deckCursor: 0,
       totalDamage: 0,
       dragSlot: null,
-      selectedEnemyId: null,
       dragMoved: false,
       suppressSkillClickUntil: 0,
       guideMessage: "",
@@ -631,7 +492,11 @@
         haste: 0, nextHaste: 0,
         attackUp: 0, nextAttackUp: 0,
       },
-      enemies: buildWaveEnemies(1),
+      enemies: [
+        mkEnemy(0, "Roadside Thug", 118, "CLUB"),
+        mkEnemy(1, "Knife Bandit", 104, "KNIFE"),
+        mkEnemy(2, "Gang Leader", 156, "LEADER"),
+      ],
       donSlots: [],
       enemySlots: [],
       sins: { Lust: 0, Envy: 0, Gluttony: 0 },
@@ -644,72 +509,8 @@
     return battle ? battle.enemies.filter((enemy) => enemy.hp > 0) : [];
   }
 
-  function activeEnemySlots(enemyId) {
-    return battle ? battle.enemySlots.filter((slot) => slot.enemyId === enemyId && !slot.consumed) : [];
-  }
-
-  function firstEnemyIntent(enemyId) {
-    return activeEnemySlots(enemyId)[0] || null;
-  }
-
-  function setSelectedEnemy(enemyId, preferredIntentId = null, rerender = false) {
-    if (!battle) return null;
-    const live = aliveEnemies();
-    const fallback = live[0]?.id ?? null;
-    battle.selectedEnemyId = live.some((enemy) => enemy.id === enemyId) ? enemyId : fallback;
-    const selectedSlot = preferredIntentId ? enemySlotById(preferredIntentId) : firstEnemyIntent(battle.selectedEnemyId);
-    if (selectedSlot) showEnemySkillInspector(selectedSlot);
-    if (rerender) {
-      renderEnemies();
-      renderEnemyIntents();
-    }
-    return selectedSlot;
-  }
-
-  function getEnemySprite(enemy, pose = null) {
-    const set = enemySprites[enemy?.spriteKey] || enemySprites.club;
-    const wanted = enemy?.hp <= 0 ? "dead" : (pose || enemy?.pose || "idle");
-    return set[wanted] || set.idle;
-  }
-
-  function setEnemyPose(enemyId, pose = "idle", resetDelay = 0) {
-    const enemy = enemyById(enemyId);
-    if (!enemy) return;
-    enemy.pose = pose;
-    renderEnemies();
-    if (resetDelay > 0) {
-      setTimeout(() => {
-        const again = enemyById(enemyId);
-        if (!again || again.hp <= 0) return;
-        again.pose = "idle";
-        renderEnemies();
-      }, resetDelay);
-    }
-  }
-
   function battleWon() {
     return !!battle && battle.enemies.every((enemy) => enemy.hp <= 0);
-  }
-
-
-  function advanceToNextWave() {
-    if (!battle || battle.wave >= (battle.totalWaves || 1)) return false;
-    battle.wave += 1;
-    battle.turn = 1;
-    battle.tutorialStep = 0;
-    battle.focusSlot = 0;
-    battle.dragSlot = null;
-    battle.dragMoved = false;
-    battle.autoMode = null;
-    battle.guideMessage = `WAVE ${battle.wave} begins. A new enemy joins the ambush!`;
-    battle.enemies = buildWaveEnemies(battle.wave);
-    battle.don.haste = battle.don.nextHaste || 0;
-    battle.don.attackUp = battle.don.nextAttackUp || 0;
-    battle.don.nextHaste = 0;
-    battle.don.nextAttackUp = 0;
-    battle.donSlots = [];
-    battle.enemySlots = [];
-    return true;
   }
 
   function enemyById(id) {
@@ -745,17 +546,13 @@
 
     battle.enemySlots = [];
     living.forEach((enemy, i) => {
-      const isBossLike = enemy.role === "LEADER" || enemy.role === "ELITE";
-      const count = isBossLike && battle.turn >= 3 ? 2 : 1;
-      const pool = getEnemySkillPool(enemy);
+      const count = enemy.id === 2 && battle.turn >= 3 ? 2 : 1;
       for (let n = 0; n < count; n += 1) {
-        const skill = pool[(battle.turn + enemy.id + n - 1) % pool.length];
-        const minSpeed = enemy.role === "ELITE" ? 4 : enemy.id === 2 ? 3 : 2;
-        const maxSpeed = enemy.role === "ELITE" ? 7 : enemy.id === 2 ? 7 : 6;
+        const skill = enemyBattleSkills[(battle.turn + enemy.id + n - 1) % enemyBattleSkills.length];
         battle.enemySlots.push({
           id: `e${enemy.id}-${n}`,
           enemyId: enemy.id,
-          speed: randomInt(minSpeed, maxSpeed),
+          speed: randomInt(enemy.id === 2 ? 3 : 2, enemy.id === 2 ? 7 : 6),
           skill,
           consumed: false,
         });
@@ -828,7 +625,7 @@
   }
 
   function renderBattleHUD() {
-    els.battleWave.textContent = `${battle.wave}/${battle.totalWaves || 1}`;
+    els.battleWave.textContent = "1/1";
     els.battleTurn.textContent = String(battle.turn);
     els.phaseLabel.textContent = battle.phase === "planning" ? "COMMAND PHASE" : "COMBAT PHASE";
     els.donHpText.textContent = `${Math.max(0, battle.don.hp)}/${battle.don.maxHp}`;
@@ -848,62 +645,29 @@
   }
 
   function banditBodyHTML(enemy) {
-    const src = getEnemySprite(enemy);
-    return `<div class="lc4-bandit sprite-${enemy.spriteKey || "club"} pose-${enemy.pose || "idle"}" aria-label="${escapeHTML(enemy.name)}">
-      <img class="lc4-bandit-sprite" src="${src}" alt="${escapeHTML(enemy.name)} battle sprite">
+    return `<div class="lc4-bandit bandit-${enemy.id}" aria-label="${escapeHTML(enemy.name)}">
+      <i class="b-head"></i><i class="b-body"></i><i class="b-arm b-arm-a"></i><i class="b-arm b-arm-b"></i><i class="b-leg b-leg-a"></i><i class="b-leg b-leg-b"></i>
+      <i class="b-weapon"></i>
     </div>`;
   }
 
   function renderEnemies() {
     if (!els.enemyRoster) return;
     els.enemyRoster.innerHTML = "";
-    const liveIds = aliveEnemies().map((enemy) => enemy.id);
-    if (battle.selectedEnemyId == null || !liveIds.includes(battle.selectedEnemyId)) battle.selectedEnemyId = liveIds[0] ?? null;
-    const columnCount = Math.max(3, battle.enemies.length);
-    els.enemyRoster.style.gridTemplateColumns = `repeat(${columnCount}, minmax(0, 1fr))`;
-    els.enemyRoster.dataset.count = String(columnCount);
     battle.enemies.forEach((enemy) => {
       const card = document.createElement("article");
-      card.className = `lc4-enemy ${enemy.hp <= 0 ? "is-dead" : ""} ${enemy.staggered ? "is-staggered" : ""} ${battle.selectedEnemyId === enemy.id ? "is-selected" : ""}`;
+      card.className = `lc4-enemy ${enemy.hp <= 0 ? "is-dead" : ""} ${enemy.staggered ? "is-staggered" : ""}`;
       card.dataset.enemyId = String(enemy.id);
       const hpPct = clamp((enemy.hp / enemy.maxHp) * 100, 0, 100);
-      const nextThreshold = enemy.thresholds[enemy.staggerLevel];
-      const staggerPct = nextThreshold == null ? 0 : clamp((nextThreshold / enemy.maxHp) * 100, 0, 100);
       const bleed = enemy.bleedCount > 0 ? `<span class="lc4-status bleed">BLEED ${enemy.bleedPotency}×${enemy.bleedCount}</span>` : "";
       card.innerHTML = `
         <div class="lc4-enemy-name"><small>${escapeHTML(enemy.role)}</small><b>${escapeHTML(enemy.name)}</b></div>
-        <div class="lc4-enemy-stage"><div class="lc4-shadow"></div><div class="lc4-enemy-focus"></div>${banditBodyHTML(enemy)}<div class="lc4-unit-float" data-float-enemy="${enemy.id}" hidden></div></div>
+        <div class="lc4-enemy-stage"><div class="lc4-shadow"></div>${banditBodyHTML(enemy)}<div class="lc4-unit-float" data-float-enemy="${enemy.id}" hidden></div></div>
         <div class="lc4-enemy-hud">
-          <div class="lc4-enemy-hp"><i style="width:${hpPct}%"></i>${nextThreshold == null ? "" : `<em class="lc10-stagger-mark" style="left:${staggerPct}%"></em>`}</div>
-          <div class="lc10-stagger-track"><i style="width:${Math.max(0, 100-hpPct)}%"></i><span>${nextThreshold == null ? "NO STAGGER" : `STAGGER @ ${nextThreshold} HP`}</span></div>
+          <div class="lc4-enemy-hp"><i style="width:${hpPct}%"></i></div>
           <b>${Math.max(0, enemy.hp)}/${enemy.maxHp}</b>
           <div class="lc4-statuses">${enemy.staggered ? '<span class="lc4-status stagger">STAGGER</span>' : ""}${bleed}</div>
         </div>`;
-      if (enemy.hp > 0) {
-        card.addEventListener("click", () => {
-          if (battle.phase !== "planning") return;
-          const picked = autoTargetEnemy(enemy.id);
-          battle.guideMessage = picked?.slot && picked?.intent
-            ? `${enemy.name} auto-targeted for slot ${picked.slot.index + 1}. Click another enemy to redirect quickly.`
-            : `${enemy.name} selected. Check the skill effect at the upper-right panel.`;
-          tutorialForTurn();
-          renderPlanning();
-        });
-        card.addEventListener("pointerup", () => {
-          if (battle.phase !== "planning" || battle.dragSlot === null) return;
-          const slot = firstEnemyIntent(enemy.id);
-          const drag = battle.donSlots[battle.dragSlot];
-          if (slot && drag) {
-            drag.targetIntentId = slot.id;
-            battle.autoMode = null;
-            battle.focusSlot = battle.dragSlot;
-            battle.dragSlot = null;
-            battle.guideMessage = `${enemy.name} targeted. The top-right panel now shows that enemy action.`;
-            setSelectedEnemy(enemy.id, slot.id);
-            renderPlanning();
-          }
-        });
-      }
       els.enemyRoster.appendChild(card);
     });
   }
@@ -919,26 +683,16 @@
       const sibIndex = siblings.findIndex((x) => x.id === slot.id);
       const btn = document.createElement("button");
       btn.type = "button";
-      btn.className = `lc4-intent ${intentTypeClass(slot.skill.type)} ${slot.skill.defense ? "is-defense" : ""}`;
+      btn.className = "lc4-intent";
       btn.dataset.intentId = slot.id;
       btn.dataset.enemyId = String(enemy.id);
       btn.style.left = `${48 + ((enemyIndex + 0.5) * 52 / Math.max(1, living.length)) + sibIndex * 3.8}%`;
-      btn.innerHTML = `<span class="lc4-intent-speed">${slot.speed}</span><span class="lc4-intent-frame"></span>${slot.skill.art ? `<img class="lc4-intent-art" src="${escapeHTML(slot.skill.art)}" alt="" />` : `<i>⚔</i>`}<b>${escapeHTML(slot.skill.name)}</b><small>${slot.skill.base}+${slot.skill.coinPower} · ${slot.skill.coins}C · ${escapeHTML(slot.skill.type || "ATK")}</small>`;
-      if (battle.selectedEnemyId === enemy.id) btn.classList.add("is-selected");
+      btn.innerHTML = `<span class="lc4-intent-speed">${slot.speed}</span><i>⚔</i><b>${escapeHTML(slot.skill.name)}</b><small>${slot.skill.base}+${slot.skill.coinPower} · ${slot.skill.coins}C</small>`;
       btn.addEventListener("click", () => {
         if (battle.phase !== "planning") return;
-        const picked = autoTargetEnemy(enemy.id, slot.id);
-        battle.guideMessage = picked?.slot
-          ? `${picked.slot.index + 1} locked onto ${enemy.name}'s ${slot.skill.name}.`
-          : "Selected enemy action.";
+        battle.guideMessage = "Drag a skill card onto this enemy action to target it.";
         tutorialForTurn();
-        renderPlanning();
       });
-      btn.addEventListener("mouseenter", () => {
-        battle.selectedEnemyId = enemy.id;
-        scheduleEnemyInspector(slot);
-      });
-      btn.addEventListener("mouseleave", hideEnemyInspectorHoverDelay);
       btn.addEventListener("pointerup", () => {
         if (battle.phase !== "planning" || battle.dragSlot === null) return;
         const drag = battle.donSlots[battle.dragSlot];
@@ -963,98 +717,6 @@
     els.turnOrder.innerHTML = all.map((item) => `<span class="${item.team}">${item.text}</span>`).join("");
   }
 
-  function showKeywordPanel(skill) {
-    if (!els.battleKeywordPanel || !skill) return;
-    const key = skill.keywords?.find((k) => keywordDescriptions[k]) || skill.keywords?.[0];
-    if (!key) { els.battleKeywordPanel.hidden = true; return; }
-    if (key.toLowerCase() === "bleed") {
-      els.keywordName.innerHTML = `${bleedMarkup("")}`;
-    } else {
-      els.keywordName.textContent = key.toUpperCase();
-    }
-    els.keywordText.textContent = keywordDescriptions[key] || `${key} modifies this skill during battle.`;
-    els.battleKeywordPanel.hidden = false;
-  }
-
-  function showEnemySkillInspector(enemySlot) {
-    if (!els.enemySkillInspector || !enemySlot) return;
-    const skill = enemySlot.skill;
-    const enemy = enemyById(enemySlot.enemyId);
-    battle.selectedEnemyId = enemy?.id ?? battle.selectedEnemyId;
-    const typeLabel = (skill.type || "Attack").toUpperCase();
-    const desc = enemySkillText[skill.key] || `A ${skill.type} attack. Clash it, redirect it, or leave it unopposed at your own risk.`;
-    const effects = enemySkillEffects[skill.key] || [];
-    const effectMarkup = effects.length
-      ? effects.map((effect) => `
-          <div class="lc21-skillfx-row">
-            <span class="lc21-skillfx-tag">${escapeHTML(effect.tag)}</span>
-            <b>${escapeHTML(effect.text)}</b>
-          </div>`).join("")
-      : `<div class="lc21-skillfx-row"><span class="lc21-skillfx-tag">[Info]</span><b>No special effect.</b></div>`;
-
-    els.enemyInspectorName.textContent = `${enemy?.name || "Enemy"} · ${skill.name}`;
-    if (els.enemyInspectorArt) {
-      if (skill.art) {
-        els.enemyInspectorArt.src = skill.art;
-        els.enemyInspectorArt.hidden = false;
-      } else {
-        els.enemyInspectorArt.hidden = true;
-      }
-    }
-    if (els.enemyInspectorType) {
-      els.enemyInspectorType.textContent = typeLabel;
-      els.enemyInspectorType.className = `lc10-chip ${intentTypeClass(skill.type)}`;
-    }
-    if (els.enemyInspectorCoins) els.enemyInspectorCoins.textContent = `${skill.coins} COIN${skill.coins > 1 ? "S" : ""}`;
-    els.enemyInspectorPower.textContent = `${skill.base} + ${skill.coinPower} · ${skill.coins} Coin${skill.coins > 1 ? "s" : ""}`;
-    els.enemyInspectorText.innerHTML = `
-      <div class="lc21-inspector-body">
-        <div class="lc21-inspector-formula">
-          <span class="lc21-power-num">${skill.base}</span>
-          <span class="lc21-op">+</span>
-          <span class="lc21-power-num is-coin">${skill.coinPower}</span>
-          <span class="lc21-op">·</span>
-          <span class="lc21-coin-count">${skill.coins} Coin${skill.coins > 1 ? "s" : ""}</span>
-        </div>
-        <div class="lc21-inspector-desc">${escapeHTML(desc)}</div>
-        ${skill.keywords?.includes("Bleed") ? `<div class="lc21-bleed-row">${bleedMarkup("status on hit")}</div>` : ""}
-        <div class="lc21-section">
-          <div class="lc21-section-title">SKILL EFFECTS</div>
-          <div class="lc21-skillfx-list">${effectMarkup}</div>
-        </div>
-      </div>`;
-    els.enemySkillInspector.hidden = false;
-    requestAnimationFrame(() => els.enemySkillInspector.classList.add("is-visible"));
-  }
-
-  function renderMatchupPreview() {
-    if (!els.battleMatchup || !battle || battle.phase !== "planning") return;
-    const slot = battle.donSlots[battle.focusSlot];
-    const enemySlot = slot ? enemySlotById(slot.targetIntentId) : null;
-    if (!slot || !enemySlot || enemySlot.consumed) {
-      els.battleMatchup.hidden = true;
-      return;
-    }
-    const skill = getSelectedSkill(slot);
-    const forecast = clashForecast(slot);
-    const donPower = maxSkillPower(skill, slot.speed, battle.don.attackUp);
-    const enemyPower = enemyMaxPower(enemySlot);
-    els.matchDonArt.src = skill.art || skill.badge || "";
-    els.matchDonSkill.textContent = skill.name;
-    els.matchDonSpeed.textContent = `SPD ${slot.speed}`;
-    els.matchDonCoins.textContent = Array.from({length:skill.coins},()=>"●").join(" ");
-    els.matchDonPower.textContent = String(donPower);
-    els.matchEnemySkill.textContent = enemySlot.skill.name;
-    els.matchEnemySpeed.textContent = `SPD ${enemySlot.speed}`;
-    els.matchEnemyCoins.textContent = Array.from({length:enemySlot.skill.coins},()=>"●").join(" ");
-    els.matchEnemyPower.textContent = String(enemyPower);
-    els.matchForecast.textContent = forecast.label;
-    els.battleMatchup.className = `lc10-matchup ${forecast.cls}`;
-    els.battleMatchup.hidden = false;
-    showKeywordPanel(skill);
-    showEnemySkillInspector(enemySlot);
-  }
-
   function showSkillInspector(skill, slot) {
     els.battleInspector.hidden = false;
     els.inspectorName.textContent = skill.name;
@@ -1065,33 +727,10 @@
     els.inspectorPower.textContent = `${skill.base} + ${getSkillCoinPower(skill, slot.speed)} · ${skill.coins} Coin${skill.coins > 1 ? "s" : ""}`;
     els.inspectorText.textContent = skill.effect;
     els.inspectorKeywords.innerHTML = skill.keywords.map((word) => `<span>${escapeHTML(word)}</span>`).join("");
-    showKeywordPanel(skill);
   }
 
   function hideSkillInspector() {
     els.battleInspector.hidden = true;
-  }
-
-  function intentTypeClass(type = "") {
-    const key = String(type).toLowerCase();
-    if (key.includes("slash")) return "type-slash";
-    if (key.includes("pierce")) return "type-pierce";
-    if (key.includes("blunt")) return "type-blunt";
-    if (key.includes("defense") || key.includes("guard") || key.includes("evade") || key.includes("block")) return "type-defense";
-    return "type-generic";
-  }
-
-  function bleedMarkup(textValue) {
-    return `<span class="lc10-inline-bleed"><img src="assets/battle/ui/bleed-logo.png" alt="Bleed" /><b>Bleed</b>${textValue ? `<span>${escapeHTML(textValue)}</span>` : ""}</span>`;
-  }
-
-  function scheduleEnemyInspector(slot) {
-    clearTimeout(enemyInspectorHoverTimer);
-    enemyInspectorHoverTimer = setTimeout(() => showEnemySkillInspector(slot), 70);
-  }
-
-  function hideEnemyInspectorHoverDelay() {
-    clearTimeout(enemyInspectorHoverTimer);
   }
 
   function skillSigil(skill) {
@@ -1127,48 +766,31 @@
     battle.focusSlot = index;
     const startX = event.clientX;
     const startY = event.clientY;
-    let hoveredIntentId = null;
     showSkillInspector(getSelectedSkill(slot), slot);
     document.body.classList.add("lc4-targeting");
 
-    const updateHover = (clientX, clientY) => {
-      const hovered = document.elementFromPoint(clientX, clientY)?.closest?.(".lc4-intent");
-      hoveredIntentId = hovered?.dataset?.intentId || null;
-      setDragHoverIntent(hoveredIntentId);
-      if (hoveredIntentId) {
-        const targetRect = hovered.getBoundingClientRect();
-        scheduleTargetLines({ x: targetRect.left + targetRect.width / 2, y: targetRect.top + targetRect.height / 2 });
-      } else {
-        scheduleTargetLines({ x: clientX, y: clientY });
-      }
-    };
-
     const onMove = (moveEvent) => {
       if (Math.hypot(moveEvent.clientX - startX, moveEvent.clientY - startY) > 6) battle.dragMoved = true;
-      updateHover(moveEvent.clientX, moveEvent.clientY);
+      drawTargetLines({ x: moveEvent.clientX, y: moveEvent.clientY });
     };
 
     const onUp = (upEvent) => {
-      const target = hoveredIntentId ? els.enemyIntentSlots.querySelector(`[data-intent-id="${hoveredIntentId}"]`) : document.elementFromPoint(upEvent.clientX, upEvent.clientY)?.closest?.(".lc4-intent");
+      const target = document.elementFromPoint(upEvent.clientX, upEvent.clientY)?.closest?.(".lc4-intent");
       if (target && slot && battle.dragMoved) {
         slot.targetIntentId = target.dataset.intentId;
         battle.autoMode = null;
-        battle.guideMessage = "Target snapped. Press START when your chain looks good.";
-        snapIntentButton(slot.targetIntentId);
+        battle.guideMessage = "Target set. The arrow color previews the Clash. Assign the rest, then press START.";
       }
-      if (battle.dragMoved) battle.suppressSkillClickUntil = performance.now() + 220;
+      if (battle.dragMoved) battle.suppressSkillClickUntil = performance.now() + 260;
       battle.dragSlot = null;
       document.body.classList.remove("lc4-targeting");
-      setDragHoverIntent(null);
-      scheduleTargetLines(null);
       window.removeEventListener("pointermove", onMove);
       window.removeEventListener("pointerup", onUp);
       renderPlanning();
     };
 
-    window.addEventListener("pointermove", onMove, { passive: true });
+    window.addEventListener("pointermove", onMove);
     window.addEventListener("pointerup", onUp, { once: true });
-    updateHover(event.clientX, event.clientY);
     event.preventDefault();
   }
 
@@ -1294,26 +916,16 @@
       path.setAttribute("marker-end", `url(#${marker})`);
       svg.appendChild(path);
     });
-    if ((pointer || dragHoverIntentId) && battle.dragSlot !== null) {
+    if (pointer && battle.dragSlot !== null) {
       const from = els.actionRail.querySelector(`[data-action-slot="${battle.dragSlot}"] .lc4-slot-core`);
       if (from) {
         const a = from.getBoundingClientRect();
         const x1 = a.left + a.width / 2 - rect.left;
         const y1 = a.top + a.height / 2 - rect.top;
-        let x2 = pointer?.x ?? x1;
-        let y2 = pointer?.y ?? y1;
-        if (dragHoverIntentId) {
-          const hovered = els.enemyIntentSlots.querySelector(`[data-intent-id="${dragHoverIntentId}"]`);
-          if (hovered) {
-            const hb = hovered.getBoundingClientRect();
-            x2 = hb.left + hb.width / 2;
-            y2 = hb.top + hb.height / 2;
-          }
-        }
-        x2 -= rect.left;
-        y2 -= rect.top;
+        const x2 = pointer.x - rect.left;
+        const y2 = pointer.y - rect.top;
         const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
-        path.classList.add("lc4-link", "dragging", dragHoverIntentId ? "snap" : "free");
+        path.classList.add("lc4-link", "dragging");
         path.setAttribute("d", `M ${x1} ${y1} C ${x1} ${y1 - 120}, ${x2} ${y2 - 90}, ${x2} ${y2}`);
         svg.appendChild(path);
       }
@@ -1332,12 +944,10 @@
     renderBattleHUD();
     renderEnemies();
     renderEnemyIntents();
-    if (battle.selectedEnemyId != null) setSelectedEnemy(battle.selectedEnemyId);
     renderTurnOrder();
     renderActionRail();
-    renderMatchupPreview();
     tutorialForTurn();
-    scheduleTargetLines();
+    requestAnimationFrame(drawTargetLines);
   }
 
   function autoSelect(mode) {
@@ -1401,8 +1011,6 @@
       }
     }
     els.actionRail.classList.remove("lc8-needs-target");
-    els.targetLines.hidden = true;
-    els.targetLines.innerHTML = "";
     const resolve = battleInputResolver;
     battleInputResolver = null;
     resolve();
@@ -1425,48 +1033,24 @@
   function renderClashCoins(container, flips, activeCoins) {
     container.innerHTML = "";
     for (let i = 0; i < activeCoins; i += 1) {
-      const isHeads = !!flips?.[i];
       const coin = document.createElement("i");
-      coin.className = `lc4-coin ${isHeads ? "heads" : "tails"}`;
-      coin.setAttribute("aria-label", isHeads ? "Heads" : "Tails");
-      coin.title = isHeads ? "Heads" : "Tails";
-
-      const img = document.createElement("img");
-      img.className = "lc4-coin-img";
-      img.src = isHeads ? "assets/ui/coin-head.png" : "assets/ui/coin-tail.png";
-      img.alt = isHeads ? "Heads coin" : "Tails coin";
-
-      coin.appendChild(img);
+      coin.className = `lc4-coin ${flips?.[i] ? "heads" : "tails"}`;
+      coin.textContent = flips?.[i] ? "H" : "T";
       container.appendChild(coin);
     }
   }
 
   async function showClash(slot, enemySlot, donCoins, enemyCoins, donRoll, enemyRoll, label = "CLASH") {
     const skill = getSelectedSkill(slot);
-    const donPower = donRoll?.power ?? maxSkillPower(skill, slot.speed, battle.don.attackUp);
-    const enemyPower = enemyRoll?.power ?? enemyMaxPower(enemySlot);
-    const verdict = donPower > enemyPower ? "don" : donPower < enemyPower ? "enemy" : "tie";
     els.clashDonSkill.textContent = skill.name;
     if (els.clashDonArt && skill.art) els.clashDonArt.src = skill.art;
     els.clashEnemySkill.textContent = enemySlot.skill.name;
     els.clashResult.textContent = label;
-    els.clashDonPower.textContent = String(donPower);
-    els.clashEnemyPower.textContent = String(enemyPower);
-    els.clashDonPower.className = `lc4-clash-power ${verdict === "don" ? "is-winning" : verdict === "enemy" ? "is-losing" : "is-even"}`;
-    els.clashEnemyPower.className = `lc4-clash-power ${verdict === "enemy" ? "is-winning" : verdict === "don" ? "is-losing" : "is-even"}`;
-    els.clashResult.className = verdict === "don" ? "is-don" : verdict === "enemy" ? "is-enemy" : "is-even";
+    els.clashDonPower.textContent = String(donRoll?.power ?? maxSkillPower(skill, slot.speed, battle.don.attackUp));
+    els.clashEnemyPower.textContent = String(enemyRoll?.power ?? enemyMaxPower(enemySlot));
     renderClashCoins(els.clashCoinsDon, donRoll?.flips || Array(donCoins).fill(false), donCoins);
     renderClashCoins(els.clashCoinsEnemy, enemyRoll?.flips || Array(enemyCoins).fill(false), enemyCoins);
     els.clashOverlay.hidden = false;
-    els.clashOverlay.classList.remove("is-don-win", "is-enemy-win", "is-tie", "is-active");
-    void els.clashOverlay.offsetWidth;
-    els.clashOverlay.classList.add("is-active", verdict === "don" ? "is-don-win" : verdict === "enemy" ? "is-enemy-win" : "is-tie");
-    pulseClashNode(els.clashDonPower);
-    pulseClashNode(els.clashEnemyPower);
-    pulseClashNode(els.clashResult);
-    spawnClashImpact(verdict);
-    playClashSfx("start");
-    playCoinFlipSequence(donRoll?.flips || [], enemyRoll?.flips || []);
     await delay(410);
   }
 
@@ -1557,40 +1141,22 @@
       if (dr.power > er.power) {
         enemyCoins -= 1;
         spawnCoinBurst(enemyCoins + 1);
-        spawnClashImpact("don");
-        playClashSfx("win");
         battle.don.sp = clamp(battle.don.sp + 5, -45, 45);
-        els.clashOverlay.classList.remove("is-enemy-win", "is-tie");
-        els.clashOverlay.classList.add("is-don-win");
         els.clashResult.textContent = "CLASH WIN";
-        pulseClashNode(els.clashResult);
-        pulseClashNode(els.clashDonPower);
         combatLog("CLASH WIN", "win");
       } else if (dr.power < er.power) {
         donCoins -= 1;
         spawnCoinBurst(donCoins + 1);
-        spawnClashImpact("enemy");
-        playClashSfx("lose");
         battle.don.sp = clamp(battle.don.sp - 5, -45, 45);
-        els.clashOverlay.classList.remove("is-don-win", "is-tie");
-        els.clashOverlay.classList.add("is-enemy-win");
         els.clashResult.textContent = "CLASH LOSE";
-        pulseClashNode(els.clashResult);
-        pulseClashNode(els.clashEnemyPower);
         combatLog("CLASH LOSE", "lose");
       } else {
-        spawnClashImpact("tie");
-        playClashSfx("tie");
-        els.clashOverlay.classList.remove("is-don-win", "is-enemy-win");
-        els.clashOverlay.classList.add("is-tie");
         els.clashResult.textContent = "TIE";
-        pulseClashNode(els.clashResult);
         combatLog("TIE — REROLL", "neutral");
       }
       await delay(270);
     }
     els.clashOverlay.hidden = true;
-    els.clashOverlay.classList.remove("is-active", "is-don-win", "is-enemy-win", "is-tie");
     setBattleDonState("idle");
     return { winner: donCoins > 0 ? "don" : "enemy", remainingDon: Math.max(0, donCoins), remainingEnemy: Math.max(0, enemyCoins) };
   }
@@ -1701,7 +1267,6 @@
     els.battleFxLayer.appendChild(hit);
     const body = enemyEl.querySelector(".lc4-bandit");
     if (body) {
-      setEnemyPose(enemyId, "hurt", 240);
       body.classList.remove("lc5-hit");
       void body.offsetWidth;
       body.classList.add("lc5-hit");
@@ -1855,7 +1420,6 @@
       total += damage;
       battle.totalDamage += damage;
       spawnSlash(enemy.id, skill.css);
-      playClashSfx("hit");
       const enemyEl = enemyElement(enemy.id);
       enemyEl?.animate([
         { transform: "translateX(0)" }, { transform: "translateX(16px) rotate(2deg)" }, { transform: "translateX(-8px)" }, { transform: "translateX(0)" },
@@ -1899,7 +1463,6 @@
       renderEnemies();
       if (enemy.hp <= 0) { enemySlot.consumed = true; return; }
     }
-    setEnemyPose(enemy.id, "attack", 700);
     const enemyEl = enemyElement(enemy.id)?.querySelector(".lc4-bandit");
     enemyEl?.animate([
       { transform: "translate(0,0)" },
@@ -1909,10 +1472,8 @@
     ], { duration: 620, easing: "cubic-bezier(.2,.8,.2,1)" });
     await delay(400);
     const roll = rollCoins(enemySlot.skill, coins, enemySlot.speed, true);
-    const damageScale = enemySlot.skill.defense ? 0.38 : 0.72;
-    const damage = Math.max(1, Math.round((roll.power + randomInt(1, 4)) * damageScale));
+    const damage = Math.max(1, Math.round((roll.power + randomInt(1, 4)) * .72));
     battle.don.hp = Math.max(0, battle.don.hp - damage);
-    playClashSfx("hit");
     setBattleDonState(battle.don.hp <= 0 ? "dead" : "hurt");
     enemySlot.consumed = true;
     els.battleScreen.classList.remove("hit-shake");
@@ -2100,17 +1661,6 @@
     });
   }
 
-  async function showWaveTransition() {
-    if (!battle || !els.battleGuideTitle || !els.battleGuideText) return;
-    els.battleGuideTitle.textContent = `WAVE ${battle.wave}`;
-    if (battle.wave === 2) {
-      els.battleGuideText.textContent = "The same 3 bandits return with 1 elite reinforcement. Prepare a new command chain.";
-    } else {
-      els.battleGuideText.textContent = `Wave ${battle.wave} begins.`;
-    }
-    await delay(900);
-  }
-
   async function startBattleTutorial() {
     battle = makeBattleState();
     state.scene = "forestBattle";
@@ -2136,28 +1686,18 @@
       await showBattleIntro();
     }
 
-    while (battle.active && battle.don.hp > 0) {
+    while (battle.active && !battleWon() && battle.don.hp > 0) {
       if (!firstTurnPrepared) applyTurnStartBuffs();
       firstTurnPrepared = false;
       renderPlanning();
       await waitForBattleStart();
       await executePlannedTurn();
-      if (battle.don.hp <= 0) break;
-      if (battleWon()) {
-        if (advanceToNextWave()) {
-          renderPlanning();
-          await showWaveTransition();
-          firstTurnPrepared = false;
-          await delay(320);
-          continue;
-        }
-        break;
-      }
+      if (battleWon() || battle.don.hp <= 0) break;
       finishTurn();
       await delay(320);
     }
 
-    const victory = battleWon() && battle.wave >= (battle.totalWaves || 1);
+    const victory = battleWon();
     battle.active = false;
     const result = await showBattleResult(victory);
     els.battleResult.hidden = true;
@@ -2204,7 +1744,7 @@
     await say("Don Quixote", "Hah! A most educational victory!");
     setCharacter("happy");
     await say("Don Quixote", `${state.playerName}, didst thou witness that splendid display?`);
-    await say("", "Battle tutorial cleared. Both waves have been defeated, and Forest exploration can continue from here in a later chapter.");
+    await say("", "Battle tutorial cleared. Forest exploration can continue from here in a later chapter.");
     await mapLoop();
   }
 
@@ -2462,189 +2002,6 @@
 
   const delay = (ms) => new Promise((r) => setTimeout(r, ms));
 
-  function ensureSfxContext() {
-    const AC = window.AudioContext || window.webkitAudioContext;
-    if (!AC) return null;
-    if (!sfxContext) sfxContext = new AC();
-    if (sfxContext.state === "suspended") sfxContext.resume().catch(() => {});
-    return sfxContext;
-  }
-
-  function playTone({ freq = 440, duration = 0.08, type = "sine", gain = 0.045, attack = 0.003, release = 0.07, pan = 0, when = 0, endFreq = null } = {}) {
-    const ctx = ensureSfxContext();
-    if (!ctx) return;
-    const start = ctx.currentTime + when;
-    const end = start + duration;
-    const osc = ctx.createOscillator();
-    const amp = ctx.createGain();
-    const panner = ctx.createStereoPanner ? ctx.createStereoPanner() : null;
-    osc.type = type;
-    osc.frequency.setValueAtTime(freq, start);
-    if (endFreq != null) osc.frequency.exponentialRampToValueAtTime(Math.max(1, endFreq), end);
-    amp.gain.setValueAtTime(0.0001, start);
-    amp.gain.exponentialRampToValueAtTime(gain, start + attack);
-    amp.gain.exponentialRampToValueAtTime(0.0001, end);
-    if (panner) {
-      panner.pan.setValueAtTime(pan, start);
-      osc.connect(amp);
-      amp.connect(panner);
-      panner.connect(ctx.destination);
-    } else {
-      osc.connect(amp);
-      amp.connect(ctx.destination);
-    }
-    osc.start(start);
-    osc.stop(end + 0.02);
-  }
-
-  function playNoise({ duration = 0.06, gain = 0.025, filterFreq = 1200, pan = 0, when = 0 } = {}) {
-    const ctx = ensureSfxContext();
-    if (!ctx) return;
-    const frameCount = Math.max(1, Math.floor(ctx.sampleRate * duration));
-    const buffer = ctx.createBuffer(1, frameCount, ctx.sampleRate);
-    const data = buffer.getChannelData(0);
-    for (let i = 0; i < frameCount; i += 1) data[i] = (Math.random() * 2 - 1) * (1 - i / frameCount);
-    const source = ctx.createBufferSource();
-    source.buffer = buffer;
-    const filter = ctx.createBiquadFilter();
-    filter.type = "bandpass";
-    filter.frequency.value = filterFreq;
-    const amp = ctx.createGain();
-    const start = ctx.currentTime + when;
-    const end = start + duration;
-    const panner = ctx.createStereoPanner ? ctx.createStereoPanner() : null;
-    amp.gain.setValueAtTime(0.0001, start);
-    amp.gain.exponentialRampToValueAtTime(gain, start + 0.01);
-    amp.gain.exponentialRampToValueAtTime(0.0001, end);
-    if (panner) {
-      panner.pan.setValueAtTime(pan, start);
-      source.connect(filter);
-      filter.connect(amp);
-      amp.connect(panner);
-      panner.connect(ctx.destination);
-    } else {
-      source.connect(filter);
-      filter.connect(amp);
-      amp.connect(ctx.destination);
-    }
-    source.start(start);
-    source.stop(end + 0.02);
-  }
-
-  function playClashSfx(kind = "start") {
-    ensureSfxContext();
-    const metal = (base = 540, pan = 0) => {
-      playTone({ freq: base, endFreq: base * 1.52, duration: 0.065, gain: 0.018, type: "triangle", pan });
-      playTone({ freq: base * 1.85, endFreq: base * 1.34, duration: 0.05, gain: 0.014, type: "sine", pan: -pan, when: 0.006 });
-      playNoise({ duration: 0.045, gain: 0.018, filterFreq: 2400, pan });
-    };
-    switch (kind) {
-      case "start":
-        playNoise({ duration: 0.09, gain: 0.016, filterFreq: 1900, pan: -0.08 });
-        playTone({ freq: 170, endFreq: 360, duration: 0.09, gain: 0.02, type: "sawtooth", pan: -0.18 });
-        playTone({ freq: 260, endFreq: 640, duration: 0.09, gain: 0.018, type: "triangle", pan: 0.18, when: 0.012 });
-        metal(840, 0);
-        break;
-      case "coin-heads":
-        playTone({ freq: 1180, endFreq: 1700, duration: 0.05, gain: 0.022, type: "triangle" });
-        playTone({ freq: 2100, endFreq: 1540, duration: 0.036, gain: 0.009, type: "sine", when: 0.008 });
-        break;
-      case "coin-tails":
-        playTone({ freq: 460, endFreq: 240, duration: 0.06, gain: 0.018, type: "square" });
-        playNoise({ duration: 0.028, gain: 0.01, filterFreq: 820, when: 0.006 });
-        break;
-      case "win":
-        metal(960, -0.16);
-        metal(1260, 0.16);
-        playTone({ freq: 620, endFreq: 990, duration: 0.16, gain: 0.026, type: "sawtooth", when: 0.018 });
-        break;
-      case "lose":
-        metal(620, 0.2);
-        playTone({ freq: 380, endFreq: 150, duration: 0.17, gain: 0.025, type: "sawtooth", pan: 0.18 });
-        playNoise({ duration: 0.07, gain: 0.018, filterFreq: 700 });
-        break;
-      case "tie":
-        metal(760, 0);
-        playTone({ freq: 520, endFreq: 560, duration: 0.08, gain: 0.015, type: "triangle", when: 0.01 });
-        break;
-      case "hit":
-        metal(700, 0);
-        playNoise({ duration: 0.05, gain: 0.025, filterFreq: 1200 });
-        playTone({ freq: 170, endFreq: 84, duration: 0.08, gain: 0.018, type: "square" });
-        break;
-      default:
-        break;
-    }
-  }
-
-  function playCoinFlipSequence(donFlips = [], enemyFlips = []) {
-    const flips = [...donFlips, ...enemyFlips];
-    flips.forEach((isHeads, index) => {
-      const delayTime = 0.04 + index * 0.055;
-      setTimeout(() => playClashSfx(isHeads ? "coin-heads" : "coin-tails"), delayTime * 1000);
-    });
-  }
-
-  function pulseClashNode(el, cls = "is-pulse") {
-    if (!el) return;
-    el.classList.remove(cls);
-    void el.offsetWidth;
-    el.classList.add(cls);
-  }
-
-  function spawnClashImpact(verdict = "tie") {
-    if (!els.clashOverlay) return;
-    const fx = document.createElement("span");
-    fx.className = `lc20-clash-impact ${verdict}`;
-    els.clashOverlay.appendChild(fx);
-    setTimeout(() => fx.remove(), 420);
-  }
-
-  function getAutoTargetSlot() {
-    if (!battle?.donSlots?.length) return null;
-    if (battle.focusSlot != null && battle.donSlots[battle.focusSlot]) return battle.donSlots[battle.focusSlot];
-    return battle.donSlots.find((slot) => !slot.targetIntentId) || battle.donSlots[0] || null;
-  }
-
-  function autoTargetEnemy(enemyId, preferredIntentId = null) {
-    if (!battle || battle.phase !== "planning") return null;
-    const intent = preferredIntentId ? enemySlotById(preferredIntentId) : firstEnemyIntent(enemyId);
-    const slot = getAutoTargetSlot();
-    if (slot && intent) {
-      slot.targetIntentId = intent.id;
-      slot.defense = false;
-      battle.focusSlot = slot.index;
-      battle.autoMode = null;
-    }
-    if (intent) setSelectedEnemy(enemyId, intent.id);
-    else setSelectedEnemy(enemyId);
-    return { slot, intent };
-  }
-
-  function setDragHoverIntent(intentId = null) {
-    dragHoverIntentId = intentId;
-    const buttons = els.enemyIntentSlots?.querySelectorAll?.('.lc4-intent') || [];
-    buttons.forEach((btn) => btn.classList.toggle('is-drop-target', btn.dataset.intentId === intentId));
-  }
-
-  function scheduleTargetLines(pointer = null) {
-    targetLinePointer = pointer;
-    if (targetLineRaf) return;
-    targetLineRaf = requestAnimationFrame(() => {
-      targetLineRaf = 0;
-      drawTargetLines(targetLinePointer);
-    });
-  }
-
-  function snapIntentButton(intentId) {
-    const btn = els.enemyIntentSlots?.querySelector?.(`[data-intent-id="${intentId}"]`);
-    if (!btn) return;
-    btn.classList.remove('is-snap');
-    void btn.offsetWidth;
-    btn.classList.add('is-snap');
-    setTimeout(() => btn.classList.remove('is-snap'), 260);
-  }
-
   function anyModalOpen() {
     return [
       els.nameModal,
@@ -2653,8 +2010,6 @@
       els.systemModal,
     ].some((el) => !el.hidden);
   }
-
-  document.addEventListener("pointerdown", () => { ensureSfxContext(); }, { once: true });
 
   els.newGameBtn.addEventListener("click", async () => {
     state = makeInitialState();
@@ -2742,18 +2097,10 @@
   });
 
   els.startCombatBtn.addEventListener("click", triggerBattleStart);
-  els.battleDon?.addEventListener("click", () => {
-    if (!battle || battle.phase !== "planning") return;
-    const slot = battle.donSlots?.[battle.focusSlot] || battle.donSlots?.[0];
-    if (!slot) return;
-    battle.guideMessage = "Don selected. Check her current skill on the left-side inspector.";
-    showSkillInspector(getSelectedSkill(slot), slot);
-    tutorialForTurn();
-  });
   els.autoWinBtn.addEventListener("click", () => autoSelect("win"));
   els.autoDamageBtn.addEventListener("click", () => autoSelect("damage"));
   window.addEventListener("resize", () => {
-    if (battle?.phase === "planning" && !els.battleScreen.hidden) scheduleTargetLines();
+    if (battle?.phase === "planning" && !els.battleScreen.hidden) requestAnimationFrame(drawTargetLines);
   });
 
   els.battleContinue.addEventListener("click", () => {

@@ -100,3 +100,27 @@ Skill GIFs are replayed as the actual combat animation layer, with damage/coin h
 - Uses the four skill screenshots supplied by the project owner to create in-game art for Joust, Galloping Tilt, For Justice!, and Evade.
 - Skill artwork now appears on action cards, the hover inspector, Clash UI, and attack cut-in.
 - V6 active HTML/CSS/JS are preserved as index.v6.bak.html, style.v6.bak.css, and script.v6.bak.js.
+
+
+## V8 update
+- Fixed the backpack tutorial reminder race/delay.
+- Battle turns begin with no automatic targets.
+- WIN RATE / DAMAGE are the only automatic chain/target buttons.
+- Skill cards can be dragged directly onto enemy intents.
+- Added a 3-step first-battle onboarding overlay.
+- START warns if any action slot is still untargeted.
+
+## V9 tutorial visibility fix
+- The first Forest battle turn is prepared before the tutorial overlay opens.
+- Battle rendering self-repairs missing transient Don action slots / enemy intents.
+- WIN RATE / DAMAGE also rebuild missing slots before auto-chain logic runs.
+- First-turn tutorial highlights Don skill cards and enemy intent icons.
+- Cleaned malformed literal `\\n` sequences from the V8 CSS append block.
+
+
+## V10 UI update
+- Added reference-style Clash forecast panel with both skill powers/coins.
+- Added skill keyword and enemy-skill effect panels.
+- Added visible stagger threshold tracks for enemies.
+- Reworked bottom action deck, intent tiles, START/WIN RATE/DAMAGE controls and spacing.
+- Keeps V9 drag targeting/tutorial behavior and all user-supplied Don battle/skill assets.
