@@ -51,7 +51,7 @@
       <img
         id="character"
         class="character"
-        src="assets/characters/idle.png?v=vnclassic31"
+        src="assets/characters/idle.png"
         alt="Don Quixote"
         hidden
       />
@@ -151,9 +151,9 @@
 
         <aside class="lc4-sin-panel" aria-label="Sin resources">
           <b>SIN</b>
-          <span class="sin-lust"><img src="assets/battle/icons/sins/lust.png" alt="Lust" /><i id="sinLust">0</i></span>
-          <span class="sin-envy"><img src="assets/battle/icons/sins/envy.png" alt="Envy" /><i id="sinEnvy">0</i></span>
-          <span class="sin-gluttony"><img src="assets/battle/icons/sins/gluttony.png" alt="Gluttony" /><i id="sinGluttony">0</i></span>
+          <span class="sin-lust">● <i id="sinLust">0</i></span>
+          <span class="sin-envy">● <i id="sinEnvy">0</i></span>
+          <span class="sin-gluttony">● <i id="sinGluttony">0</i></span>
         </aside>
 
         <svg id="targetLines" class="lc4-target-lines" aria-hidden="true">
@@ -172,12 +172,12 @@
             <div class="lc4-don-plate">
               <div class="lc4-don-title"><small>LCB SINNER</small><b>DON QUIXOTE</b></div>
               <div class="lc4-mini-meter"><span>HP</span><i><em id="donHpBar"></em></i><b id="donHpText">203/203</b></div>
-              <div class="lc4-mini-meter"><span class="lc24-sp-label"><img src="assets/battle/icons/skills/sanity.png" alt="" />SP</span><i><em id="donSpBar"></em></i><b id="donSpText">0</b></div>
+              <div class="lc4-mini-meter"><span>SP</span><i><em id="donSpBar"></em></i><b id="donSpText">0</b></div>
               <div class="lc4-unit-sub"><span>SPD <b id="donSpeed">3</b></span><span id="donStatus">READY</span></div>
             </div>
             <div class="lc4-don-stage">
               <div class="lc4-shadow"></div>
-              <img id="battleDon" class="lc4-don lc6-don-base" src="assets/battle/don/base/idle.png" alt="Don Quixote" />
+              <img id="battleDon" class="lc4-don lc6-don-base" src="assets/battle/don/idle-animation.gif" alt="Don Quixote" />
               <img id="donActionSprite" class="lc6-don-action-sprite" alt="" hidden />
               <div id="donDamage" class="lc4-float" hidden></div>
             </div>
@@ -189,7 +189,7 @@
 
         <footer id="planningPanel" class="lc4-planning">
           <div class="lc4-manager">
-            <div class="lc4-manager-orbit"><img src="assets/battle/icons/portrait/don-quixote.png" alt="Don Quixote" /></div>
+            <div class="lc4-manager-orbit"><img src="assets/battle/don/idle.png" alt="" /></div>
             <span>DON</span>
             <b id="managerSp">0 SP</b>
           </div>
@@ -197,8 +197,8 @@
           <div class="lc4-command">
             <button id="startCombatBtn" class="lc4-start" type="button"><span>START</span><small>ENTER</small></button>
             <div class="lc4-auto">
-              <button id="autoWinBtn" type="button"><img class="lc24-command-icon" src="assets/battle/icons/ui/target.png" alt="" /><span>WIN RATE</span><kbd>P</kbd></button>
-              <button id="autoDamageBtn" type="button"><img class="lc24-command-icon" src="assets/battle/icons/skills/attack.png" alt="" /><span>DAMAGE</span><kbd>D</kbd></button>
+              <button id="autoWinBtn" type="button"><span>WIN RATE</span><kbd>P</kbd></button>
+              <button id="autoDamageBtn" type="button"><span>DAMAGE</span><kbd>D</kbd></button>
             </div>
           </div>
         </footer>

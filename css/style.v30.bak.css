@@ -30,7 +30,7 @@ button { -webkit-tap-highlight-color: transparent; }
 .secondary-btn { background: #151719; }
 .danger-btn { background: #2b1514; border-color: #6d2e2a; }
 .primary-btn:hover, .secondary-btn:hover, .danger-btn:hover { transform: translateY(-2px); border-color: #e0c66f; }
-.character { position: absolute; z-index: 4; left: 50%; bottom: -5%; transform: translateX(-50%); width: auto; height: 112%; max-width: 94vw; object-fit: contain; object-position: center bottom; filter: drop-shadow(0 16px 24px rgba(0,0,0,.45)); transition: opacity .18s ease; pointer-events: none; }
+.character { position: absolute; z-index: 4; left: 50%; bottom: 0; transform: translateX(-50%); width: min(34vw, 440px); height: auto; max-width: 86vw; max-height: 80vh; object-fit: contain; object-position: center bottom; filter: drop-shadow(0 14px 22px rgba(0,0,0,.42)); transition: opacity .18s ease; pointer-events: none; }
 .dialogue-box { position: absolute; z-index: 10; left: 50%; bottom: max(24px, env(safe-area-inset-bottom)); transform: translateX(-50%); width: min(1060px, calc(100vw - 44px)); min-height: 150px; padding: 34px 36px 28px; background: linear-gradient(180deg, rgba(16,18,19,.95), rgba(5,6,7,.96)); border: 1px solid rgba(220,210,178,.32); box-shadow: var(--shadow); clip-path: polygon(0 0, 97% 0, 100% 16%, 100% 100%, 2% 100%, 0 84%); cursor: pointer; }
 .dialogue-box::before { content:""; position:absolute; left: 0; top:0; width: 34%; height: 3px; background: linear-gradient(90deg, var(--gold), transparent); }
 .speaker { display: inline-block; min-width: 170px; margin-bottom: 10px; padding: 7px 12px 6px; border-left: 3px solid var(--gold); background: rgba(211,184,101,.08); color: var(--gold); text-transform: uppercase; letter-spacing: .11em; font-size: 12px; font-weight: 900; }
@@ -85,7 +85,7 @@ button { -webkit-tap-highlight-color: transparent; }
 @media (max-width: 700px) {
   .game { min-height: 480px; }
   .title-card { padding:26px 22px; }
-  .character { height: 86%; bottom: 9%; }
+  .character { width: min(56vw, 300px); max-width: 72vw; max-height: 64vh; bottom: 0; }
   .dialogue-box { width: calc(100vw - 22px); bottom: max(10px, env(safe-area-inset-bottom)); min-height: 138px; padding: 28px 20px 24px; }
   .speaker { min-width: 130px; }
   .dialogue { font-size: 20px; }
@@ -363,7 +363,7 @@ button { -webkit-tap-highlight-color: transparent; }
   position:absolute; inset:0; z-index:80; overflow:hidden;
   background:#120b0b; color:#f1ece3; font-family:Arial,Helvetica,sans-serif;
 }
-.lc-scene-bg { position:absolute; inset:-3%; background:url("assets/backgrounds/forest.jpeg") center/cover no-repeat; filter:brightness(.27) saturate(.65) sepia(.28) hue-rotate(330deg); transform:scale(1.05); }
+.lc-scene-bg { position:absolute; inset:-3%; background:url("../assets/backgrounds/forest.jpeg") center/cover no-repeat; filter:brightness(.27) saturate(.65) sepia(.28) hue-rotate(330deg); transform:scale(1.05); }
 .lc-red-wash { position:absolute; inset:0; background:radial-gradient(circle at 52% 43%,rgba(112,18,20,.12),rgba(37,4,6,.68) 74%,rgba(5,2,2,.94)),linear-gradient(90deg,rgba(77,8,10,.54),transparent 35%,transparent 64%,rgba(62,5,6,.44)); mix-blend-mode:screen; pointer-events:none; }
 .lc-grain { position:absolute; inset:0; pointer-events:none; opacity:.2; background-image:repeating-radial-gradient(circle at 0 0,transparent 0 2px,rgba(255,255,255,.06) 3px 4px); background-size:7px 7px; mix-blend-mode:overlay; }
 .lc-scratch { position:absolute; left:-4%; right:-4%; height:18px; z-index:30; pointer-events:none; background:linear-gradient(8deg,transparent 12%,#f4dfa0 18% 24%,transparent 29% 39%,#dbc06b 42% 48%,transparent 53% 65%,#f4dfa0 70% 75%,transparent 81%); filter:drop-shadow(0 0 5px #000); opacity:.95; }
@@ -564,7 +564,7 @@ button { -webkit-tap-highlight-color: transparent; }
   user-select:none;
 }
 .lc4-battle button{font:inherit}
-.lc4-scene-bg{position:absolute;inset:-3%;background:url("assets/backgrounds/forest.jpeg") center/cover no-repeat;filter:brightness(.34) saturate(.72) contrast(1.15);transform:scale(1.05)}
+.lc4-scene-bg{position:absolute;inset:-3%;background:url("../assets/backgrounds/forest.jpeg") center/cover no-repeat;filter:brightness(.34) saturate(.72) contrast(1.15);transform:scale(1.05)}
 .lc4-red-wash{position:absolute;inset:0;background:linear-gradient(90deg,rgba(55,0,0,.63),rgba(84,8,8,.38) 42%,rgba(30,0,0,.62)),radial-gradient(circle at 51% 42%,transparent 0 34%,rgba(0,0,0,.82) 83%);mix-blend-mode:multiply;pointer-events:none}
 .lc4-vignette{position:absolute;inset:0;box-shadow:inset 0 0 180px #000,inset 0 -110px 130px #000a;pointer-events:none}
 .lc4-grain{position:absolute;inset:0;opacity:.14;pointer-events:none;background-image:repeating-linear-gradient(0deg,transparent 0 2px,#fff1 3px,transparent 4px),repeating-linear-gradient(90deg,#0001 0 3px,transparent 4px 7px)}
@@ -861,7 +861,7 @@ body.lc4-targeting .lc4-intent{transform:translateY(-4px) scale(1.08);transition
   inset:0;
   background:
     linear-gradient(180deg, rgba(1,6,8,.18) 0%, rgba(2,8,11,.12) 34%, rgba(3,5,7,.50) 74%, rgba(2,2,2,.86) 100%),
-    url("assets/backgrounds/forest-battle.png") center top/cover no-repeat;
+    url("../assets/backgrounds/forest-battle.png") center top/cover no-repeat;
   filter:brightness(.68) saturate(.92) contrast(1.05);
   transform:scale(1.015);
 }
@@ -1189,3 +1189,1283 @@ body.lc4-targeting .lc4-intent{transform:translateY(-4px) scale(1.08);transition
 .lc4-clash-mid i{height:260px!important;width:7px!important}
 
 @keyframes lc21IntentSnap{0%{transform:translateY(-2px) scale(1.06)}55%{transform:translateY(-6px) scale(1.12)}100%{transform:translateY(0) scale(1)}}
+
+
+/* v22 layout / volume / slower pacing polish */
+#battleKeywordPanel{display:none!important}
+.lc4-command{width:236px!important;height:154px!important;justify-self:end}
+.lc4-start{left:auto!important;right:0!important;bottom:30px!important;width:96px!important;height:96px!important}
+.lc4-auto{left:0!important;right:auto!important;bottom:36px!important;display:grid!important;grid-template-columns:1fr!important;gap:8px!important}
+.lc4-auto button{width:122px!important;padding:10px 12px!important;font-size:10px!important;line-height:1!important;text-align:center!important;border-width:2px!important;box-shadow:0 6px 12px rgba(0,0,0,.24)}
+#autoWinBtn{font-size:12px!important;font-weight:900!important}
+#autoDamageBtn{font-size:10px!important}
+.volume-row{display:flex;align-items:center;justify-content:space-between;gap:12px}.volume-row input[type=range]{flex:1}
+@media(max-width:900px){.lc4-command{width:188px!important}.lc4-auto button{width:96px!important;padding:8px 8px!important;font-size:8px!important}.lc4-start{width:78px!important;height:78px!important;bottom:36px!important}}
+
+
+/* v23: calmer targeting UI + compact command controls */
+#battleKeywordPanel,
+#enemySkillInspector,
+.lc4-statuses{display:none!important}
+
+/* Show only the focused target link in JS; make it calmer and easier on the eyes. */
+.lc4-link{
+  stroke-width:1.8!important;
+  opacity:.46!important;
+  filter:drop-shadow(0 0 1.5px currentColor)!important;
+  animation:none!important;
+}
+.lc4-link.dominating,.lc4-link.favored{stroke:#7da859!important;color:#7da859!important}
+.lc4-link.neutral{stroke:#b99d55!important;color:#b99d55!important}
+.lc4-link.struggling,.lc4-link.hopeless{stroke:#a65b55!important;color:#a65b55!important}
+.lc4-link.unopposed{stroke:#609caf!important;color:#609caf!important}
+.lc4-link.dragging{stroke:#d6c792!important;color:#d6c792!important;stroke-width:2.2!important;opacity:.72!important;stroke-dasharray:8 7!important}
+.lc4-link.dragging.snap{stroke:#a6c678!important;stroke-width:2.4!important;filter:drop-shadow(0 0 4px rgba(166,198,120,.25))!important}
+
+/* Keep the skill rail and command controls together as one compact command area. */
+.lc4-planning{
+  left:18px!important;
+  right:18px!important;
+  grid-template-columns:82px minmax(460px,760px) 220px!important;
+  justify-content:center!important;
+  column-gap:10px!important;
+}
+.lc4-action-rail{max-width:760px;width:100%;justify-self:center}
+.lc4-command{
+  width:220px!important;
+  height:148px!important;
+  justify-self:start!important;
+  position:relative!important;
+}
+.lc4-start{
+  left:auto!important;
+  right:0!important;
+  bottom:27px!important;
+  width:94px!important;
+  height:94px!important;
+}
+.lc4-auto{
+  left:0!important;
+  right:auto!important;
+  bottom:30px!important;
+  width:116px!important;
+  display:grid!important;
+  gap:8px!important;
+}
+.lc4-auto button{
+  width:116px!important;
+  min-height:42px!important;
+  padding:7px 10px!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:space-between!important;
+  gap:8px!important;
+  text-align:left!important;
+  font-size:9px!important;
+  transform:none!important;
+  clip-path:polygon(8px 0,100% 0,100% 100%,0 100%,0 8px)!important;
+}
+#autoWinBtn{font-size:11px!important;font-weight:900!important}
+.lc4-auto kbd{
+  min-width:23px;
+  height:23px;
+  display:inline-grid;
+  place-items:center;
+  border:1px solid #8d6b3c;
+  border-radius:3px;
+  background:#100b08;
+  color:#efd291;
+  font:800 10px/1 Inter,Arial,sans-serif;
+  box-shadow:inset 0 -2px 0 #0008;
+}
+
+@media(max-width:1050px){
+  .lc4-planning{grid-template-columns:64px minmax(370px,1fr) 170px!important;left:6px!important;right:6px!important}
+  .lc4-command{width:170px!important}
+  .lc4-auto{width:90px!important}.lc4-auto button{width:90px!important;font-size:7px!important;padding:6px!important}
+  .lc4-start{width:72px!important;height:72px!important;bottom:38px!important}
+}
+@media(max-width:760px){
+  .lc4-planning{grid-template-columns:44px minmax(280px,1fr) 114px!important}
+  .lc4-command{width:114px!important;transform:none!important}
+  .lc4-auto{width:62px!important;bottom:39px!important;gap:5px!important}.lc4-auto button{width:62px!important;min-height:30px!important;font-size:5px!important;padding:4px!important}
+  .lc4-auto kbd{min-width:17px;height:17px;font-size:7px}
+  .lc4-start{width:54px!important;height:54px!important;right:0!important;bottom:44px!important;border-width:4px!important}
+}
+
+/* v23: compact clash forecast so it doesn't cover the battlefield. */
+.lc10-matchup{
+  width:min(430px,38vw)!important;
+  height:88px!important;
+  top:36px!important;
+  background:linear-gradient(90deg,rgba(8,7,5,.92),rgba(8,7,5,.82))!important;
+  border-color:rgba(129,102,57,.65)!important;
+  box-shadow:0 8px 22px rgba(0,0,0,.35)!important;
+}
+.lc10-match-side img{width:48px!important;height:48px!important}
+.lc10-match-side>strong{font-size:24px!important}
+.lc10-match-center span{font-size:10px!important}
+
+
+/* v24 supplied icon + Don base appearance integration */
+:root{
+  --lc-display-font:"Bebas Kai","EXCELSIOR SANS","Arial Narrow",Impact,sans-serif;
+  --lc-body-font:"Pretendard",Inter,system-ui,-apple-system,"Segoe UI",Arial,sans-serif;
+  --lc-pixel-font:"Perfect DOS VGA 437",ui-monospace,SFMono-Regular,Menlo,monospace;
+}
+body{font-family:var(--lc-body-font)}
+.lc4-topbar,.lc4-command,.lc4-sin-panel,.lc4-guide h3,.lc10-panel-tab,.lc4-clash-side>b,.lc4-skill-front strong{font-family:var(--lc-display-font)}
+.lc4-unit-sub,.lc4-mini-meter,.lc4-intent>small,.lc4-start small{font-family:var(--lc-pixel-font)}
+
+.lc4-sin-panel span{display:flex!important;align-items:center;gap:7px!important;justify-content:space-between}
+.lc4-sin-panel span img{width:19px;height:19px;object-fit:contain;filter:drop-shadow(0 0 5px currentColor)}
+.lc4-sin-panel span i{margin-left:auto}
+.lc4-sin-panel .sin-lust,.lc4-sin-panel .sin-envy,.lc4-sin-panel .sin-gluttony{color:inherit!important}
+
+.lc24-sp-label{display:flex!important;align-items:center;gap:3px}
+.lc24-sp-label img{width:12px;height:12px;object-fit:contain;filter:drop-shadow(0 0 3px #79c8ff55)}
+
+.lc4-manager-orbit img{object-fit:cover!important;object-position:center 35%;transform:scale(1.08)}
+
+.lc4-skill-aff{display:flex!important;align-items:center;gap:4px!important}
+.lc4-skill-aff img{width:14px;height:14px;object-fit:contain;filter:drop-shadow(0 1px 2px #000)}
+.lc24-card-type{position:absolute;right:7px;bottom:37px;width:15px;height:15px;object-fit:contain;opacity:.78;filter:drop-shadow(0 1px 2px #000)}
+
+.lc24-command-icon{width:17px;height:17px;object-fit:contain;flex:0 0 auto;filter:drop-shadow(0 1px 2px #0008)}
+#autoWinBtn,#autoDamageBtn{display:flex!important;align-items:center!important;justify-content:center!important;gap:6px!important}
+#autoWinBtn .lc24-command-icon{width:24px;height:18px}
+#autoDamageBtn .lc24-command-icon{width:17px;height:17px}
+
+.lc4-don,.lc6-don-action-sprite{image-rendering:auto;object-fit:contain}
+.lc24-frame-sequence{max-width:min(54vw,760px)!important;max-height:min(52vh,500px)!important;width:auto!important;height:auto!important;filter:drop-shadow(0 15px 22px #000b)}
+.lc6-don-action-sprite.lc6-skill1,.lc6-don-action-sprite.lc6-skill2{transform-origin:center bottom}
+.lc6-don-action-sprite.lc6-skill3{transform-origin:center center}
+
+/* New PNG sequence assets are wider than the older GIF crop. Keep Don fully visible. */
+.lc6-sprite-combat .lc4-don-stage{overflow:visible!important}
+.lc6-sprite-combat .lc6-don-action-sprite{z-index:14}
+
+@media(max-width:900px){
+  .lc24-frame-sequence{max-width:62vw!important;max-height:44vh!important}
+  .lc4-sin-panel span img{width:15px;height:15px}
+  .lc24-card-type{width:12px;height:12px;right:4px;bottom:30px}
+}
+
+/* Stabilize the supplied PNG attack sequence inside one canvas so frames do not jump. */
+.lc6-don-action-sprite.lc24-frame-sequence{
+  width:min(64vw,980px)!important;
+  height:min(46vh,430px)!important;
+  max-width:none!important;
+  max-height:none!important;
+  object-fit:contain!important;
+  object-position:left bottom!important;
+  left:2%!important;
+  bottom:7%!important;
+}
+.lc6-don-action-sprite.lc24-frame-sequence.lc6-skill3{bottom:9%!important}
+@media(max-width:900px){
+  .lc6-don-action-sprite.lc24-frame-sequence{width:70vw!important;height:40vh!important;left:0!important;bottom:10%!important}
+}
+
+
+/* v25: closer-to-reference battlefield layout refresh (inspired, not exact clone) */
+.lc4-battle{
+  --v25-gold:#9a7a43;
+  --v25-gold-soft:#c8ac6c;
+  --v25-panel:rgba(8,6,5,.84);
+  --v25-panel-2:rgba(12,9,7,.93);
+}
+
+/* keep top HUD compact and flatter */
+.lc4-topbar{
+  left:30px!important;
+  right:26px!important;
+  top:12px!important;
+  height:44px!important;
+  align-items:center!important;
+}
+.lc4-wavebox{
+  min-width:74px!important;
+  padding:7px 9px!important;
+  border-width:2px!important;
+  background:linear-gradient(180deg,rgba(33,20,9,.92),rgba(14,10,7,.94))!important;
+}
+.lc4-wavebox span{font-size:9px!important;letter-spacing:.08em!important}
+.lc4-phase{
+  min-width:158px!important;
+  padding:6px 16px!important;
+  font-size:10px!important;
+  background:linear-gradient(180deg,rgba(25,17,10,.88),rgba(10,7,6,.92))!important;
+}
+.lc4-top-actions{gap:8px!important}
+.lc4-square{width:38px!important;height:38px!important}
+
+/* main field more like a centered tactical board */
+.lc4-arena{
+  left:36px!important;
+  right:36px!important;
+  top:72px!important;
+  bottom:196px!important;
+  grid-template-columns:28% 72%!important;
+  align-items:end!important;
+}
+.lc4-don-unit{
+  align-items:flex-end!important;
+  justify-content:center!important;
+  padding:0 0 18px 0!important;
+}
+.lc4-don-stage{
+  height:82%!important;
+  align-items:flex-end!important;
+  justify-content:center!important;
+}
+.lc4-don{
+  height:min(28vh,255px)!important;
+  max-width:76%!important;
+  filter:drop-shadow(0 8px 12px rgba(0,0,0,.6))!important;
+}
+.lc4-don-plate{
+  left:8px!important;
+  bottom:0!important;
+  width:min(210px,86%)!important;
+  transform:none!important;
+  background:linear-gradient(180deg,rgba(10,8,7,.92),rgba(4,4,4,.98))!important;
+  border:1px solid rgba(159,127,67,.72)!important;
+}
+.lc4-don-title b{font-size:15px!important}
+.lc4-don-title small,.lc4-mini-meter,.lc4-unit-sub{font-size:8px!important}
+.lc4-shadow{width:48%!important;height:14px!important;bottom:6px!important;filter:blur(8px)!important}
+
+.lc4-enemy-roster{
+  padding:16px 0 34px!important;
+  gap:6px!important;
+  align-items:end!important;
+}
+.lc4-enemy-roster[data-count="4"]{
+  grid-template-columns:repeat(4,minmax(0,1fr))!important;
+}
+.lc4-enemy{
+  transform-origin:center bottom;
+}
+.lc4-enemy-stage{
+  height:76%!important;
+  align-items:flex-end!important;
+}
+.lc4-enemy-name{
+  top:3%!important;
+}
+.lc4-enemy-name small{font-size:6px!important}
+.lc4-enemy-name b{font-size:10px!important}
+.lc4-enemy-hud{
+  left:9%!important;
+  right:9%!important;
+  bottom:10px!important;
+}
+.lc4-bandit{width:min(8.6vw,118px)!important;height:min(24vh,215px)!important}
+.lc4-bandit.sprite-club,.lc4-bandit.sprite-elite{width:min(9.7vw,132px)!important;height:min(26vh,235px)!important}
+.lc4-bandit.sprite-knife{width:min(7vw,96px)!important;height:min(20vh,174px)!important}
+.lc4-bandit.sprite-leader{width:min(8vw,109px)!important;height:min(22vh,190px)!important}
+
+/* intent panels become lighter floating tactical tiles */
+.lc4-intent-layer{z-index:21!important}
+.lc4-intent{
+  width:82px!important;
+  height:76px!important;
+  border:0!important;
+  background:linear-gradient(180deg,rgba(18,14,11,.58),rgba(9,7,6,.18) 66%,rgba(0,0,0,0))!important;
+  box-shadow:none!important;
+  clip-path:none!important;
+  filter:drop-shadow(0 4px 7px rgba(0,0,0,.42))!important;
+}
+.lc4-intent:hover{transform:translateX(-50%) translateY(-4px) scale(1.04)!important}
+.lc4-intent-frame{display:none!important}
+.lc4-intent-speed{
+  top:-12px!important;
+  width:26px!important;
+  height:26px!important;
+  border:2px solid var(--v25-gold-soft)!important;
+  background:rgba(18,14,10,.94)!important;
+  color:#f8e6ba!important;
+  box-shadow:0 0 0 2px rgba(8,8,8,.9), 0 0 9px rgba(255,210,120,.12)!important;
+}
+.lc4-intent-art{top:2px!important;width:74px!important;height:40px!important}
+.lc4-intent>b{top:38px!important;width:78px!important;font-size:7px!important;color:#f1e4c5!important}
+.lc4-intent>small{top:52px!important;width:78px!important;font-size:5px!important;color:#b8ae9f!important}
+.lc4-intent.type-blunt,.lc4-intent.type-pierce,.lc4-intent.type-slash,.lc4-intent.type-defense{
+  box-shadow:none!important;
+}
+
+/* arrows visible but less neon */
+.lc4-link{
+  stroke-width:2.2!important;
+  opacity:.74!important;
+  filter:drop-shadow(0 0 2px currentColor)!important;
+}
+.lc4-link.is-secondary{opacity:.42!important;stroke-width:1.7!important}
+.lc4-link.is-focus{opacity:.88!important;stroke-width:2.5!important}
+.lc4-link.dominating,.lc4-link.favored{stroke:#8bb94e!important;color:#8bb94e!important}
+.lc4-link.neutral{stroke:#bd9c4d!important;color:#bd9c4d!important}
+.lc4-link.struggling,.lc4-link.hopeless{stroke:#9b524a!important;color:#9b524a!important}
+.lc4-link.unopposed{stroke:#4f8ba8!important;color:#4f8ba8!important}
+
+/* planning rail closer to the reference: compact left portrait, centered cards, controls right */
+.lc4-planning{
+  left:18px!important;
+  right:18px!important;
+  bottom:8px!important;
+  height:182px!important;
+  padding-top:10px!important;
+  grid-template-columns:72px minmax(420px, 1fr) 176px!important;
+  justify-content:center!important;
+  align-items:end!important;
+  column-gap:12px!important;
+  background:linear-gradient(180deg,rgba(0,0,0,0) 0,rgba(7,5,4,.62) 18%,rgba(4,3,3,.93) 100%)!important;
+  border-top:1px solid rgba(112,88,53,.56)!important;
+}
+.lc4-manager{
+  height:112px!important;
+  align-self:end!important;
+  transform:none!important;
+}
+.lc4-manager-orbit{
+  width:74px!important;
+  height:74px!important;
+}
+.lc4-action-rail{
+  max-width:none!important;
+  width:100%!important;
+  justify-self:stretch!important;
+  height:170px!important;
+  padding:0 2px 2px!important;
+  overflow-x:auto!important;
+  overflow-y:hidden!important;
+  display:flex!important;
+  align-items:flex-end!important;
+  justify-content:flex-start!important;
+}
+.lc4-action{
+  flex:0 0 88px!important;
+  width:88px!important;
+  height:162px!important;
+  margin-left:-5px!important;
+}
+.lc4-action:first-child{margin-left:0!important}
+.lc4-skill-front{left:12px!important;width:68px!important;height:92px!important;border-width:2px!important}
+.lc4-skill-back{width:64px!important;height:86px!important;transform:translate(0,12px) rotate(4deg)!important}
+.lc4-skill-front>strong,.lc4-skill-back>strong{margin-top:40px!important;max-width:64px!important;font-size:6px!important;line-height:1.06!important}
+.lc4-skill-power b{font-size:15px!important}
+.lc4-skill-power i{font-size:7px!important}
+.lc4-slot-core{
+  left:17px!important;
+  bottom:5px!important;
+  width:54px!important;
+  height:56px!important;
+  border-width:2px!important;
+}
+.lc4-speed-die{font-size:15px!important}
+.lc4-mini-portrait{width:22px!important;height:22px!important}
+.lc4-forecast{top:0!important;left:2px!important;right:2px!important;padding:2px 4px!important;font-size:5px!important}
+.lc4-defense-toggle{right:-2px!important;bottom:10px!important;width:24px!important;height:24px!important}
+
+.lc4-command{
+  width:176px!important;
+  height:126px!important;
+  justify-self:end!important;
+}
+.lc4-auto{
+  left:0!important;
+  right:auto!important;
+  bottom:14px!important;
+  width:90px!important;
+  gap:6px!important;
+}
+.lc4-auto button{
+  width:90px!important;
+  min-height:34px!important;
+  padding:6px 8px!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:space-between!important;
+  gap:6px!important;
+  text-align:left!important;
+  font-size:8px!important;
+}
+.lc4-auto button span{flex:1}
+.lc4-auto kbd{min-width:18px!important;height:18px!important;font-size:8px!important}
+#autoWinBtn{font-size:10px!important}
+#autoDamageBtn{font-size:9px!important}
+.lc4-start{
+  right:0!important;
+  left:auto!important;
+  bottom:12px!important;
+  width:84px!important;
+  height:84px!important;
+  border-width:6px!important;
+}
+.lc4-start span{font-size:11px!important}
+.lc4-start small{font-size:6px!important}
+
+/* side panels smaller / calmer */
+.lc4-guide{
+  top:94px!important;
+  left:18px!important;
+  width:min(252px, 22vw)!important;
+  padding:12px 14px!important;
+  background:linear-gradient(180deg,rgba(10,8,7,.86),rgba(3,3,3,.95))!important;
+  border-left:3px solid var(--v25-gold)!important;
+}
+.lc4-guide h3{font-size:10px!important}
+.lc4-guide p{font-size:11px!important;line-height:1.35!important}
+.lc10-matchup{
+  top:70px!important;
+  width:min(440px,40vw)!important;
+  height:76px!important;
+  background:linear-gradient(90deg,rgba(9,8,7,.93),rgba(9,8,7,.86))!important;
+}
+.lc10-match-side img{width:40px!important;height:40px!important}
+.lc10-match-side>strong{font-size:22px!important}
+
+/* hide noisy overlay inspectors during planning; hover still reserved for future use */
+#enemySkillInspector,
+#battleKeywordPanel{display:none!important}
+
+@media (max-width: 1100px){
+  .lc4-arena{left:20px!important;right:20px!important;bottom:192px!important;grid-template-columns:31% 69%!important}
+  .lc4-bandit{width:min(10vw,106px)!important;height:min(22vh,182px)!important}
+  .lc4-bandit.sprite-club,.lc4-bandit.sprite-elite{width:min(10.9vw,118px)!important;height:min(24vh,198px)!important}
+  .lc4-bandit.sprite-knife{width:min(8.1vw,84px)!important;height:min(18vh,144px)!important}
+  .lc4-planning{grid-template-columns:62px minmax(320px,1fr) 154px!important;height:176px!important}
+  .lc4-command{width:154px!important}.lc4-start{width:74px!important;height:74px!important}.lc4-auto{width:78px!important}.lc4-auto button{width:78px!important;font-size:7px!important}
+}
+@media (max-width: 860px){
+  .lc4-guide{width:206px!important}
+  .lc4-arena{top:82px!important;bottom:188px!important;grid-template-columns:33% 67%!important}
+  .lc4-planning{left:8px!important;right:8px!important;grid-template-columns:54px minmax(260px,1fr) 126px!important;height:170px!important;column-gap:8px!important}
+  .lc4-manager{height:94px!important}.lc4-manager-orbit{width:62px!important;height:62px!important}
+  .lc4-action{flex-basis:80px!important;width:80px!important;height:152px!important}
+  .lc4-skill-front{left:10px!important;width:62px!important;height:84px!important}.lc4-skill-back{width:58px!important;height:78px!important}
+  .lc4-slot-core{left:15px!important;width:49px!important;height:50px!important}
+  .lc4-command{width:126px!important}.lc4-start{width:64px!important;height:64px!important}.lc4-auto{width:62px!important}.lc4-auto button{width:62px!important;min-height:28px!important;padding:4px!important;font-size:5px!important}
+  .lc10-matchup{width:54vw!important}
+}
+
+/* v26 major battle layout rebuild */
+#battleScreen #battleTutorial,
+#battleScreen #battleInspector,
+#battleScreen #battleKeywordPanel,
+#battleScreen #enemySkillInspector,
+#battleScreen #battleMatchup{display:none!important}
+
+#battleScreen .lc4-red-wash{opacity:.10!important}
+#battleScreen .lc4-grain{opacity:.10!important}
+#battleScreen .lc4-brush{opacity:.08!important}
+
+#battleScreen .lc4-left-rail{
+  left:6px!important;top:62px!important;bottom:126px!important;width:26px!important;opacity:.78!important
+}
+#battleScreen .lc4-left-rail span{
+  width:24px!important;height:44px!important;font-size:8px!important;border-width:1px!important
+}
+
+#battleScreen .lc4-topbar{left:8px!important;right:8px!important;top:6px!important;height:42px!important}
+#battleScreen .lc4-wavebox{
+  min-width:62px!important;padding:4px 7px!important;border:1px solid #7d6339!important;
+  border-left:4px solid #a57b3d!important;background:linear-gradient(180deg,rgba(32,22,12,.96),rgba(10,8,6,.96))!important;
+  box-shadow:0 4px 10px #0008!important
+}
+#battleScreen .lc4-wavebox span{font-size:8px!important}
+#battleScreen .lc4-wavebox b{font-size:17px!important}
+#battleScreen .lc4-phase{
+  min-width:126px!important;padding:5px 14px!important;border-top:1px solid #80653e!important;
+  border-bottom:1px solid #40341f!important;background:rgba(8,7,5,.58)!important;
+  font-size:8px!important;letter-spacing:.16em!important
+}
+#battleScreen .lc4-square{width:34px!important;height:34px!important;border:1px solid #7b623a!important;background:rgba(10,8,6,.82)!important}
+
+#battleScreen .lc4-sin-panel{
+  right:7px!important;top:54px!important;width:46px!important;padding:5px!important;
+  background:rgba(7,6,5,.72)!important;border:1px solid #7a6039!important;box-shadow:none!important
+}
+#battleScreen .lc4-sin-panel>strong{font-size:7px!important;margin-bottom:4px!important}
+#battleScreen .lc4-sin-panel span{height:21px!important;padding:1px 2px!important;gap:3px!important}
+#battleScreen .lc4-sin-panel span img{width:14px!important;height:14px!important}
+#battleScreen .lc4-sin-panel span i{font-size:8px!important}
+
+#battleScreen .lc4-arena{
+  left:36px!important;right:54px!important;top:48px!important;bottom:118px!important;display:block!important;transform:none!important
+}
+
+#battleScreen .lc4-don-unit{
+  position:absolute!important;left:6%!important;bottom:11%!important;width:20%!important;height:54%!important;
+  padding:0!important;display:block!important
+}
+#battleScreen .lc4-don-stage{
+  position:absolute!important;inset:0!important;width:100%!important;height:100%!important;
+  display:flex!important;align-items:flex-end!important;justify-content:center!important
+}
+#battleScreen .lc4-don{height:min(34vh,300px)!important;max-width:100%!important;object-fit:contain!important}
+#battleScreen .lc4-don-plate{
+  left:50%!important;transform:translateX(-50%)!important;bottom:-23px!important;width:152px!important;
+  padding:3px 5px!important;background:transparent!important;border:0!important;box-shadow:none!important
+}
+#battleScreen .lc4-don-title{display:none!important}
+#battleScreen .lc4-mini-meter{grid-template-columns:22px 1fr 38px!important;gap:3px!important;font-size:6px!important;margin-top:2px!important}
+#battleScreen .lc4-mini-meter>i{height:5px!important;border:0!important;background:#171310!important;box-shadow:0 0 0 1px #503f27!important}
+#battleScreen .lc4-mini-meter>i>em{background:#b34a40!important}
+#battleScreen .lc4-mini-meter:nth-of-type(2)>i>em{background:#4e819d!important}
+#battleScreen .lc4-unit-sub{justify-content:center!important;gap:8px!important;margin-top:2px!important;font-size:5px!important}
+#battleScreen .lc4-shadow{width:54%!important;height:10px!important;bottom:2px!important;opacity:.74!important}
+
+#battleScreen .lc4-enemy-roster{
+  position:absolute!important;left:31%!important;right:0!important;top:12%!important;bottom:8%!important;height:auto!important;
+  display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;align-items:end!important;gap:2%!important;padding:0!important
+}
+#battleScreen .lc4-enemy-roster[data-count="4"]{grid-template-columns:repeat(4,minmax(0,1fr))!important}
+#battleScreen .lc4-enemy{position:relative!important;height:78%!important;align-self:end!important}
+#battleScreen .lc4-enemy-stage{height:100%!important;display:flex!important;align-items:flex-end!important}
+#battleScreen .lc4-bandit,
+#battleScreen .lc4-bandit.sprite-club,
+#battleScreen .lc4-bandit.sprite-knife,
+#battleScreen .lc4-bandit.sprite-leader,
+#battleScreen .lc4-bandit.sprite-elite{width:min(9vw,124px)!important;height:min(30vh,260px)!important}
+#battleScreen .lc4-bandit.sprite-knife{width:min(7.2vw,98px)!important;height:min(24vh,210px)!important}
+#battleScreen .lc4-enemy-name{
+  top:auto!important;bottom:-5px!important;left:50%!important;width:130px!important;
+  transform:translate(-50%,100%)!important;opacity:.92!important
+}
+#battleScreen .lc4-enemy-name small{display:none!important}
+#battleScreen .lc4-enemy-name b{font-size:7px!important;color:#d9c8a6!important}
+#battleScreen .lc4-enemy-hud{
+  left:50%!important;right:auto!important;bottom:-19px!important;width:118px!important;transform:translateX(-50%)!important
+}
+#battleScreen .lc4-enemy-hp{
+  height:5px!important;border:0!important;background:#1b1713!important;box-shadow:0 0 0 1px #4d3b24!important
+}
+#battleScreen .lc4-enemy-hud>b{margin-top:1px!important;font-size:5px!important;color:#bda98b!important}
+#battleScreen .lc10-stagger-track,#battleScreen .lc4-statuses{display:none!important}
+
+#battleScreen .lc4-intent{
+  width:58px!important;height:58px!important;border:0!important;background:transparent!important;box-shadow:none!important;
+  clip-path:none!important;filter:drop-shadow(0 4px 5px #000b)!important
+}
+#battleScreen .lc4-intent-speed{
+  left:2px!important;top:2px!important;transform:translate(-45%,-45%)!important;width:24px!important;height:24px!important;
+  border:2px solid #a9864c!important;background:#17110b!important;font-size:11px!important;z-index:4!important
+}
+#battleScreen .lc4-intent-art{
+  left:50%!important;top:0!important;width:54px!important;height:54px!important;padding:3px!important;object-fit:contain!important;
+  background:rgba(8,7,6,.78)!important;border:1px solid rgba(150,113,62,.58)!important;
+  clip-path:polygon(50% 0,92% 22%,100% 67%,72% 100%,28% 100%,0 67%,8% 22%)!important
+}
+#battleScreen .lc4-intent>b,#battleScreen .lc4-intent>small,#battleScreen .lc4-intent-frame{display:none!important}
+
+#battleScreen .lc4-target-lines{z-index:16!important}
+#battleScreen .lc4-link{stroke-width:2.1!important;opacity:.70!important;filter:drop-shadow(0 0 1px currentColor)!important;animation:none!important}
+#battleScreen .lc4-link.is-secondary{opacity:.48!important;stroke-width:1.7!important}
+#battleScreen .lc4-link.is-focus{opacity:.88!important;stroke-width:2.5!important}
+#battleScreen .lc4-link.dominating,#battleScreen .lc4-link.favored{stroke:#7faa4a!important;color:#7faa4a!important}
+#battleScreen .lc4-link.neutral{stroke:#b58d45!important;color:#b58d45!important}
+#battleScreen .lc4-link.struggling,#battleScreen .lc4-link.hopeless{stroke:#a14843!important;color:#a14843!important}
+
+#battleScreen .lc4-planning{
+  left:0!important;right:0!important;bottom:0!important;height:126px!important;padding:0 16px 5px!important;
+  display:grid!important;grid-template-columns:82px minmax(0,1fr) 154px!important;align-items:end!important;gap:8px!important;
+  background:linear-gradient(180deg,rgba(0,0,0,0) 0%,rgba(5,4,3,.42) 18%,rgba(5,4,3,.90) 54%,rgba(2,2,2,.98) 100%)!important;
+  border-top:0!important
+}
+#battleScreen .lc4-manager{height:94px!important;align-self:end!important;transform:none!important}
+#battleScreen .lc4-manager-orbit{width:62px!important;height:62px!important;margin-inline:auto!important}
+#battleScreen .lc4-manager>strong,#battleScreen .lc4-manager>small{font-size:6px!important}
+#battleScreen .lc4-action-rail{
+  height:119px!important;width:100%!important;max-width:760px!important;justify-self:center!important;display:flex!important;
+  justify-content:center!important;align-items:flex-end!important;gap:0!important;padding:0!important;overflow:visible!important
+}
+#battleScreen .lc4-action{flex:0 0 68px!important;width:68px!important;height:112px!important;margin-left:-5px!important}
+#battleScreen .lc4-action:first-child{margin-left:0!important}
+#battleScreen .lc4-skill-front{left:7px!important;top:14px!important;width:56px!important;height:74px!important;border-width:1px!important}
+#battleScreen .lc4-skill-back{left:5px!important;top:20px!important;width:52px!important;height:67px!important}
+#battleScreen .lc7-skill-art{inset:2px!important;width:calc(100% - 4px)!important;height:calc(100% - 4px)!important}
+#battleScreen .lc4-skill-front>strong,#battleScreen .lc4-skill-back>strong{display:none!important}
+#battleScreen .lc4-skill-power{bottom:2px!important;left:2px!important;right:2px!important}
+#battleScreen .lc4-skill-power b{font-size:12px!important}
+#battleScreen .lc4-skill-power i{font-size:5px!important}
+#battleScreen .lc4-slot-core{left:15px!important;bottom:0!important;width:38px!important;height:38px!important;border:2px solid #6e5632!important}
+#battleScreen .lc4-speed-die{font-size:11px!important}
+#battleScreen .lc4-mini-portrait{width:17px!important;height:17px!important}
+#battleScreen .lc4-slot-core small{font-size:4px!important}
+#battleScreen .lc4-defense-toggle{width:19px!important;height:19px!important;right:-2px!important;bottom:7px!important;font-size:8px!important}
+#battleScreen .lc4-forecast{top:5px!important;left:5px!important;right:5px!important;padding:1px 3px!important;font-size:4px!important}
+
+#battleScreen .lc4-command{width:154px!important;height:104px!important;justify-self:end!important;align-self:end!important}
+#battleScreen .lc4-auto{left:0!important;bottom:10px!important;width:73px!important;gap:4px!important}
+#battleScreen .lc4-auto button{
+  width:73px!important;min-height:29px!important;padding:4px 5px!important;font-size:6px!important;
+  border:1px solid #6e472d!important;background:linear-gradient(90deg,#31130d,#110a07)!important
+}
+#battleScreen .lc4-auto button img{width:11px!important;height:11px!important}
+#battleScreen .lc4-auto kbd{min-width:15px!important;height:15px!important;font-size:6px!important}
+#battleScreen .lc4-start{right:0!important;bottom:8px!important;width:74px!important;height:74px!important;border-width:5px!important}
+#battleScreen .lc4-start::before{inset:-8px!important;border-width:4px!important}
+#battleScreen .lc4-start::after{inset:-5px!important;border-width:2px!important}
+#battleScreen .lc4-start span{font-size:9px!important}
+#battleScreen .lc4-start small{font-size:5px!important}
+
+#battleScreen .lc4-turn-order{left:28px!important;bottom:124px!important;gap:2px!important}
+#battleScreen .lc4-turn-order span{width:18px!important;height:18px!important;font-size:7px!important}
+
+@media(max-width:1000px){
+  #battleScreen .lc4-arena{bottom:112px!important}
+  #battleScreen .lc4-don-unit{left:5%!important;width:22%!important}
+  #battleScreen .lc4-enemy-roster{left:29%!important;gap:1%!important}
+  #battleScreen .lc4-action-rail{justify-content:flex-start!important;overflow-x:auto!important;overflow-y:hidden!important}
+}
+
+
+/* =========================================================
+   v27 bottom command UI refresh
+   Closer to the provided Limbus-style lower battle tray
+   ========================================================= */
+
+#battleScreen .lc4-planning{
+  left:18px !important;
+  right:18px !important;
+  bottom:8px !important;
+  height:156px !important;
+  padding:0 8px 4px !important;
+  grid-template-columns:64px minmax(0, 1fr) 140px !important;
+  align-items:end !important;
+  column-gap:10px !important;
+  background:linear-gradient(180deg, rgba(0,0,0,0) 0%, rgba(6,5,4,.26) 26%, rgba(4,3,2,.78) 76%, rgba(2,2,2,.92) 100%) !important;
+  border-top:0 !important;
+}
+
+#battleScreen .lc4-manager{
+  height:84px !important;
+  display:grid !important;
+  align-content:end !important;
+  justify-items:center !important;
+  gap:1px !important;
+}
+#battleScreen .lc4-manager-orbit{
+  width:56px !important;
+  height:56px !important;
+  border:4px solid #8b6d39 !important;
+  box-shadow:0 0 0 3px #0f0c09, 0 0 0 5px #4a3821, inset 0 0 14px #000 !important;
+  background:radial-gradient(circle at 35% 30%, #302213, #110d09 72%) !important;
+}
+#battleScreen .lc4-manager-orbit::before{
+  inset:6px !important;
+  border:2px dashed #c8ab63 !important;
+  opacity:.7 !important;
+}
+#battleScreen .lc4-manager-orbit::after{
+  inset:13px !important;
+  border:1px dashed #8f7542 !important;
+  opacity:.55 !important;
+}
+#battleScreen .lc4-manager > span{
+  font-size:7px !important;
+  color:#c8ba98 !important;
+  letter-spacing:.1em !important;
+}
+#battleScreen .lc4-manager > b{
+  font-size:8px !important;
+}
+
+#battleScreen .lc4-action-rail{
+  width:100% !important;
+  max-width:630px !important;
+  height:142px !important;
+  justify-self:center !important;
+  justify-content:center !important;
+  align-items:end !important;
+  overflow-x:auto !important;
+  overflow-y:hidden !important;
+  gap:0 !important;
+  padding:0 4px 2px !important;
+  scrollbar-width:none !important;
+}
+#battleScreen .lc4-action{
+  flex:0 0 74px !important;
+  width:74px !important;
+  height:136px !important;
+  margin-left:-8px !important;
+}
+#battleScreen .lc4-action:first-child{margin-left:0 !important;}
+#battleScreen .lc4-action.is-focus{
+  transform:translateY(-4px) !important;
+}
+
+#battleScreen .lc4-forecast{
+  top:-1px !important;
+  left:4px !important;
+  right:4px !important;
+  padding:2px 3px !important;
+  font-size:5px !important;
+  line-height:1.05 !important;
+  text-align:center !important;
+  border:1px solid currentColor !important;
+  background:rgba(8,7,6,.9) !important;
+  box-shadow:0 2px 4px rgba(0,0,0,.5) !important;
+}
+
+#battleScreen .lc4-skill-front,
+#battleScreen .lc4-skill-back{
+  clip-path:polygon(18% 0, 86% 0, 100% 18%, 100% 86%, 82% 100%, 18% 100%, 0 86%, 0 16%) !important;
+  box-shadow:0 5px 7px rgba(0,0,0,.55), inset 0 0 0 1px rgba(15,12,10,.95) !important;
+}
+#battleScreen .lc4-skill-front{
+  left:10px !important;
+  top:14px !important;
+  width:54px !important;
+  height:72px !important;
+  padding:4px !important;
+  transform:rotate(-3deg) !important;
+  border-width:1px !important;
+}
+#battleScreen .lc4-skill-back{
+  left:6px !important;
+  top:20px !important;
+  width:50px !important;
+  height:66px !important;
+  padding:4px !important;
+  transform:translate(0,6px) rotate(5deg) !important;
+  filter:brightness(.56) !important;
+}
+#battleScreen .lc7-skill-art{
+  inset:2px !important;
+  width:calc(100% - 4px) !important;
+  height:calc(100% - 4px) !important;
+}
+#battleScreen .lc4-skill-aff{
+  top:3px !important;
+  left:4px !important;
+  font-size:4px !important;
+  gap:2px !important;
+  letter-spacing:.08em !important;
+}
+#battleScreen .lc4-skill-aff img{
+  width:8px !important;
+  height:8px !important;
+}
+#battleScreen .lc24-card-type{
+  width:9px !important;
+  height:9px !important;
+  right:4px !important;
+  top:5px !important;
+}
+#battleScreen .lc4-sigil{
+  width:16px !important;
+  height:16px !important;
+  right:4px !important;
+  top:16px !important;
+  font-size:7px !important;
+  border-width:1px !important;
+}
+#battleScreen .lc4-skill-front > strong,
+#battleScreen .lc4-skill-back > strong{
+  display:none !important;
+}
+#battleScreen .lc4-skill-power{
+  left:4px !important;
+  right:4px !important;
+  bottom:4px !important;
+  gap:2px !important;
+  justify-content:flex-start !important;
+}
+#battleScreen .lc4-skill-power b{
+  font-size:11px !important;
+  color:#f2e4b5 !important;
+}
+#battleScreen .lc4-skill-power i{
+  font-size:5px !important;
+  color:#d19f62 !important;
+}
+#battleScreen .lc4-skill-coins{
+  right:4px !important;
+  bottom:5px !important;
+  font-size:5px !important;
+  letter-spacing:0 !important;
+}
+
+#battleScreen .lc4-slot-core{
+  left:15px !important;
+  bottom:1px !important;
+  width:44px !important;
+  height:44px !important;
+  border:2px solid #8b5c2f !important;
+  background:
+    linear-gradient(180deg, rgba(54,31,16,.95), rgba(19,12,8,.95)) !important;
+  clip-path:polygon(24% 4%, 76% 4%, 96% 50%, 76% 96%, 24% 96%, 4% 50%) !important;
+  border-radius:0 !important;
+  box-shadow:0 0 0 2px #150f0a, 0 4px 7px rgba(0,0,0,.55) !important;
+}
+#battleScreen .lc4-slot-core::before{
+  content:"";
+  position:absolute;
+  inset:3px;
+  clip-path:polygon(24% 4%, 76% 4%, 96% 50%, 76% 96%, 24% 96%, 4% 50%);
+  border:1px solid rgba(222,152,85,.45);
+  pointer-events:none;
+}
+#battleScreen .lc4-speed-die{
+  position:absolute !important;
+  left:50% !important;
+  top:-11px !important;
+  transform:translateX(-50%) !important;
+  min-width:18px !important;
+  height:18px !important;
+  padding:0 4px !important;
+  border-radius:999px !important;
+  border:2px solid #8a6b35 !important;
+  background:#1a130d !important;
+  color:#f3d778 !important;
+  display:grid !important;
+  place-items:center !important;
+  font-size:10px !important;
+  line-height:1 !important;
+  box-shadow:0 0 0 2px #090807 !important;
+}
+#battleScreen .lc4-mini-portrait{
+  width:26px !important;
+  height:26px !important;
+  left:50% !important;
+  top:50% !important;
+  transform:translate(-50%,-42%) !important;
+  background:radial-gradient(circle, rgba(248,230,157,.18), transparent 70%) !important;
+}
+#battleScreen .lc4-mini-portrait img{
+  object-fit:cover !important;
+  object-position:center 28% !important;
+}
+#battleScreen .lc4-slot-core small{
+  position:absolute !important;
+  left:50% !important;
+  bottom:2px !important;
+  transform:translateX(-50%) !important;
+  font-size:5px !important;
+  color:#b9a37b !important;
+  letter-spacing:.08em !important;
+}
+#battleScreen .lc4-defense-toggle{
+  right:-1px !important;
+  bottom:10px !important;
+  width:18px !important;
+  height:18px !important;
+  border-width:1px !important;
+  font-size:7px !important;
+}
+
+#battleScreen .lc4-command{
+  width:140px !important;
+  height:96px !important;
+  justify-self:end !important;
+  align-self:end !important;
+}
+#battleScreen .lc4-auto{
+  left:0 !important;
+  bottom:6px !important;
+  width:64px !important;
+  gap:5px !important;
+}
+#battleScreen .lc4-auto button{
+  width:64px !important;
+  min-height:24px !important;
+  padding:4px 6px !important;
+  display:flex !important;
+  align-items:center !important;
+  justify-content:space-between !important;
+  gap:4px !important;
+  font-size:6px !important;
+  line-height:1 !important;
+  border:1px solid #8c4628 !important;
+  background:linear-gradient(90deg, #4b180d, #221009) !important;
+  color:#f0d09a !important;
+  box-shadow:0 2px 4px rgba(0,0,0,.38) !important;
+}
+#battleScreen .lc4-auto button img{
+  width:10px !important;
+  height:10px !important;
+}
+#battleScreen .lc4-auto kbd{
+  min-width:14px !important;
+  height:14px !important;
+  font-size:6px !important;
+  background:#1b100b !important;
+  border:1px solid #9a6b38 !important;
+  color:#f5e5b0 !important;
+}
+#battleScreen .lc4-start{
+  width:66px !important;
+  height:66px !important;
+  right:0 !important;
+  left:auto !important;
+  bottom:0 !important;
+  border-width:5px !important;
+  background:radial-gradient(circle, #5c2d10 0%, #20120b 52%, #17100a 100%) !important;
+  box-shadow:0 0 0 3px #0b0907, 0 0 0 5px #4d3723, 0 5px 10px rgba(0,0,0,.58) !important;
+}
+#battleScreen .lc4-start::before{
+  inset:-8px !important;
+  border-width:4px !important;
+  border-color:#9b7242 !important;
+}
+#battleScreen .lc4-start::after{
+  inset:-4px !important;
+  border-width:2px !important;
+}
+#battleScreen .lc4-start span{
+  font-size:10px !important;
+  letter-spacing:.04em !important;
+}
+#battleScreen .lc4-start small{
+  font-size:5px !important;
+}
+
+@media (max-width: 900px){
+  #battleScreen .lc4-planning{
+    grid-template-columns:54px minmax(0, 1fr) 118px !important;
+    height:148px !important;
+    left:8px !important;
+    right:8px !important;
+  }
+  #battleScreen .lc4-manager-orbit{width:50px !important; height:50px !important;}
+  #battleScreen .lc4-action{flex-basis:68px !important; width:68px !important;}
+  #battleScreen .lc4-command{width:118px !important;}
+  #battleScreen .lc4-auto{width:56px !important;}
+  #battleScreen .lc4-auto button{width:56px !important; font-size:5px !important;}
+  #battleScreen .lc4-start{width:58px !important; height:58px !important;}
+}
+
+
+
+/* =========================================================
+   v28: old Don sprite + draw/fan skill hand interaction
+   ========================================================= */
+
+/* Restore normal/full Don sprite in the manager/slot instead of close-up face. */
+#battleScreen .lc4-manager-orbit img{
+  object-fit:contain!important;
+  object-position:center bottom!important;
+  transform:translateX(-50%) scale(.92)!important;
+  height:108%!important;
+  bottom:-8%!important;
+}
+#battleScreen .lc4-mini-portrait{
+  overflow:visible!important;
+  background:transparent!important;
+}
+#battleScreen .lc4-mini-portrait img{
+  object-fit:contain!important;
+  object-position:center bottom!important;
+  width:100%!important;
+  height:100%!important;
+  transform:scale(1.12)!important;
+}
+
+/* Default state: only the currently selected/front card is visible.
+   Clicking the portrait hex "draws" the two choices out like a hand. */
+#battleScreen .lc4-action .lc4-skill-back{
+  opacity:0!important;
+  pointer-events:none!important;
+  transform:translate(0,16px) rotate(0deg) scale(.82)!important;
+  transition:
+    transform .22s cubic-bezier(.18,.85,.24,1),
+    opacity .16s ease,
+    filter .16s ease!important;
+}
+#battleScreen .lc4-action .lc4-skill-front{
+  transform:translate(0,0) rotate(-2deg)!important;
+  transition:
+    transform .22s cubic-bezier(.18,.85,.24,1),
+    opacity .16s ease,
+    filter .16s ease!important;
+}
+
+/* Open hand: fan cards left/right above the hex slot. */
+#battleScreen .lc4-action.is-hand-open{
+  z-index:40!important;
+}
+#battleScreen .lc4-action.is-hand-open .lc4-skill-front{
+  opacity:1!important;
+  pointer-events:auto!important;
+  transform:translate(18px,-26px) rotate(8deg) scale(1.06)!important;
+  filter:brightness(1.08)!important;
+}
+#battleScreen .lc4-action.is-hand-open .lc4-skill-back{
+  opacity:1!important;
+  pointer-events:auto!important;
+  transform:translate(-18px,-25px) rotate(-10deg) scale(1.04)!important;
+  filter:brightness(.9)!important;
+}
+#battleScreen .lc4-action.is-hand-open .lc4-slot-core{
+  filter:brightness(1.22)!important;
+  box-shadow:
+    0 0 0 2px #150f0a,
+    0 0 14px rgba(238,185,94,.34),
+    0 5px 8px rgba(0,0,0,.6)!important;
+}
+#battleScreen .lc4-action.is-hand-open .lc4-forecast{
+  transform:translateY(-34px)!important;
+}
+
+/* Make the portrait hex clearly clickable. */
+#battleScreen .lc4-slot-core{
+  cursor:pointer!important;
+}
+#battleScreen .lc4-slot-core:hover{
+  filter:brightness(1.15)!important;
+}
+
+/* WIN RATE lives in the small strip above the selected card/slot,
+   instead of being confused with the portrait/sprite. */
+#battleScreen .lc4-forecast.unassigned{
+  color:#bba77a!important;
+  border-color:#655438!important;
+  opacity:.68!important;
+}
+#battleScreen .lc4-forecast{
+  min-width:54px!important;
+  text-align:center!important;
+  transition:transform .18s ease, opacity .18s ease!important;
+}
+
+/* Keep skill card art visible when the hand is closed. */
+#battleScreen .lc4-action:not(.is-hand-open) .lc4-skill-front{
+  left:10px!important;
+  top:14px!important;
+}
+
+/* Prevent the opened hand from being cut off by the lower UI. */
+#battleScreen .lc4-action-rail{
+  overflow:visible!important;
+}
+
+/* Slightly more room for fanned cards. */
+#battleScreen .lc4-planning{
+  height:170px!important;
+}
+#battleScreen .lc4-action-rail{
+  height:160px!important;
+}
+#battleScreen .lc4-action{
+  height:150px!important;
+}
+
+/* Keep the bottom UI compact while hand is closed. */
+#battleScreen .lc4-action:not(.is-hand-open) .lc4-skill-back{
+  visibility:hidden!important;
+}
+#battleScreen .lc4-action.is-hand-open .lc4-skill-back{
+  visibility:visible!important;
+}
+
+@media(max-width:900px){
+  #battleScreen .lc4-action.is-hand-open .lc4-skill-front{
+    transform:translate(14px,-22px) rotate(8deg) scale(1.02)!important;
+  }
+  #battleScreen .lc4-action.is-hand-open .lc4-skill-back{
+    transform:translate(-14px,-22px) rotate(-10deg) scale(1.01)!important;
+  }
+}
+
+
+/* =========================================================
+   v29: enemy intents closer to bandits + HP / Sanity dock
+   ========================================================= */
+
+/* Intent buttons now sit directly above the corresponding enemy sprite. */
+#battleScreen .lc4-intent{
+  transform:translateX(-50%) !important;
+  width:54px !important;
+  height:54px !important;
+}
+#battleScreen .lc4-intent:hover{
+  transform:translateX(-50%) translateY(-3px) scale(1.06) !important;
+}
+#battleScreen .lc4-intent-art{
+  width:50px !important;
+  height:50px !important;
+}
+#battleScreen .lc4-intent-speed{
+  width:23px !important;
+  height:23px !important;
+  font-size:10px !important;
+}
+#battleScreen .lc4-intent > b,
+#battleScreen .lc4-intent > small{
+  display:none !important;
+}
+
+/* Remove the old row of raw speed-number circles completely. */
+#battleScreen .lc4-turn-order{
+  left:14px !important;
+  bottom:122px !important;
+  display:block !important;
+  width:auto !important;
+  height:auto !important;
+}
+
+/* Limbus-inspired HP / Sanity platform, based on the user's reference. */
+#battleScreen .lc29-vitals-dock{
+  position:relative;
+  display:grid;
+  grid-template-columns:56px 92px 56px;
+  align-items:end;
+  gap:0;
+  width:204px;
+  height:70px;
+  filter:drop-shadow(0 6px 8px rgba(0,0,0,.62));
+}
+
+#battleScreen .lc29-vital-core{
+  position:relative;
+  width:92px;
+  height:54px;
+  margin-bottom:3px;
+  background:
+    linear-gradient(180deg,#171713 0 70%,#34150f 70%),
+    #111;
+  clip-path:polygon(16% 0,84% 0,100% 27%,88% 79%,50% 100%,12% 79%,0 27%);
+  box-shadow:inset 0 0 0 2px rgba(174,136,70,.48);
+}
+
+#battleScreen .lc29-vital-core::before{
+  content:"";
+  position:absolute;
+  inset:7px 12px 10px;
+  clip-path:polygon(16% 0,84% 0,100% 27%,88% 79%,50% 100%,12% 79%,0 27%);
+  border:1px solid rgba(207,176,103,.55);
+  background:
+    radial-gradient(circle at center,rgba(205,173,93,.16),transparent 56%),
+    linear-gradient(135deg,transparent 42%,rgba(195,159,83,.22) 43% 45%,transparent 46%);
+}
+
+#battleScreen .lc29-vital-emblem{
+  position:absolute;
+  left:50%;
+  top:50%;
+  width:33px;
+  height:33px;
+  transform:translate(-50%,-54%);
+  border:2px solid rgba(192,155,77,.72);
+  border-radius:50%;
+  box-shadow:
+    inset 0 0 0 4px rgba(23,20,15,.8),
+    0 0 0 2px rgba(7,6,5,.95);
+}
+#battleScreen .lc29-vital-emblem::before,
+#battleScreen .lc29-vital-emblem::after{
+  content:"";
+  position:absolute;
+  left:50%;
+  top:50%;
+  background:#ad8849;
+  transform-origin:left center;
+}
+#battleScreen .lc29-vital-emblem::before{
+  width:12px;
+  height:2px;
+  transform:translate(0,-1px) rotate(-20deg);
+}
+#battleScreen .lc29-vital-emblem::after{
+  width:2px;
+  height:12px;
+  transform:translate(-1px,-10px);
+}
+
+#battleScreen .lc29-vital-side{
+  position:relative;
+  display:grid;
+  justify-items:center;
+  align-content:end;
+  gap:2px;
+  z-index:2;
+}
+#battleScreen .lc29-vital-side.hp{
+  transform:translateX(8px);
+}
+#battleScreen .lc29-vital-side.sanity{
+  transform:translateX(-8px);
+}
+
+#battleScreen .lc29-vital-orb{
+  position:relative;
+  display:grid;
+  place-items:center;
+  width:43px;
+  height:43px;
+  border-radius:50%;
+  overflow:hidden;
+  border:3px solid #1b1511;
+  box-shadow:0 0 0 2px #7b633d,0 3px 5px rgba(0,0,0,.6);
+  background:#19130f;
+}
+#battleScreen .lc29-vital-orb i{
+  position:absolute;
+  left:0;
+  right:0;
+  bottom:0;
+  height:var(--fill);
+  transition:height .22s ease;
+}
+#battleScreen .lc29-vital-side.hp .lc29-vital-orb{
+  border-color:#6a2a22;
+  box-shadow:0 0 0 2px #9b3c31,0 3px 5px rgba(0,0,0,.6);
+}
+#battleScreen .lc29-vital-side.hp .lc29-vital-orb i{
+  background:linear-gradient(180deg,#d95a4d,#771e19);
+}
+#battleScreen .lc29-vital-side.sanity .lc29-vital-orb{
+  border-color:#45415f;
+  box-shadow:0 0 0 2px #777198,0 3px 5px rgba(0,0,0,.6);
+}
+#battleScreen .lc29-vital-side.sanity .lc29-vital-orb i{
+  background:linear-gradient(180deg,#8794d0,#3e426f);
+}
+#battleScreen .lc29-vital-orb b,
+#battleScreen .lc29-vital-orb img{
+  position:relative;
+  z-index:2;
+}
+#battleScreen .lc29-vital-orb b{
+  color:#ffe7d3;
+  font:900 9px/1 Georgia,serif;
+  text-shadow:0 1px 3px #000;
+}
+#battleScreen .lc29-vital-orb img{
+  width:19px;
+  height:19px;
+  object-fit:contain;
+  filter:drop-shadow(0 1px 2px #000);
+}
+#battleScreen .lc29-vital-side small{
+  min-width:54px;
+  padding:2px 4px;
+  text-align:center;
+  color:#d9c8aa;
+  font:700 6px/1 Georgia,serif;
+  background:rgba(10,8,6,.86);
+  border:1px solid rgba(119,88,50,.65);
+}
+
+/* No legacy speed circles. */
+#battleScreen .lc4-turn-order > span{
+  display:none !important;
+}
+
+@media(max-width:900px){
+  #battleScreen .lc29-vitals-dock{
+    transform:scale(.82);
+    transform-origin:left bottom;
+  }
+  #battleScreen .lc4-turn-order{
+    left:7px !important;
+    bottom:110px !important;
+  }
+}
+
+
+/* v30: restore classic VN sprite scale (full body, not giant portrait) */
+#character.character{width:min(34vw,440px)!important;height:auto!important;max-height:80vh!important;object-fit:contain!important;object-position:center bottom!important;bottom:0!important;left:50%!important;transform:translateX(-50%)!important;}
+@media (max-width: 900px){#character.character{width:min(56vw,300px)!important;max-width:72vw!important;max-height:64vh!important;bottom:0!important;}}

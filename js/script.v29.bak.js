@@ -151,7 +151,7 @@
       shop: "assets/backgrounds/shop.png",
     },
     characters: {
-      idle: "assets/characters/idle.png",
+      idle: "assets/battle/icons/portrait/don-quixote.png",
       happy: "assets/characters/happy.png",
       superHappy: "assets/characters/super-happy.png",
       cry: "assets/characters/cry.png",
@@ -165,20 +165,63 @@
   };
 
   const battleDonSprites = {
-    idle: "assets/battle/don/idle-animation.gif",
-    idleStatic: "assets/battle/don/idle.png",
-    guard: "assets/battle/don/guard.png",
-    hurt: "assets/battle/don/hurt.png",
-    evade: "assets/battle/don/evade.png",
-    moving: "assets/battle/don/moving.png",
-    neutral: "assets/battle/don/neutral.png",
+    idle: "assets/battle/don/base/idle.png",
+    idleStatic: "assets/battle/don/base/idle.png",
+    guard: "assets/battle/don/base/gud.png",
+    hurt: "assets/battle/don/base/hurt.png",
+    evade: "assets/battle/don/base/evade.png",
+    moving: "assets/battle/don/base/move.png",
+    neutral: "assets/battle/don/base/idle.png",
     dead: "assets/battle/don/dead.png",
   };
 
   const battleDonAnimations = {
-    joust: { src: "assets/battle/don/skill-1.gif", duration: 800, hitTimes: [0.56], css: "skill1" },
-    gallop: { src: "assets/battle/don/skill-2.gif", duration: 720, hitTimes: [0.58], css: "skill2" },
-    justice: { src: "assets/battle/don/skill-3.gif", duration: 1400, hitTimes: [0.30, 0.58, 0.80], css: "skill3" },
+    joust: {
+      frames: [
+        "assets/battle/don/base/skill1_1.png",
+        "assets/battle/don/base/skill1_2.png",
+        "assets/battle/don/base/skill1_3.png",
+      ],
+      duration: 1500, hitTimes: [0.66], css: "skill1"
+    },
+    gallop: {
+      frames: [
+        "assets/battle/don/base/skill2_1.png",
+        "assets/battle/don/base/skill2_2.png",
+        "assets/battle/don/base/skill2_3.png",
+      ],
+      duration: 1500, hitTimes: [0.68], css: "skill2"
+    },
+    justice: {
+      frames: [
+        "assets/battle/don/base/skill3_1.png",
+        "assets/battle/don/base/skill3_2.png",
+        "assets/battle/don/base/skill3_3.png",
+        "assets/battle/don/base/skill3_4.png",
+        "assets/battle/don/base/skill3_5.png",
+        "assets/battle/don/base/skill3_6.png",
+        "assets/battle/don/base/skill3_7.png",
+        "assets/battle/don/base/skill3_8.png",
+        "assets/battle/don/base/skill3_9.png",
+        "assets/battle/don/base/skill3_10.png",
+        "assets/battle/don/base/skill3_11.png",
+        "assets/battle/don/base/skill3_12.png",
+      ],
+      duration: 2600, hitTimes: [0.34, 0.62, 0.86], css: "skill3"
+    },
+  };
+
+  const battleUiIcons = {
+    sins: {
+      Lust: "assets/battle/icons/sins/lust.png",
+      Envy: "assets/battle/icons/sins/envy.png",
+      Gluttony: "assets/battle/icons/sins/gluttony.png",
+    },
+    attack: "assets/battle/icons/skills/attack.png",
+    defense: "assets/battle/icons/skills/defense.png",
+    evade: "assets/battle/icons/skills/evade.png",
+    sanity: "assets/battle/icons/skills/sanity.png",
+    target: "assets/battle/icons/ui/target.png",
   };
 
 
@@ -213,8 +256,17 @@
     },
   };
 
-  Object.values({ ...battleDonSprites, ...Object.fromEntries(Object.entries(battleDonAnimations).map(([k,v]) => [k, v.src])), ...Object.fromEntries(Object.entries(enemySprites).flatMap(([k, poses]) => Object.entries(poses).map(([pose, src]) => [`${k}-${pose}`, src]))) }).forEach((src) => {
+  const battleImagePreload = [
+    ...Object.values(battleDonSprites),
+    ...Object.values(battleDonAnimations).flatMap((animation) => animation.frames || []),
+    ...Object.values(enemySprites).flatMap((poses) => Object.values(poses)),
+    ...Object.values(battleUiIcons.sins),
+    battleUiIcons.attack, battleUiIcons.defense, battleUiIcons.evade, battleUiIcons.sanity, battleUiIcons.target,
+  ];
+  [...new Set(battleImagePreload)].forEach((src) => {
+    if (!src) return;
     const img = new Image();
+    img.decoding = "async";
     img.src = src;
   });
 
@@ -355,7 +407,7 @@
 
   function makeInitialState() {
     return {
-      version: 2,
+      version: 3,
       scene: "start",
       step: 0,
       playerName: "Dante",
@@ -371,7 +423,7 @@
       battleIntroSeen: false,
       backpackOpened: false,
       tutorialActive: true,
-      volume: 35,
+      volume: 20,
     };
   }
 
@@ -624,6 +676,7 @@
       selectedEnemyId: null,
       dragMoved: false,
       suppressSkillClickUntil: 0,
+      openHandSlot: null,
       guideMessage: "",
       autoMode: null,
       don: {
@@ -658,7 +711,6 @@
     const fallback = live[0]?.id ?? null;
     battle.selectedEnemyId = live.some((enemy) => enemy.id === enemyId) ? enemyId : fallback;
     const selectedSlot = preferredIntentId ? enemySlotById(preferredIntentId) : firstEnemyIntent(battle.selectedEnemyId);
-    if (selectedSlot) showEnemySkillInspector(selectedSlot);
     if (rerender) {
       renderEnemies();
       renderEnemyIntents();
@@ -898,6 +950,7 @@
             battle.autoMode = null;
             battle.focusSlot = battle.dragSlot;
             battle.dragSlot = null;
+      battle.openHandSlot = null;
             battle.guideMessage = `${enemy.name} targeted. The top-right panel now shows that enemy action.`;
             setSelectedEnemy(enemy.id, slot.id);
             renderPlanning();
@@ -908,23 +961,47 @@
     });
   }
 
+  function positionEnemyIntents() {
+    if (!els.enemyIntentSlots || els.enemyIntentSlots.hidden) return;
+    const layerRect = els.enemyIntentSlots.getBoundingClientRect();
+    const buttons = [...els.enemyIntentSlots.querySelectorAll(".lc4-intent")];
+
+    buttons.forEach((btn) => {
+      const enemyId = Number(btn.dataset.enemyId);
+      const enemyCard = els.enemyRoster?.querySelector?.(`[data-enemy-id="${enemyId}"]`);
+      const sprite = enemyCard?.querySelector?.(".lc4-bandit") || enemyCard?.querySelector?.(".lc4-enemy-stage");
+      if (!sprite) return;
+
+      const siblings = buttons.filter((node) => Number(node.dataset.enemyId) === enemyId);
+      const sibIndex = Math.max(0, siblings.indexOf(btn));
+      const total = Math.max(1, siblings.length);
+      const spread = total === 1 ? 0 : (sibIndex - (total - 1) / 2) * 42;
+
+      const box = sprite.getBoundingClientRect();
+      const x = box.left + box.width / 2 - layerRect.left + spread;
+      const y = box.top - layerRect.top - 68 - Math.abs(spread) * 0.04;
+
+      btn.style.left = `${x}px`;
+      btn.style.top = `${Math.max(74, y)}px`;
+    });
+  }
+
   function renderEnemyIntents() {
     els.enemyIntentSlots.innerHTML = "";
-    const living = aliveEnemies();
     battle.enemySlots.forEach((slot) => {
       const enemy = enemyById(slot.enemyId);
       if (!enemy || enemy.hp <= 0 || slot.consumed) return;
-      const enemyIndex = Math.max(0, living.findIndex((x) => x.id === enemy.id));
-      const siblings = battle.enemySlots.filter((x) => x.enemyId === enemy.id && !x.consumed);
-      const sibIndex = siblings.findIndex((x) => x.id === slot.id);
+
       const btn = document.createElement("button");
       btn.type = "button";
       btn.className = `lc4-intent ${intentTypeClass(slot.skill.type)} ${slot.skill.defense ? "is-defense" : ""}`;
       btn.dataset.intentId = slot.id;
       btn.dataset.enemyId = String(enemy.id);
-      btn.style.left = `${48 + ((enemyIndex + 0.5) * 52 / Math.max(1, living.length)) + sibIndex * 3.8}%`;
-      btn.innerHTML = `<span class="lc4-intent-speed">${slot.speed}</span><span class="lc4-intent-frame"></span>${slot.skill.art ? `<img class="lc4-intent-art" src="${escapeHTML(slot.skill.art)}" alt="" />` : `<i>⚔</i>`}<b>${escapeHTML(slot.skill.name)}</b><small>${slot.skill.base}+${slot.skill.coinPower} · ${slot.skill.coins}C · ${escapeHTML(slot.skill.type || "ATK")}</small>`;
+
+      btn.innerHTML = `<span class="lc4-intent-speed">${slot.speed}</span><span class="lc4-intent-frame"></span>${slot.skill.art ? `<img class="lc4-intent-art" src="${escapeHTML(slot.skill.art)}" alt="" />` : `<i>⚔</i>`}<b>${escapeHTML(slot.skill.name)}</b><small>${slot.skill.base}+${slot.skill.coinPower} · ${escapeHTML(slot.skill.type || "ATK")}</small>`;
+
       if (battle.selectedEnemyId === enemy.id) btn.classList.add("is-selected");
+
       btn.addEventListener("click", () => {
         if (battle.phase !== "planning") return;
         const picked = autoTargetEnemy(enemy.id, slot.id);
@@ -934,11 +1011,13 @@
         tutorialForTurn();
         renderPlanning();
       });
+
       btn.addEventListener("mouseenter", () => {
         battle.selectedEnemyId = enemy.id;
         scheduleEnemyInspector(slot);
       });
       btn.addEventListener("mouseleave", hideEnemyInspectorHoverDelay);
+
       btn.addEventListener("pointerup", () => {
         if (battle.phase !== "planning" || battle.dragSlot === null) return;
         const drag = battle.donSlots[battle.dragSlot];
@@ -951,20 +1030,37 @@
         battle.dragSlot = null;
         renderPlanning();
       });
+
       els.enemyIntentSlots.appendChild(btn);
     });
+
+    requestAnimationFrame(positionEnemyIntents);
   }
 
   function renderTurnOrder() {
-    const all = [
-      ...battle.donSlots.map((slot) => ({ team: "don", speed: slot.speed, text: slot.speed })),
-      ...battle.enemySlots.filter((slot) => !slot.consumed).map((slot) => ({ team: "enemy", speed: slot.speed, text: slot.speed })),
-    ].sort((a, b) => b.speed - a.speed);
-    els.turnOrder.innerHTML = all.map((item) => `<span class="${item.team}">${item.text}</span>`).join("");
+    if (!els.turnOrder || !battle) return;
+    const hpPct = clamp((battle.don.hp / battle.don.maxHp) * 100, 0, 100);
+    const sanityPct = clamp(((battle.don.sp + 45) / 90) * 100, 0, 100);
+
+    els.turnOrder.innerHTML = `
+      <div class="lc29-vitals-dock" aria-label="Don Quixote health and sanity">
+        <div class="lc29-vital-side hp">
+          <span class="lc29-vital-orb"><i style="--fill:${hpPct}%"></i><b>HP</b></span>
+          <small>${Math.max(0, battle.don.hp)}/${battle.don.maxHp}</small>
+        </div>
+        <div class="lc29-vital-core">
+          <span class="lc29-vital-emblem"></span>
+        </div>
+        <div class="lc29-vital-side sanity">
+          <span class="lc29-vital-orb"><i style="--fill:${sanityPct}%"></i><img src="assets/battle/icons/skills/sanity.png" alt="" /></span>
+          <small>${battle.don.sp >= 0 ? "+" : ""}${battle.don.sp} SP</small>
+        </div>
+      </div>`;
   }
 
   function showKeywordPanel(skill) {
-    if (!els.battleKeywordPanel || !skill) return;
+    if (els.battleKeywordPanel) els.battleKeywordPanel.hidden = true;
+    return;
     const key = skill.keywords?.find((k) => keywordDescriptions[k]) || skill.keywords?.[0];
     if (!key) { els.battleKeywordPanel.hidden = true; return; }
     if (key.toLowerCase() === "bleed") {
@@ -977,7 +1073,11 @@
   }
 
   function showEnemySkillInspector(enemySlot) {
-    if (!els.enemySkillInspector || !enemySlot) return;
+    if (els.enemySkillInspector) {
+      els.enemySkillInspector.classList.remove("is-visible");
+      els.enemySkillInspector.hidden = true;
+    }
+    return;
     const skill = enemySlot.skill;
     const enemy = enemyById(enemySlot.enemyId);
     battle.selectedEnemyId = enemy?.id ?? battle.selectedEnemyId;
@@ -1051,8 +1151,8 @@
     els.matchForecast.textContent = forecast.label;
     els.battleMatchup.className = `lc10-matchup ${forecast.cls}`;
     els.battleMatchup.hidden = false;
-    showKeywordPanel(skill);
-    showEnemySkillInspector(enemySlot);
+    if (els.battleKeywordPanel) els.battleKeywordPanel.hidden = true;
+    if (els.enemySkillInspector) { els.enemySkillInspector.classList.remove("is-visible"); els.enemySkillInspector.hidden = true; }
   }
 
   function showSkillInspector(skill, slot) {
@@ -1065,11 +1165,11 @@
     els.inspectorPower.textContent = `${skill.base} + ${getSkillCoinPower(skill, slot.speed)} · ${skill.coins} Coin${skill.coins > 1 ? "s" : ""}`;
     els.inspectorText.textContent = skill.effect;
     els.inspectorKeywords.innerHTML = skill.keywords.map((word) => `<span>${escapeHTML(word)}</span>`).join("");
-    showKeywordPanel(skill);
   }
 
   function hideSkillInspector() {
     els.battleInspector.hidden = true;
+    if (els.battleKeywordPanel) els.battleKeywordPanel.hidden = true;
   }
 
   function intentTypeClass(type = "") {
@@ -1103,9 +1203,12 @@
 
   function skillCardHTML(skill, slot, back = false) {
     const cp = getSkillCoinPower(skill, slot.speed);
+    const affinityIcon = battleUiIcons.sins[skill.affinity] || "";
+    const typeIcon = skill.defense ? battleUiIcons.evade : battleUiIcons.attack;
     return `<img class="lc7-skill-art" src="${escapeHTML(skill.art || "")}" alt="" />
       <span class="lc7-card-shade"></span>
-      <span class="lc4-skill-aff">${escapeHTML(skill.affinity)}</span>
+      <span class="lc4-skill-aff">${affinityIcon ? `<img src="${escapeHTML(affinityIcon)}" alt="" />` : ""}${escapeHTML(skill.affinity)}</span>
+      <img class="lc24-card-type" src="${escapeHTML(typeIcon)}" alt="" />
       <span class="lc4-sigil">${skillSigil(skill)}</span>
       <strong>${escapeHTML(skill.name)}</strong>
       <span class="lc4-skill-power"><b>${skill.base}</b><i>+${cp}</i></span>
@@ -1123,6 +1226,7 @@
     }
 
     battle.dragSlot = index;
+    battle.openHandSlot = index;
     battle.dragMoved = false;
     battle.focusSlot = index;
     const startX = event.clientX;
@@ -1180,15 +1284,15 @@
       const alternate = donBattleSkills[altKey];
       const forecast = clashForecast(slot);
       const wrap = document.createElement("div");
-      wrap.className = `lc4-action ${battle.focusSlot === slot.index ? "is-focus" : ""}`;
+      wrap.className = `lc4-action ${battle.focusSlot === slot.index ? "is-focus" : ""} ${battle.openHandSlot === slot.index ? "is-hand-open" : ""}`;
       wrap.dataset.actionSlot = String(slot.index);
       wrap.innerHTML = `
-        <div class="lc4-forecast ${forecast.cls}">${forecast.label}</div>
+        <div class="lc4-forecast ${slot.targetIntentId ? forecast.cls : "unassigned"}">${slot.targetIntentId ? forecast.label : "WIN RATE"}</div>
         <button class="lc4-skill-back lc4-aff-${alternate.css}" type="button" aria-label="Switch to ${escapeHTML(alternate.name)}">${skillCardHTML(alternate, slot, true)}</button>
         <button class="lc4-skill-front lc4-aff-${selected.css}" type="button">${skillCardHTML(selected, slot)}</button>
         <button class="lc4-slot-core" type="button" aria-label="Drag to target an enemy action">
           <span class="lc4-speed-die">${slot.speed}</span>
-          <span class="lc4-mini-portrait"><img src="assets/characters/idle.png" alt="" /></span>
+          <span class="lc4-mini-portrait"><img src="assets/battle/don/idle.png" alt="" /></span>
           <small>${slot.index + 1}</small>
         </button>
         <button class="lc4-defense-toggle ${slot.defense ? "active" : ""}" type="button" title="Evade">◇</button>`;
@@ -1199,6 +1303,17 @@
       const frontChoice = slot.selected;
       const backChoice = slot.selected === 0 ? 1 : 0;
 
+      core.addEventListener("click", (event) => {
+        if (battle.phase !== "planning") return;
+        event.stopPropagation();
+        battle.focusSlot = slot.index;
+        battle.openHandSlot = battle.openHandSlot === slot.index ? null : slot.index;
+        battle.guideMessage = battle.openHandSlot === slot.index
+          ? "Skill hand opened. Pick a card, then target an enemy."
+          : "Skill hand closed.";
+        renderPlanning();
+      });
+
       front.addEventListener("pointerdown", (event) => beginTargetDrag(event, slot.index, frontChoice));
       back.addEventListener("pointerdown", (event) => beginTargetDrag(event, slot.index, backChoice));
 
@@ -1207,6 +1322,7 @@
         battle.focusSlot = slot.index;
         slot.selected = frontChoice;
         slot.defense = false;
+        battle.openHandSlot = null;
         battle.guideMessage = "Skill selected. Drag it onto an enemy action to create a target arrow.";
         showSkillInspector(getSelectedSkill(slot), slot);
         renderPlanning();
@@ -1216,6 +1332,7 @@
         battle.focusSlot = slot.index;
         slot.selected = backChoice;
         slot.defense = false;
+        battle.openHandSlot = null;
         battle.guideMessage = "Skill selected. Drag it onto an enemy action to create a target arrow.";
         renderPlanning();
         showSkillInspector(getSelectedSkill(slot), slot);
@@ -1276,19 +1393,20 @@
     svg.setAttribute("viewBox", `0 0 ${rect.width} ${rect.height}`);
     [...svg.querySelectorAll("path.lc4-link")].forEach((path) => path.remove());
     battle.donSlots.forEach((slot) => {
-      const from = els.actionRail.querySelector(`[data-action-slot="${slot.index}"] .lc4-slot-core`);
+      if (!slot.targetIntentId) return;
+      const from = els.actionRail.querySelector(`[data-action-slot="${slot.index}"] .lc4-skill-front`) || els.actionRail.querySelector(`[data-action-slot="${slot.index}"] .lc4-slot-core`);
       const to = els.enemyIntentSlots.querySelector(`[data-intent-id="${slot.targetIntentId}"]`);
       if (!from || !to) return;
       const a = from.getBoundingClientRect();
       const b = to.getBoundingClientRect();
       const x1 = a.left + a.width / 2 - rect.left;
-      const y1 = a.top + a.height / 2 - rect.top;
+      const y1 = a.top + a.height * .20 - rect.top;
       const x2 = b.left + b.width / 2 - rect.left;
       const y2 = b.top + b.height / 2 - rect.top;
-      const lift = Math.max(80, Math.abs(x2 - x1) * .22);
+      const lift = Math.max(110, Math.abs(x2 - x1) * .28);
       const forecast = clashForecast(slot);
       const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
-      path.classList.add("lc4-link", forecast.cls);
+      path.classList.add("lc4-link", forecast.cls, slot.index === battle.focusSlot ? "is-focus" : "is-secondary");
       path.setAttribute("d", `M ${x1} ${y1} C ${x1} ${y1 - lift}, ${x2} ${y2 - lift}, ${x2} ${y2}`);
       const marker = forecast.cls === "dominating" || forecast.cls === "favored" ? "arrowGreen" : forecast.cls === "neutral" ? "arrowGold" : forecast.cls === "unopposed" ? "arrowBlue" : "arrowRed";
       path.setAttribute("marker-end", `url(#${marker})`);
@@ -1338,6 +1456,7 @@
     renderMatchupPreview();
     tutorialForTurn();
     scheduleTargetLines();
+    requestAnimationFrame(positionEnemyIntents);
   }
 
   function autoSelect(mode) {
@@ -1346,8 +1465,8 @@
     const liveIntents = battle.enemySlots.filter((intent) => !intent.consumed && enemyById(intent.enemyId)?.hp > 0);
     battle.autoMode = mode;
     battle.guideMessage = mode === "win"
-      ? "WIN RATE built a safer automatic chain. The arrows appeared because you pressed WIN RATE."
-      : "DAMAGE built a higher-damage automatic chain. The arrows appeared because you pressed DAMAGE.";
+      ? "WIN RATE built a safer automatic chain. Only the focused target line is shown to keep the screen clear."
+      : "DAMAGE built a higher-damage automatic chain. Only the focused target line is shown to keep the screen clear.";
     battle.donSlots.forEach((slot, index) => {
       if (mode === "win") {
         let best = null;
@@ -1755,7 +1874,7 @@
         { transform: `translate(${dx * .88}px,${dy + 4}px) skewX(4deg) scale(1.06)`, offset: .72 },
         { transform: "translate(0,0) skewX(0) scale(1)" },
       ];
-      duration = 560;
+      duration = 720;
     } else if (skill.key === "justice") {
       const side = coinIndex % 2 === 0 ? -1 : 1;
       frames = [
@@ -1765,10 +1884,10 @@
         { transform: `translate(${dx * .86}px,${dy}px) rotate(${side * -3}deg) scale(1.05)`, offset: .76 },
         { transform: "translate(0,0) rotate(0) scale(1)" },
       ];
-      duration = 470;
+      duration = 610;
     } else {
       frames = [{ transform: "translate(0,0)" }, { transform: `translate(${dx}px,${dy}px)` }, { transform: "translate(0,0)" }];
-      duration = 520;
+      duration = 680;
     }
     const anim = els.battleDon.animate(frames, { duration, easing: "cubic-bezier(.14,.78,.2,1)" });
     await delay(Math.round(duration * .56));
@@ -1787,9 +1906,32 @@
     img.src = `${src}?play=${Date.now()}-${Math.random().toString(16).slice(2)}`;
   }
 
+  const rawDelay = (ms) => new Promise((resolve) => setTimeout(resolve, Math.max(0, ms)));
+
+  function playDonFrameSequence(img, frames, duration) {
+    if (!img || !frames?.length) return Promise.resolve();
+    let raf = 0;
+    let lastFrame = -1;
+    const start = performance.now();
+    return new Promise((resolve) => {
+      const tick = (now) => {
+        const progress = Math.min(1, Math.max(0, (now - start) / duration));
+        const frameIndex = Math.min(frames.length - 1, Math.floor(progress * frames.length));
+        if (frameIndex !== lastFrame) {
+          lastFrame = frameIndex;
+          img.src = frames[frameIndex];
+        }
+        if (progress < 1) raf = requestAnimationFrame(tick);
+        else resolve();
+      };
+      img.src = frames[0];
+      raf = requestAnimationFrame(tick);
+    });
+  }
+
   async function playDonSkillSprite(skill, enemyId, coinCount, onHit) {
     const meta = battleDonAnimations[skill.key];
-    if (!meta || !els.donActionSprite) {
+    if (!meta || !els.donActionSprite || !meta.frames?.length) {
       for (let i = 0; i < coinCount; i += 1) {
         await animateDonLunge(enemyId, skill, i);
         await onHit(i);
@@ -1802,23 +1944,23 @@
     els.battleScreen.classList.add("lc5-combat-cinema", "lc6-sprite-combat");
     setBattleDonState("moving");
     els.battleDon.hidden = false;
-    await delay(90);
+    await rawDelay(110);
     els.battleDon.hidden = true;
     els.donActionSprite.hidden = false;
-    els.donActionSprite.className = `lc6-don-action-sprite lc6-${meta.css}`;
-    restartBattleGif(els.donActionSprite, meta.src);
+    els.donActionSprite.className = `lc6-don-action-sprite lc6-${meta.css} lc24-frame-sequence`;
 
-    const start = performance.now();
+    const startTime = performance.now();
+    const sequence = playDonFrameSequence(els.donActionSprite, meta.frames, meta.duration);
     const hitTimes = meta.hitTimes.slice(0, Math.max(1, coinCount));
     for (let i = 0; i < hitTimes.length; i += 1) {
-      const targetTime = start + meta.duration * hitTimes[i];
+      const targetTime = startTime + meta.duration * hitTimes[i];
       const wait = Math.max(0, targetTime - performance.now());
-      if (wait) await delay(wait);
+      if (wait) await rawDelay(wait);
       flashBattle();
+      playClashSfx("hit");
       await onHit(i);
     }
-    const remain = Math.max(0, start + meta.duration - performance.now());
-    if (remain) await delay(remain);
+    await sequence;
 
     els.donActionSprite.hidden = true;
     els.donActionSprite.removeAttribute("src");
@@ -1859,7 +2001,7 @@
       const enemyEl = enemyElement(enemy.id);
       enemyEl?.animate([
         { transform: "translateX(0)" }, { transform: "translateX(16px) rotate(2deg)" }, { transform: "translateX(-8px)" }, { transform: "translateX(0)" },
-      ], { duration: 250 });
+      ], { duration: 340 });
       els.battleScreen.classList.remove("hit-shake");
       void els.battleScreen.offsetWidth;
       els.battleScreen.classList.add("hit-shake");
@@ -1899,14 +2041,14 @@
       renderEnemies();
       if (enemy.hp <= 0) { enemySlot.consumed = true; return; }
     }
-    setEnemyPose(enemy.id, "attack", 700);
+    setEnemyPose(enemy.id, "attack", 920);
     const enemyEl = enemyElement(enemy.id)?.querySelector(".lc4-bandit");
     enemyEl?.animate([
       { transform: "translate(0,0)" },
       { transform: "translate(-26vw,-2vh) scale(1.08)", offset: .62 },
       { transform: "translate(-24vw,0) scale(1.08)", offset: .76 },
       { transform: "translate(0,0)" },
-    ], { duration: 620, easing: "cubic-bezier(.2,.8,.2,1)" });
+    ], { duration: 820, easing: "cubic-bezier(.2,.8,.2,1)" });
     await delay(400);
     const roll = rollCoins(enemySlot.skill, coins, enemySlot.speed, true);
     const damageScale = enemySlot.skill.defense ? 0.38 : 0.72;
@@ -1944,7 +2086,7 @@
       els.battleDon.classList.add("lc5-evade");
       els.battleDon.animate([
         { transform: "translateX(0) skewX(0)" }, { transform: "translateX(-110px) skewX(10deg)", offset:.42 }, { transform: "translateX(-128px) skewX(6deg)", offset:.62 }, { transform: "translateX(0) skewX(0)" },
-      ], { duration: 520, easing:"cubic-bezier(.12,.8,.2,1)" });
+      ], { duration: 700, easing:"cubic-bezier(.12,.8,.2,1)" });
       await delay(520);
       els.battleDon.classList.remove("lc5-evade");
       setBattleDonState("idle");
@@ -2460,7 +2602,9 @@
     );
   }
 
-  const delay = (ms) => new Promise((r) => setTimeout(r, ms));
+  const battleTempo = () => 1.28;
+  const pace = (ms) => Math.round(ms * battleTempo());
+  const delay = (ms) => new Promise((r) => setTimeout(r, pace(ms)));
 
   function ensureSfxContext() {
     const AC = window.AudioContext || window.webkitAudioContext;
@@ -2473,6 +2617,7 @@
   function playTone({ freq = 440, duration = 0.08, type = "sine", gain = 0.045, attack = 0.003, release = 0.07, pan = 0, when = 0, endFreq = null } = {}) {
     const ctx = ensureSfxContext();
     if (!ctx) return;
+    const volumeScale = Math.max(0, Math.min(1, Number(state?.volume ?? 20) / 100));
     const start = ctx.currentTime + when;
     const end = start + duration;
     const osc = ctx.createOscillator();
@@ -2482,7 +2627,7 @@
     osc.frequency.setValueAtTime(freq, start);
     if (endFreq != null) osc.frequency.exponentialRampToValueAtTime(Math.max(1, endFreq), end);
     amp.gain.setValueAtTime(0.0001, start);
-    amp.gain.exponentialRampToValueAtTime(gain, start + attack);
+    amp.gain.exponentialRampToValueAtTime(Math.max(0.0001, gain * volumeScale), start + attack);
     amp.gain.exponentialRampToValueAtTime(0.0001, end);
     if (panner) {
       panner.pan.setValueAtTime(pan, start);
@@ -2500,6 +2645,7 @@
   function playNoise({ duration = 0.06, gain = 0.025, filterFreq = 1200, pan = 0, when = 0 } = {}) {
     const ctx = ensureSfxContext();
     if (!ctx) return;
+    const volumeScale = Math.max(0, Math.min(1, Number(state?.volume ?? 20) / 100));
     const frameCount = Math.max(1, Math.floor(ctx.sampleRate * duration));
     const buffer = ctx.createBuffer(1, frameCount, ctx.sampleRate);
     const data = buffer.getChannelData(0);
@@ -2514,7 +2660,7 @@
     const end = start + duration;
     const panner = ctx.createStereoPanner ? ctx.createStereoPanner() : null;
     amp.gain.setValueAtTime(0.0001, start);
-    amp.gain.exponentialRampToValueAtTime(gain, start + 0.01);
+    amp.gain.exponentialRampToValueAtTime(Math.max(0.0001, gain * volumeScale), start + 0.01);
     amp.gain.exponentialRampToValueAtTime(0.0001, end);
     if (panner) {
       panner.pan.setValueAtTime(pan, start);
@@ -2685,8 +2831,14 @@
         }
       }
       if (event.key === "Enter" && battle?.phase === "planning") triggerBattleStart();
-      if (event.key.toLowerCase() === "w" && battle?.phase === "planning") autoSelect("win");
-      if (event.key.toLowerCase() === "d" && battle?.phase === "planning") autoSelect("damage");
+      if ((event.key.toLowerCase() === "p" || event.key.toLowerCase() === "w") && battle?.phase === "planning") {
+        event.preventDefault();
+        autoSelect("win");
+      }
+      if (event.key.toLowerCase() === "d" && battle?.phase === "planning") {
+        event.preventDefault();
+        autoSelect("damage");
+      }
       return;
     }
     if (anyModalOpen()) return;
@@ -2753,7 +2905,10 @@
   els.autoWinBtn.addEventListener("click", () => autoSelect("win"));
   els.autoDamageBtn.addEventListener("click", () => autoSelect("damage"));
   window.addEventListener("resize", () => {
-    if (battle?.phase === "planning" && !els.battleScreen.hidden) scheduleTargetLines();
+    if (battle?.phase === "planning" && !els.battleScreen.hidden) {
+      scheduleTargetLines();
+      requestAnimationFrame(positionEnemyIntents);
+    }
   });
 
   els.battleContinue.addEventListener("click", () => {

@@ -124,3 +124,21 @@ Skill GIFs are replayed as the actual combat animation layer, with damage/coin h
 - Added visible stagger threshold tracks for enemies.
 - Reworked bottom action deck, intent tiles, START/WIN RATE/DAMAGE controls and spacing.
 - Keeps V9 drag targeting/tutorial behavior and all user-supplied Don battle/skill assets.
+
+
+## v23 project layout
+- `index.html` stays in the project root.
+- HTML backups are in `html/`.
+- Stylesheets are in `css/`.
+- JavaScript files are in `js/`.
+- Battle shortcuts: `P` = WIN RATE, `D` = DAMAGE, `Enter` = START.
+
+
+## V24 asset integration
+
+- Added the supplied Don Quixote base-appearance PNG set and rebuilt Joust, Galloping Tilt, and For Justice as frame-sequence battle animations.
+- Don idle / move / guard / hurt / evade now use the supplied base-appearance sprites.
+- Added supplied Lust, Envy, and Gluttony icons to the SIN HUD and skill cards.
+- Added supplied targeting / attack / sanity icons to battle controls and HUD.
+- Kept all previous story, battle, bandit, elite, wave, hotkey, save, and settings behavior.
+- Custom font binaries are intentionally not bundled. The CSS will try the local font family names `Bebas Kai`, `EXCELSIOR SANS`, `Pretendard`, and `Perfect DOS VGA 437`, then fall back to system fonts. See `assets/fonts/README.txt`.
