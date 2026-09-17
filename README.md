@@ -142,3 +142,14 @@ Skill GIFs are replayed as the actual combat animation layer, with damage/coin h
 - Added supplied targeting / attack / sanity icons to battle controls and HUD.
 - Kept all previous story, battle, bandit, elite, wave, hotkey, save, and settings behavior.
 - Custom font binaries are intentionally not bundled. The CSS will try the local font family names `Bebas Kai`, `EXCELSIOR SANS`, `Pretendard`, and `Perfect DOS VGA 437`, then fall back to system fonts. See `assets/fonts/README.txt`.
+
+
+## V36 story UI
+- Reworked visual-novel presentation to a dark translucent cinematic layout inspired by the supplied reference screenshot.
+- Added location plaque, hex menu button, role + speaker tag, half-body character framing, and a wider translucent dialogue box.
+
+
+## V39 gameplay repair
+- WIN RATE, DAMAGE, and START now stay together immediately after the final skill card.
+- Removed malformed V38 CSS that caused default/white controls.
+- Reworked clash presentation and reduced expensive effects for smoother battle animation.

@@ -11,8 +11,12 @@
     hud: $("hud"),
     hudLocation: $("hudLocation"),
     hudTime: $("hudTime"),
+    storyLocationPlaque: $("storyLocationPlaque"),
+    storyLocationText: $("storyLocationText"),
+    storyMenuHex: $("storyMenuHex"),
     character: $("character"),
     dialogueBox: $("dialogueBox"),
+    speakerRole: $("speakerRole"),
     speaker: $("speaker"),
     dialogue: $("dialogue"),
     choices: $("choices"),
@@ -107,6 +111,8 @@
     enemyIntentSlots: $("enemyIntentSlots"),
     actionRail: $("actionRail"),
     planningPanel: $("planningPanel"),
+    commandCluster: document.querySelector(".lc4-command"),
+    autoCluster: document.querySelector(".lc4-auto"),
     startCombatBtn: $("startCombatBtn"),
     autoWinBtn: $("autoWinBtn"),
     autoDamageBtn: $("autoDamageBtn"),
@@ -118,6 +124,7 @@
     clashDonSkill: $("clashDonSkill"),
     clashDonArt: $("clashDonArt"),
     clashEnemySkill: $("clashEnemySkill"),
+    clashEnemyArt: $("clashEnemyArt"),
     clashDonPower: $("clashDonPower"),
     clashEnemyPower: $("clashEnemyPower"),
     clashCoinsDon: $("clashCoinsDon"),
@@ -170,7 +177,7 @@
     guard: "assets/battle/don/base/gud.png",
     hurt: "assets/battle/don/base/hurt.png",
     evade: "assets/battle/don/base/evade.png",
-    moving: "assets/battle/don/base/move.png",
+    moving: "assets/battle/don/moving.png",
     neutral: "assets/battle/don/base/idle.png",
     dead: "assets/battle/don/dead.png",
   };
@@ -453,11 +460,36 @@
     els.backpackCount.textContent = String(count);
   }
 
+  function storyLocationLabel() {
+    if (state.scene === "start" || state.scene === "story1" || state.scene === "backpack" || state.scene === "mapTutorial") return "DON QUIXOTE'S ROOM";
+    if (state.currentLocation === "Bus") return "MEPHISTOPHELES INTERIOR";
+    if (state.currentLocation === "Town") return "TOWN DISTRICT";
+    if (state.currentLocation === "Shop") return "SHOP";
+    if (state.currentLocation === "Forest" || state.scene === "forestEncounter") return "FOREST OUTSKIRTS";
+    return String(state.currentLocation || "STORY").toUpperCase();
+  }
+
+  function speakerRoleFor(name) {
+    if (!name) return "";
+    if (name === "Don Quixote") return "LCB SINNER";
+    if (name === "Bandit Leader") return "FOREST BANDIT";
+    if (name === state.playerName) return "MANAGER";
+    return "STORY CHARACTER";
+  }
+
+  function setStoryChromeVisible(visible) {
+    document.getElementById("game")?.classList.toggle("story-mode", !!visible);
+    if (els.storyLocationPlaque) els.storyLocationPlaque.hidden = !visible;
+    if (els.storyMenuHex) els.storyMenuHex.hidden = !visible;
+    if (visible && els.storyLocationText) els.storyLocationText.textContent = storyLocationLabel();
+  }
+
   function updateHUD() {
     els.hudLocation.textContent = state.currentLocation;
     els.hudTime.textContent = `${state.gameTime} min`;
     els.mapTime.textContent = `${state.gameTime} min`;
     els.mapLocation.textContent = state.currentLocation;
+    if (els.storyLocationText) els.storyLocationText.textContent = storyLocationLabel();
   }
 
   function showNotice(text, duration = 1800) {
@@ -471,6 +503,11 @@
     closeChoices();
     els.speaker.textContent = speaker || "";
     els.speaker.hidden = !speaker;
+    if (els.speakerRole) {
+      const role = speakerRoleFor(speaker);
+      els.speakerRole.textContent = role;
+      els.speakerRole.hidden = !role;
+    }
     els.dialogue.textContent = text;
     els.dialogueBox.hidden = false;
     interactionLocked = false;
@@ -924,12 +961,12 @@
       const bleed = enemy.bleedCount > 0 ? `<span class="lc4-status bleed">BLEED ${enemy.bleedPotency}/${enemy.bleedCount}</span>` : "";
       const staggerText = nextThreshold == null ? "NO STAGGER" : `STAG ${nextThreshold}`;
       card.innerHTML = `
-        <div class="lc4-enemy-name"><small>${escapeHTML(enemy.role)}</small><b>${escapeHTML(enemy.name)}</b></div>
+        <div class="lc4-enemy-name"><small>${escapeHTML(enemy.role)}</small><b>${escapeHTML(enemy.name)}</b><span class="lc34-enemy-tag">HOSTILE</span></div>
         <div class="lc4-enemy-stage"><div class="lc4-shadow"></div><div class="lc4-enemy-focus"></div>${banditBodyHTML(enemy)}<div class="lc4-unit-float" data-float-enemy="${enemy.id}" hidden></div></div>
         <div class="lc4-enemy-hud">
+          <div class="lc34-enemy-vital-head"><span>HP</span><b>${Math.max(0, enemy.hp)}/${enemy.maxHp}</b></div>
           <div class="lc4-enemy-hp"><i style="width:${hpPct}%"></i>${nextThreshold == null ? "" : `<em class="lc10-stagger-mark" style="left:${staggerPct}%"></em>`}</div>
           <div class="lc10-stagger-track"><i style="width:${Math.max(0, 100-hpPct)}%"></i><span>${staggerText}</span></div>
-          <b>${Math.max(0, enemy.hp)}/${enemy.maxHp}</b>
           <div class="lc4-statuses">${enemy.staggered ? '<span class="lc4-status stagger">STAGGER</span>' : ""}${bleed}</div>
         </div>`;
       if (enemy.hp > 0) {
@@ -976,14 +1013,14 @@
       const siblings = buttons.filter((node) => Number(node.dataset.enemyId) === enemyId);
       const sibIndex = Math.max(0, siblings.indexOf(btn));
       const total = Math.max(1, siblings.length);
-      const spread = total === 1 ? 0 : (sibIndex - (total - 1) / 2) * 30;
+      const spread = total === 1 ? 0 : (sibIndex - (total - 1) / 2) * 26;
 
       const box = sprite.getBoundingClientRect();
       const x = box.left + box.width / 2 - layerRect.left + spread;
-      const y = box.top - layerRect.top - 22 - Math.abs(spread) * 0.05;
+      const y = box.top - layerRect.top + 6 - Math.abs(spread) * 0.04;
 
       btn.style.left = `${x}px`;
-      btn.style.top = `${Math.max(28, y)}px`;
+      btn.style.top = `${Math.max(16, y)}px`;
     });
   }
 
@@ -999,7 +1036,8 @@
       btn.dataset.intentId = slot.id;
       btn.dataset.enemyId = String(enemy.id);
 
-      btn.innerHTML = `<span class="lc4-intent-speed">${slot.speed}</span><span class="lc4-intent-frame"></span>${slot.skill.art ? `<img class="lc4-intent-art" src="${escapeHTML(slot.skill.art)}" alt="" />` : `<i>⚔</i>`}<b>${escapeHTML(slot.skill.name)}</b><small>${slot.skill.base}+${slot.skill.coinPower} · ${escapeHTML(slot.skill.type || "ATK")}</small>`;
+      const intentGlyph = intentTypeGlyph(slot.skill.type, !!slot.skill.defense);
+      btn.innerHTML = `<span class="lc4-intent-speed">${slot.speed}</span><span class="lc4-intent-frame"></span><span class="lc34-intent-sigil"><span class="lc34-intent-glyph">${intentGlyph}</span></span>${slot.skill.art ? `<img class="lc4-intent-art" src="${escapeHTML(slot.skill.art)}" alt="" />` : ""}<span class="lc32-intent-type">${escapeHTML((slot.skill.type || "ATK").toUpperCase())}</span><span class="lc32-intent-coin">${slot.skill.coins || 1} COIN</span><b title="${escapeHTML(slot.skill.name)}">${escapeHTML(slot.skill.name)}</b><small>${slot.skill.base} + ${slot.skill.coinPower}</small>`;
 
       if (battle.selectedEnemyId === enemy.id) btn.classList.add("is-selected");
 
@@ -1039,36 +1077,9 @@
   }
 
   function renderTurnOrder() {
-    if (!els.turnOrder || !battle) return;
-    const hpPct = clamp((battle.don.hp / battle.don.maxHp) * 100, 0, 100);
-    const sanityPct = clamp(((battle.don.sp + 45) / 90) * 100, 0, 100);
-    const queue = [
-      ...battle.donSlots.map((slot) => ({ side: "ally", speed: slot.speed, label: `S${slot.index + 1}`, title: `Don slot ${slot.index + 1}` })),
-      ...battle.enemySlots
-        .filter((slot) => !slot.consumed && enemyById(slot.enemyId)?.hp > 0)
-        .map((slot) => ({ side: "enemy", speed: slot.speed, label: String(slot.speed), title: `${enemyById(slot.enemyId)?.name || "Enemy"} · ${slot.skill.name}` }))
-    ].sort((a, b) => b.speed - a.speed).slice(0, 8);
-
-    const queueHtml = queue.length
-      ? queue.map((entry) => `<span class="lc31-order-pill ${entry.side}" title="${escapeHTML(entry.title)}"><b>${entry.speed}</b><small>${escapeHTML(entry.label)}</small></span>`).join("")
-      : '<span class="lc31-order-empty">NO ACTIONS</span>';
-
-    els.turnOrder.innerHTML = `
-      <div class="lc31-turn-stack" aria-label="Turn order, health, and sanity">
-        <div class="lc31-order-row">${queueHtml}</div>
-        <div class="lc31-vitals">
-          <div class="lc31-vital hp">
-            <label>HP</label>
-            <div class="lc31-vital-bar"><i style="width:${hpPct}%"></i></div>
-            <b>${Math.max(0, battle.don.hp)}/${battle.don.maxHp}</b>
-          </div>
-          <div class="lc31-vital sp">
-            <label>SP</label>
-            <div class="lc31-vital-bar"><i style="width:${sanityPct}%"></i></div>
-            <b>${battle.don.sp >= 0 ? "+" : ""}${battle.don.sp}</b>
-          </div>
-        </div>
-      </div>`;
+    if (!els.turnOrder) return;
+    els.turnOrder.innerHTML = "";
+    els.turnOrder.hidden = true;
   }
 
   function showKeywordPanel(skill) {
@@ -1086,11 +1097,9 @@
   }
 
   function showEnemySkillInspector(enemySlot) {
-    if (els.enemySkillInspector) {
-      els.enemySkillInspector.classList.remove("is-visible");
-      els.enemySkillInspector.hidden = true;
-    }
-    return;
+    if (!els.enemySkillInspector || !enemySlot) return;
+    els.enemySkillInspector.classList.remove("is-visible");
+    els.enemySkillInspector.hidden = true;
     const skill = enemySlot.skill;
     const enemy = enemyById(enemySlot.enemyId);
     battle.selectedEnemyId = enemy?.id ?? battle.selectedEnemyId;
@@ -1141,31 +1150,8 @@
   }
 
   function renderMatchupPreview() {
-    if (!els.battleMatchup || !battle || battle.phase !== "planning") return;
-    const slot = battle.donSlots[battle.focusSlot];
-    const enemySlot = slot ? enemySlotById(slot.targetIntentId) : null;
-    if (!slot || !enemySlot || enemySlot.consumed) {
-      els.battleMatchup.hidden = true;
-      return;
-    }
-    const skill = getSelectedSkill(slot);
-    const forecast = clashForecast(slot);
-    const donPower = maxSkillPower(skill, slot.speed, battle.don.attackUp);
-    const enemyPower = enemyMaxPower(enemySlot);
-    els.matchDonArt.src = skill.art || skill.badge || "";
-    els.matchDonSkill.textContent = skill.name;
-    els.matchDonSpeed.textContent = `SPD ${slot.speed}`;
-    els.matchDonCoins.textContent = Array.from({length:skill.coins},()=>"●").join(" ");
-    els.matchDonPower.textContent = String(donPower);
-    els.matchEnemySkill.textContent = enemySlot.skill.name;
-    els.matchEnemySpeed.textContent = `SPD ${enemySlot.speed}`;
-    els.matchEnemyCoins.textContent = Array.from({length:enemySlot.skill.coins},()=>"●").join(" ");
-    els.matchEnemyPower.textContent = String(enemyPower);
-    els.matchForecast.textContent = forecast.label;
-    els.battleMatchup.className = `lc10-matchup ${forecast.cls}`;
-    els.battleMatchup.hidden = false;
-    if (els.battleKeywordPanel) els.battleKeywordPanel.hidden = true;
-    if (els.enemySkillInspector) { els.enemySkillInspector.classList.remove("is-visible"); els.enemySkillInspector.hidden = true; }
+    if (!els.battleMatchup) return;
+    els.battleMatchup.hidden = true;
   }
 
   function showSkillInspector(skill, slot) {
@@ -1194,6 +1180,15 @@
     return "type-generic";
   }
 
+  function intentTypeGlyph(type = "", defense = false) {
+    const key = String(type).toLowerCase();
+    if (defense || key.includes("defense") || key.includes("guard") || key.includes("evade") || key.includes("block")) return "▣";
+    if (key.includes("slash")) return "╱";
+    if (key.includes("pierce")) return "△";
+    if (key.includes("blunt")) return "⬢";
+    return "◆";
+  }
+
   function bleedMarkup(textValue) {
     return `<span class="lc10-inline-bleed"><img src="assets/battle/ui/bleed-logo.png" alt="Bleed" /><b>Bleed</b>${textValue ? `<span>${escapeHTML(textValue)}</span>` : ""}</span>`;
   }
@@ -1205,6 +1200,20 @@
 
   function hideEnemyInspectorHoverDelay() {
     clearTimeout(enemyInspectorHoverTimer);
+    if (!els.enemySkillInspector) return;
+    enemyInspectorHoverTimer = setTimeout(() => {
+      const hoveringIntent = document.querySelector('.lc4-intent:hover');
+      const hoveringInspector = els.enemySkillInspector.matches(':hover');
+      if (!hoveringIntent && !hoveringInspector) {
+        els.enemySkillInspector.classList.remove('is-visible');
+        els.enemySkillInspector.hidden = true;
+      }
+    }, 90);
+  }
+
+  if (els.enemySkillInspector) {
+    els.enemySkillInspector.addEventListener('mouseenter', () => clearTimeout(enemyInspectorHoverTimer));
+    els.enemySkillInspector.addEventListener('mouseleave', hideEnemyInspectorHoverDelay);
   }
 
   function skillSigil(skill) {
@@ -1368,6 +1377,16 @@
       wrap.addEventListener("mouseleave", hideSkillInspector);
       els.actionRail.appendChild(wrap);
     });
+
+    // V39: keep WIN RATE + DAMAGE + START together directly after the final skill card.
+    if (els.commandCluster) {
+      if (els.autoCluster && els.autoWinBtn && els.autoWinBtn.parentElement !== els.autoCluster) {
+        els.autoCluster.prepend(els.autoWinBtn);
+      }
+      els.autoWinBtn?.classList.remove("lc38-winrate-inline");
+      els.commandCluster.classList.add("lc39-inline-command");
+      els.actionRail.appendChild(els.commandCluster);
+    }
   }
 
   function tutorialForTurn() {
@@ -1404,52 +1423,55 @@
     const svg = els.targetLines;
     const rect = els.battleScreen.getBoundingClientRect();
     svg.setAttribute("viewBox", `0 0 ${rect.width} ${rect.height}`);
-    [...svg.querySelectorAll("path.lc4-link")].forEach((path) => path.remove());
+    [...svg.querySelectorAll("path.lc4-link, path.lc4-link-shadow, circle.lc4-link-origin")].forEach((node) => node.remove());
+
+    const getCardStart = (slotIndex) => {
+      const card = els.actionRail?.querySelector(`.lc4-action[data-action-slot="${slotIndex}"] .lc4-skill-front`);
+      if (card) {
+        const c = card.getBoundingClientRect();
+        return { x: c.left + c.width * .5 - rect.left, y: c.top + 8 - rect.top };
+      }
+      return { x: rect.width * .5, y: rect.height - 130 };
+    };
+
+    const buildCurve = (x1, y1, x2, y2) => {
+      const lift = Math.max(48, Math.min(120, (y1 - y2) * .35 + Math.abs(x2 - x1) * .08));
+      return `M ${x1} ${y1} C ${x1} ${y1 - lift}, ${x2} ${y2 + Math.min(36, lift * .28)}, ${x2} ${y2}`;
+    };
+
     battle.donSlots.forEach((slot) => {
       if (!slot.targetIntentId) return;
-      const from = els.actionRail.querySelector(`[data-action-slot="${slot.index}"] .lc4-skill-front`) || els.actionRail.querySelector(`[data-action-slot="${slot.index}"] .lc4-slot-core`);
       const to = els.enemyIntentSlots.querySelector(`[data-intent-id="${slot.targetIntentId}"]`);
-      if (!from || !to) return;
-      const a = from.getBoundingClientRect();
+      if (!to) return;
       const b = to.getBoundingClientRect();
-      const x1 = a.left + a.width / 2 - rect.left;
-      const y1 = a.top + a.height * .20 - rect.top;
+      const { x: x1, y: y1 } = getCardStart(slot.index);
       const x2 = b.left + b.width / 2 - rect.left;
-      const y2 = b.top + b.height / 2 - rect.top;
-      const lift = Math.max(110, Math.abs(x2 - x1) * .28);
+      const y2 = b.top + b.height * .76 - rect.top;
       const forecast = clashForecast(slot);
+      const marker = forecast.cls === "dominating" || forecast.cls === "favored" ? "arrowGreen" : forecast.cls === "neutral" ? "arrowGold" : forecast.cls === "unopposed" ? "arrowBlue" : "arrowRed";
       const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
       path.classList.add("lc4-link", forecast.cls, slot.index === battle.focusSlot ? "is-focus" : "is-secondary");
-      path.setAttribute("d", `M ${x1} ${y1} C ${x1} ${y1 - lift}, ${x2} ${y2 - lift}, ${x2} ${y2}`);
-      const marker = forecast.cls === "dominating" || forecast.cls === "favored" ? "arrowGreen" : forecast.cls === "neutral" ? "arrowGold" : forecast.cls === "unopposed" ? "arrowBlue" : "arrowRed";
+      path.setAttribute("d", buildCurve(x1, y1, x2, y2));
       path.setAttribute("marker-end", `url(#${marker})`);
       svg.appendChild(path);
     });
-    if ((pointer || dragHoverIntentId) && battle.dragSlot !== null) {
-      const from = els.actionRail.querySelector(`[data-action-slot="${battle.dragSlot}"] .lc4-slot-core`);
-      if (from) {
-        const a = from.getBoundingClientRect();
-        const x1 = a.left + a.width / 2 - rect.left;
-        const y1 = a.top + a.height / 2 - rect.top;
-        let x2 = pointer?.x ?? x1;
-        let y2 = pointer?.y ?? y1;
-        if (dragHoverIntentId) {
-          const hovered = els.enemyIntentSlots.querySelector(`[data-intent-id="${dragHoverIntentId}"]`);
-          if (hovered) {
-            const hb = hovered.getBoundingClientRect();
-            x2 = hb.left + hb.width / 2;
-            y2 = hb.top + hb.height / 2;
-          }
-        }
-        x2 -= rect.left;
-        y2 -= rect.top;
+
+    if (battle.dragSlot !== null && dragHoverIntentId) {
+      const hovered = els.enemyIntentSlots.querySelector(`[data-intent-id="${dragHoverIntentId}"]`);
+      if (hovered) {
+        const hb = hovered.getBoundingClientRect();
+        const { x: x1, y: y1 } = getCardStart(battle.dragSlot);
+        const x2 = hb.left + hb.width / 2 - rect.left;
+        const y2 = hb.top + hb.height * .76 - rect.top;
         const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
-        path.classList.add("lc4-link", "dragging", dragHoverIntentId ? "snap" : "free");
-        path.setAttribute("d", `M ${x1} ${y1} C ${x1} ${y1 - 120}, ${x2} ${y2 - 90}, ${x2} ${y2}`);
+        path.classList.add("lc4-link", "dragging", "snap", "is-focus");
+        path.setAttribute("d", buildCurve(x1, y1, x2, y2));
+        path.setAttribute("marker-end", "url(#arrowGold)");
         svg.appendChild(path);
       }
     }
   }
+
 
   function renderPlanning() {
     if (!battle) return;
@@ -1459,6 +1481,8 @@
     els.planningPanel.hidden = false;
     els.targetLines.hidden = false;
     els.enemyIntentSlots.hidden = false;
+    if (els.battleMatchup) els.battleMatchup.hidden = true;
+    if (els.turnOrder) els.turnOrder.hidden = true;
     if (els.combatTotal) els.combatTotal.hidden = true;
     renderBattleHUD();
     renderEnemies();
@@ -1573,6 +1597,31 @@
     }
   }
 
+  async function animateClashRush(enemyId) {
+    const motion = await dashDonToEnemy(enemyId, { duration: 240, movingState: true });
+    if (!motion) return;
+    const { donStage, enemyEl, dx, dy } = motion;
+    const enemyStage = enemyEl?.querySelector?.(".lc4-enemy-stage") || enemyEl;
+
+    els.battleScreen.classList.add("lc42-clash-rush");
+    flashBattle();
+    playClashSfx("hit");
+
+    const enemyHit = enemyStage.animate([
+      { transform: "translate3d(0,0,0)" },
+      { transform: "translate3d(18px,-4px,0)" },
+      { transform: "translate3d(0,0,0)" }
+    ], { duration: 210, easing: "ease-out", fill: "forwards" });
+
+    await Promise.allSettled([enemyHit.finished, rawDelay(70)]);
+    await returnDonFromEnemy(donStage, dx, dy, 220);
+    enemyHit.cancel();
+    enemyStage.style.transform = "";
+    setBattleDonState("idle");
+    els.battleScreen.classList.remove("lc42-clash-rush");
+  }
+
+
   async function showClash(slot, enemySlot, donCoins, enemyCoins, donRoll, enemyRoll, label = "CLASH") {
     const skill = getSelectedSkill(slot);
     const donPower = donRoll?.power ?? maxSkillPower(skill, slot.speed, battle.don.attackUp);
@@ -1581,6 +1630,10 @@
     els.clashDonSkill.textContent = skill.name;
     if (els.clashDonArt && skill.art) els.clashDonArt.src = skill.art;
     els.clashEnemySkill.textContent = enemySlot.skill.name;
+    if (els.clashEnemyArt) {
+      els.clashEnemyArt.src = enemySlot.skill.art || "assets/battle/enemy-skills/clumsy-chop.png";
+      els.clashEnemyArt.hidden = false;
+    }
     els.clashResult.textContent = label;
     els.clashDonPower.textContent = String(donPower);
     els.clashEnemyPower.textContent = String(enemyPower);
@@ -1589,6 +1642,21 @@
     els.clashResult.className = verdict === "don" ? "is-don" : verdict === "enemy" ? "is-enemy" : "is-even";
     renderClashCoins(els.clashCoinsDon, donRoll?.flips || Array(donCoins).fill(false), donCoins);
     renderClashCoins(els.clashCoinsEnemy, enemyRoll?.flips || Array(enemyCoins).fill(false), enemyCoins);
+    if (els.battleMatchup) {
+      els.matchDonArt.src = skill.art || skill.badge || "";
+      els.matchDonSkill.textContent = skill.name;
+      els.matchDonSpeed.textContent = "DON QUIXOTE";
+      els.matchDonCoins.textContent = `${donCoins} COIN${donCoins > 1 ? "S" : ""}`;
+      els.matchDonPower.textContent = String(donPower);
+      els.matchEnemySkill.textContent = enemySlot.skill.name;
+      els.matchEnemySpeed.textContent = enemyById(enemySlot.enemyId)?.name?.toUpperCase() || "ENEMY";
+      els.matchEnemyCoins.textContent = `${enemyCoins} COIN${enemyCoins > 1 ? "S" : ""}`;
+      els.matchEnemyPower.textContent = String(enemyPower);
+      els.matchForecast.textContent = label;
+      els.battleMatchup.className = `lc10-matchup ${verdict === "don" ? "favored" : verdict === "enemy" ? "struggling" : "neutral"}`;
+      els.battleMatchup.hidden = false;
+    }
+    els.battleScreen.classList.add("lc40-clash-hud");
     els.clashOverlay.hidden = false;
     els.clashOverlay.classList.remove("is-don-win", "is-enemy-win", "is-tie", "is-active");
     void els.clashOverlay.offsetWidth;
@@ -1599,7 +1667,8 @@
     spawnClashImpact(verdict);
     playClashSfx("start");
     playCoinFlipSequence(donRoll?.flips || [], enemyRoll?.flips || []);
-    await delay(410);
+    await animateClashRush(enemySlot.enemyId);
+    await delay(120);
   }
 
   function combatLog(text, cls = "") {
@@ -1693,7 +1762,8 @@
         playClashSfx("win");
         battle.don.sp = clamp(battle.don.sp + 5, -45, 45);
         els.clashOverlay.classList.remove("is-enemy-win", "is-tie");
-        els.clashOverlay.classList.add("is-don-win");
+        els.clashOverlay.classList.add("is-don-win", "lc39-impact-beat");
+        setTimeout(() => els.clashOverlay?.classList.remove("lc39-impact-beat"), 220);
         els.clashResult.textContent = "CLASH WIN";
         pulseClashNode(els.clashResult);
         pulseClashNode(els.clashDonPower);
@@ -1705,7 +1775,8 @@
         playClashSfx("lose");
         battle.don.sp = clamp(battle.don.sp - 5, -45, 45);
         els.clashOverlay.classList.remove("is-don-win", "is-tie");
-        els.clashOverlay.classList.add("is-enemy-win");
+        els.clashOverlay.classList.add("is-enemy-win", "lc39-impact-beat");
+        setTimeout(() => els.clashOverlay?.classList.remove("lc39-impact-beat"), 220);
         els.clashResult.textContent = "CLASH LOSE";
         pulseClashNode(els.clashResult);
         pulseClashNode(els.clashEnemyPower);
@@ -1714,21 +1785,66 @@
         spawnClashImpact("tie");
         playClashSfx("tie");
         els.clashOverlay.classList.remove("is-don-win", "is-enemy-win");
-        els.clashOverlay.classList.add("is-tie");
+        els.clashOverlay.classList.add("is-tie", "lc39-impact-beat");
+        setTimeout(() => els.clashOverlay?.classList.remove("lc39-impact-beat"), 220);
         els.clashResult.textContent = "TIE";
         pulseClashNode(els.clashResult);
         combatLog("TIE — REROLL", "neutral");
       }
-      await delay(270);
+      await delay(390);
     }
     els.clashOverlay.hidden = true;
-    els.clashOverlay.classList.remove("is-active", "is-don-win", "is-enemy-win", "is-tie");
+    if (els.battleMatchup) els.battleMatchup.hidden = true;
+    els.battleScreen.classList.remove("lc35-clash-cinematic", "lc40-clash-hud", "lc40-clash-rush", "lc42-clash-rush");
+    els.clashOverlay.classList.remove("is-active", "is-don-win", "is-enemy-win", "is-tie", "lc39-impact-beat");
+    els.battleScreen.classList.remove("lc35-clash-cinematic", "lc40-clash-hud", "lc40-clash-rush", "lc42-clash-rush");
     setBattleDonState("idle");
     return { winner: donCoins > 0 ? "don" : "enemy", remainingDon: Math.max(0, donCoins), remainingEnemy: Math.max(0, enemyCoins) };
   }
 
   function enemyElement(enemyId) {
     return els.enemyRoster?.querySelector(`[data-enemy-id="${enemyId}"]`);
+  }
+
+  function getDonAttackMotion(enemyId) {
+    if (!els.battleDon) return null;
+    const enemyEl = enemyElement(enemyId);
+    const enemySprite = enemyEl?.querySelector?.(".lc4-bandit-sprite") || enemyEl?.querySelector?.(".lc4-bandit") || enemyEl;
+    const donStage = els.battleDon.closest(".lc4-don-stage") || els.donUnit?.querySelector?.(".lc4-don-stage") || els.battleDon;
+    if (!enemySprite || !donStage) return null;
+    const donRect = els.battleDon.getBoundingClientRect();
+    const enemyRect = enemySprite.getBoundingClientRect();
+    const dx = enemyRect.left - donRect.right + Math.min(36, enemyRect.width * 0.18);
+    const dy = enemyRect.top + enemyRect.height * 0.56 - (donRect.top + donRect.height * 0.56);
+    return { donStage, enemyEl, enemySprite, dx, dy, enemyRect };
+  }
+
+  async function dashDonToEnemy(enemyId, options = {}) {
+    const motion = getDonAttackMotion(enemyId);
+    if (!motion) return null;
+    const { donStage, dx, dy } = motion;
+    const duration = options.duration ?? 260;
+    const movingState = options.movingState ?? true;
+    if (movingState) setBattleDonState("moving");
+    const anim = donStage.animate([
+      { transform: "translate3d(0,0,0)" },
+      { transform: `translate3d(${dx}px,${dy}px,0)` }
+    ], { duration, easing: "cubic-bezier(.2,.86,.28,1)", fill: "forwards" });
+    await anim.finished.catch(() => {});
+    anim.cancel();
+    donStage.style.transform = `translate3d(${dx}px,${dy}px,0)`;
+    return motion;
+  }
+
+  async function returnDonFromEnemy(donStage, dx, dy, duration = 235) {
+    if (!donStage) return;
+    const anim = donStage.animate([
+      { transform: `translate3d(${dx}px,${dy}px,0)` },
+      { transform: "translate3d(0,0,0)" }
+    ], { duration, easing: "cubic-bezier(.4,0,.2,1)", fill: "forwards" });
+    await anim.finished.catch(() => {});
+    anim.cancel();
+    donStage.style.transform = "";
   }
 
   function flashBattle() {
@@ -1843,74 +1959,28 @@
   }
 
   async function animateDonLunge(enemyId, skill, coinIndex = 0) {
-    const enemyEl = enemyElement(enemyId);
-    if (!enemyEl || !els.battleDon) return;
-    const stage = els.battleDon.closest(".lc4-don-stage");
-    const a = els.battleDon.getBoundingClientRect();
-    const b = enemyEl.getBoundingClientRect();
-    const dx = b.left - a.right + Math.min(92, b.width * .18);
-    const dy = b.top + b.height * .44 - (a.top + a.height * .44);
-    const currentSrc = assets.characters[skill.expression] || assets.characters.idle;
-    setBattleDonExpression(skill.expression || "lilAngry");
+    const motion = await dashDonToEnemy(enemyId, { duration: skill.key === "gallop" ? 260 : 235, movingState: true });
+    if (!motion || !els.battleDon) return;
+    const { donStage, dx, dy } = motion;
+    els.battleScreen.classList.add("lc5-combat-cinema");
     els.battleDon.classList.remove("lc5-joust", "lc5-gallop", "lc5-justice", "lc5-evade");
     els.battleDon.classList.add(`lc5-${skill.key}`);
-    stage?.classList.add("lc5-don-stage-attack");
-    els.battleScreen.classList.add("lc5-combat-cinema");
 
-    const root = els.battleScreen.getBoundingClientRect();
-    spawnSpeedStreaks(a.left - root.left + a.width * .5, a.top - root.top + a.height * .45, b.left - root.left, b.top - root.top + b.height * .45, skill.key === "gallop" ? 12 : 7);
-
-    if (skill.key === "gallop") {
-      spawnAfterimage(currentSrc, a, -35, 0);
-      setTimeout(() => spawnAfterimage(currentSrc, a, -62, 1), 55);
-      setTimeout(() => spawnAfterimage(currentSrc, a, -92, 2), 100);
-    } else if (skill.key === "justice") {
-      spawnAfterimage(currentSrc, a, -18, -4);
-    }
-
-    let frames;
-    let duration;
-    if (skill.key === "joust") {
-      frames = [
-        { transform: "translate(0,0) rotate(0deg) scale(1)" },
-        { transform: `translate(${dx * .25}px,${dy * .25 - 10}px) rotate(-2deg) scale(1.02)`, offset: .28 },
-        { transform: `translate(${dx}px,${dy}px) rotate(2deg) scale(1.09)`, offset: .58 },
-        { transform: `translate(${dx * .92}px,${dy}px) rotate(0deg) scale(1.05)`, offset: .72 },
-        { transform: "translate(0,0) rotate(0deg) scale(1)" },
-      ];
-      duration = 500;
-    } else if (skill.key === "gallop") {
-      frames = [
-        { transform: "translate(-24px,0) skewX(-3deg) scale(1)" },
-        { transform: `translate(${dx * .52}px,${dy * .45 - 18}px) skewX(-8deg) scale(1.03)`, offset: .34 },
-        { transform: `translate(${dx}px,${dy}px) skewX(-11deg) scale(1.11)`, offset: .56 },
-        { transform: `translate(${dx * .88}px,${dy + 4}px) skewX(4deg) scale(1.06)`, offset: .72 },
-        { transform: "translate(0,0) skewX(0) scale(1)" },
-      ];
-      duration = 720;
-    } else if (skill.key === "justice") {
-      const side = coinIndex % 2 === 0 ? -1 : 1;
-      frames = [
-        { transform: `translate(0,0) rotate(${side * 2}deg) scale(1)` },
-        { transform: `translate(${dx * .48}px,${dy * .35 - 12}px) rotate(${side * -7}deg) scale(1.04)`, offset: .38 },
-        { transform: `translate(${dx}px,${dy + side * 7}px) rotate(${side * 7}deg) scale(1.09)`, offset: .62 },
-        { transform: `translate(${dx * .86}px,${dy}px) rotate(${side * -3}deg) scale(1.05)`, offset: .76 },
-        { transform: "translate(0,0) rotate(0) scale(1)" },
-      ];
-      duration = 610;
+    const meta = battleDonAnimations[skill.key];
+    if (meta?.frames?.length) {
+      await playDonFrameSequence(els.battleDon, meta.frames, Math.max(320, meta.duration * 0.7));
     } else {
-      frames = [{ transform: "translate(0,0)" }, { transform: `translate(${dx}px,${dy}px)` }, { transform: "translate(0,0)" }];
-      duration = 680;
+      await rawDelay(150);
     }
-    const anim = els.battleDon.animate(frames, { duration, easing: "cubic-bezier(.14,.78,.2,1)" });
-    await delay(Math.round(duration * .56));
     spawnWeaponTrail(enemyId, skill, coinIndex);
     flashBattle();
-    await anim.finished.catch(() => {});
-    stage?.classList.remove("lc5-don-stage-attack");
+    await rawDelay(50);
+    await returnDonFromEnemy(donStage, dx, dy, 230);
     els.battleDon.classList.remove(`lc5-${skill.key}`);
     els.battleScreen.classList.remove("lc5-combat-cinema");
+    setBattleDonState("idle");
   }
+
 
   function restartBattleGif(img, src) {
     if (!img) return;
@@ -1944,7 +2014,7 @@
 
   async function playDonSkillSprite(skill, enemyId, coinCount, onHit) {
     const meta = battleDonAnimations[skill.key];
-    if (!meta || !els.donActionSprite || !meta.frames?.length) {
+    if (!meta || !els.battleDon || !meta.frames?.length) {
       for (let i = 0; i < coinCount; i += 1) {
         await animateDonLunge(enemyId, skill, i);
         await onHit(i);
@@ -1954,34 +2024,41 @@
 
     const target = enemyElement(enemyId);
     target?.classList.add("lc6-targeted");
-    els.battleScreen.classList.add("lc5-combat-cinema", "lc6-sprite-combat");
-    setBattleDonState("moving");
-    els.battleDon.hidden = false;
-    await rawDelay(110);
-    els.battleDon.hidden = true;
-    els.donActionSprite.hidden = false;
-    els.donActionSprite.className = `lc6-don-action-sprite lc6-${meta.css} lc24-frame-sequence`;
+    els.battleScreen.classList.add("lc5-combat-cinema");
+
+    const motion = await dashDonToEnemy(enemyId, { duration: skill.key === "gallop" ? 280 : 245, movingState: true });
+    if (!motion) {
+      target?.classList.remove("lc6-targeted");
+      els.battleScreen.classList.remove("lc5-combat-cinema");
+      return;
+    }
+    const { donStage, dx, dy } = motion;
+
+    els.battleDon.classList.remove("lc5-joust", "lc5-gallop", "lc5-justice", "lc5-evade");
+    els.battleDon.classList.add(`lc5-${skill.key}`);
 
     const startTime = performance.now();
-    const sequence = playDonFrameSequence(els.donActionSprite, meta.frames, meta.duration);
+    const sequence = playDonFrameSequence(els.battleDon, meta.frames, Math.max(380, meta.duration * 0.72));
     const hitTimes = meta.hitTimes.slice(0, Math.max(1, coinCount));
     for (let i = 0; i < hitTimes.length; i += 1) {
-      const targetTime = startTime + meta.duration * hitTimes[i];
+      const targetTime = startTime + Math.max(380, meta.duration * 0.72) * hitTimes[i];
       const wait = Math.max(0, targetTime - performance.now());
       if (wait) await rawDelay(wait);
+      spawnWeaponTrail(enemyId, skill, i);
       flashBattle();
       playClashSfx("hit");
       await onHit(i);
     }
     await sequence;
+    await rawDelay(50);
+    await returnDonFromEnemy(donStage, dx, dy, 240);
 
-    els.donActionSprite.hidden = true;
-    els.donActionSprite.removeAttribute("src");
-    els.battleDon.hidden = false;
+    els.battleDon.classList.remove(`lc5-${skill.key}`);
     setBattleDonState("idle");
     target?.classList.remove("lc6-targeted");
-    els.battleScreen.classList.remove("lc5-combat-cinema", "lc6-sprite-combat");
+    els.battleScreen.classList.remove("lc5-combat-cinema");
   }
+
 
   function spawnSlash(enemyId, affinity = "lust") {
     const enemyEl = enemyElement(enemyId);
@@ -2105,9 +2182,15 @@
       setBattleDonState("idle");
     } else {
       els.clashOverlay.hidden = true;
+      if (els.battleMatchup) els.battleMatchup.hidden = true;
+    if (els.battleMatchup) els.battleMatchup.hidden = true;
+    els.battleScreen.classList.remove("lc35-clash-cinematic", "lc40-clash-hud", "lc40-clash-rush", "lc42-clash-rush");
+      els.battleScreen.classList.remove("lc35-clash-cinematic", "lc40-clash-hud", "lc40-clash-rush", "lc42-clash-rush");
       await enemyAttack(enemySlot, Math.max(1, enemySlot.skill.coins));
     }
     els.clashOverlay.hidden = true;
+    if (els.battleMatchup) els.battleMatchup.hidden = true;
+    els.battleScreen.classList.remove("lc35-clash-cinematic", "lc40-clash-hud", "lc40-clash-rush", "lc42-clash-rush");
   }
 
   async function resolvePlayerAction(slot) {
@@ -2184,6 +2267,8 @@
     }
 
     els.clashOverlay.hidden = true;
+    if (els.battleMatchup) els.battleMatchup.hidden = true;
+    els.battleScreen.classList.remove("lc35-clash-cinematic", "lc40-clash-hud", "lc40-clash-rush", "lc42-clash-rush");
     setBattleDonExpression("idle");
     await delay(360);
     els.battleScreen.classList.remove("is-resolving");
@@ -2276,6 +2361,7 @@
     els.character.hidden = true;
     els.hud.hidden = true;
     els.quickMenu.hidden = true;
+    setStoryChromeVisible(false);
     els.backpackBtn.hidden = true;
     els.battleResult.hidden = true;
     els.battleScreen.hidden = false;
@@ -2325,6 +2411,7 @@
     battle = null;
     els.hud.hidden = false;
     els.quickMenu.hidden = false;
+    setStoryChromeVisible(true);
     els.backpackBtn.hidden = false;
     return victory;
   }
@@ -2470,6 +2557,7 @@
     els.dialogueBox.hidden = false;
     els.speaker.textContent = "";
     els.speaker.hidden = true;
+    if (els.speakerRole) els.speakerRole.hidden = true;
     els.dialogue.textContent = "what?";
     const first = await choose([
       { label: "u suck", value: "suck" },
@@ -2484,6 +2572,7 @@
       els.dialogueBox.hidden = false;
       els.speaker.textContent = "";
       els.speaker.hidden = true;
+      if (els.speakerRole) els.speakerRole.hidden = true;
       els.dialogue.textContent = "this dih";
       await choose([{ label: "fine", value: "fine" }]);
       await say("", "give her some bread");
@@ -2573,6 +2662,7 @@
     els.titleScreen.hidden = true;
     els.hud.hidden = false;
     els.quickMenu.hidden = false;
+    setStoryChromeVisible(true);
     els.backpackBtn.hidden = false;
     els.bgm.volume = state.volume / 100;
     els.volumeSlider.value = String(state.volume);
@@ -2598,6 +2688,7 @@
     battleResultResolver = null;
     els.dialogueBox.hidden = true;
     els.character.hidden = true;
+    setStoryChromeVisible(false);
     els.notice.hidden = true;
   }
 
@@ -2877,13 +2968,15 @@
   els.mapClose.addEventListener("click", () => {
     els.mapModal.hidden = true;
   });
-  els.systemBtn.addEventListener("click", () => {
+  function openSystemMenu() {
     const saved = loadSave();
     els.saveInfo.textContent = saved?.savedAt
       ? `Last save: ${new Date(saved.savedAt).toLocaleString()}`
       : "No save yet.";
     els.systemModal.hidden = false;
-  });
+  }
+  els.systemBtn.addEventListener("click", openSystemMenu);
+  els.storyMenuHex?.addEventListener("click", openSystemMenu);
   els.systemClose.addEventListener("click", () => {
     els.systemModal.hidden = true;
   });

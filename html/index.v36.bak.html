@@ -38,6 +38,14 @@
         <div class="hud-chip">⏱ <span id="hudTime">0 min</span></div>
       </div>
 
+      <div id="storyLocationPlaque" class="story-location-plaque" hidden aria-hidden="true">
+        <span id="storyLocationText">MEPHISTOPHELES INTERIOR</span>
+      </div>
+
+      <button id="storyMenuHex" class="story-menu-hex" type="button" hidden aria-label="Open story menu">
+        <span aria-hidden="true">≡</span>
+      </button>
+
       <button
         id="backpackBtn"
         class="backpack-btn"
@@ -51,7 +59,7 @@
       <img
         id="character"
         class="character"
-        src="assets/characters/idle.png"
+        src="assets/characters/idle.png?v=vnclassic31"
         alt="Don Quixote"
         hidden
       />
@@ -212,8 +220,10 @@
             <div id="clashCoinsDon" class="lc4-coins"></div>
           </div>
           <div class="lc4-clash-mid"><span id="clashResult">CLASH</span><i></i></div>
+          <div class="lc35-clash-curtain" aria-hidden="true"></div>
           <div class="lc4-clash-side lc4-clash-enemy">
-            <small>BANDIT</small>
+            <small>ENEMY</small>
+            <img id="clashEnemyArt" class="lc35-clash-enemy-art" src="assets/battle/enemy-skills/clumsy-chop.png" alt="" />
             <b id="clashEnemySkill">Dirty Swing</b>
             <div id="clashEnemyPower" class="lc4-clash-power">0</div>
             <div id="clashCoinsEnemy" class="lc4-coins"></div>
@@ -243,6 +253,7 @@
       </section>
 
       <section id="dialogueBox" class="dialogue-box" hidden aria-live="polite">
+        <div id="speakerRole" class="speaker-role" hidden>LCB SINNER</div>
         <div id="speaker" class="speaker">Don Quixote</div>
         <div id="dialogue" class="dialogue"></div>
         <div class="advance-indicator" aria-hidden="true">▼</div>
