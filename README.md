@@ -1,155 +1,92 @@
-# Raise Don Quixote — HTML Edition
+# Raise Don Quixote Web — V50 Combined
 
-This is a browser remake of the uploaded Ren'Py prototype.
+V50 combines the latest stable V49 project with the audio and story additions requested after it.
+
+## Included
+
+- Modular project structure (`data / core / ui / utils`).
+- NEW GAME bootstrap fix from V48.
+- Forest bandit encounter with two waves.
+- Don skill SFX:
+  - Joust
+  - Galloping Tilt
+  - For Justice! hit 1 / hit 2 / hit 3
+- Forest battle theme: `Canto I Battle Theme A2`.
+  - Story BGM fades out at battle start.
+  - Battle BGM loops through both waves.
+  - Story BGM returns after leaving the battle result.
+- Enemy attack SFX:
+  - Clumsy Chop -> mob skill 1
+  - Clunky Stab -> mob skill 2
+  - Weak Blow -> mob skill 3
+  - Heavy Strike -> boss skill 2
+  - Skills without a supplied custom WAV keep the generic hit fallback.
+- Wolf portrait included in the VN scene.
+- Post-bandit Don/Wolf argument scene added.
+- Wolf boss fight is activated after the post-bandit argument (see V51+ notes below).
+- Wolf skill data prepared in `js/data/enemies.js`:
+  - Sever
+  - Indigo Blade
+  - Azure Rend
+  - Shimmering Cleave
+  - Mirage Slash
+  - Exhaust
+  - Track remains a future mechanic hook.
+
+## Battle mechanics already present
+
+- SP / Sanity: -45 to +45.
+- Coin-based Clash loop.
+- Stagger thresholds and x2 damage while staggered.
+- Bleed Potency / Count.
+- Rupture Potency / Count.
+- Save / Load and story flow preserved.
 
 ## Run
 
-Open `index.html` directly, or for the most consistent browser behavior run a small local server:
+Because the project uses ES modules, serve the folder through HTTP:
 
 ```bash
 python3 -m http.server 8000
 ```
 
-Then open `http://localhost:8000`.
+Then open:
 
-## Included systems
-
-- Visual-novel dialogue and choices
-- Name input
-- Don Quixote expression changes
-- Backpack/inventory tutorial
-- Potion item and inventory UI
-- World map, location/time tracking, unlocks
-- Background music and volume control
-- Local browser save/load via `localStorage`
-- Responsive desktop/mobile layout
-- Keyboard shortcuts: Enter/Space advance, number keys choose, `I` inventory, `M` map
-
-## Source-project issues handled in this remake
-
-The Ren'Py source currently has incomplete/broken progression around the map/forest section (including a missing `forest_main` label and quest gates that are never set). The HTML version keeps the existing story text but makes the current demo playable: Town can be visited after it is unlocked, Forest becomes available after the Bus tutorial step, and Forest ends with a neutral “current demo content ends here” message rather than inventing new story.
-
-The uploaded custom font file is intentionally not redistributed in this remake.
-
-
-## Forest Battle V3 — command-chain combat
-
-The Forest bandit encounter has been rebuilt after reviewing the uploaded Limbus Company gameplay reference. The battle now has two distinct phases:
-
-- **Command phase:** multiple Don speed/action slots, two skill choices per slot, clash forecasts, enemy intent slots, targeting lines, turn order, `WIN RATE` and `DAMAGE` auto-select, and a circular `START` command.
-- **Combat phase:** speed-based resolution, Coin/Clash rounds, SP-based Heads chance, clash win/loss, unopposed attacks, multi-Coin hits, damage popups, camera shake, Stagger, Bleed, Haste, Attack Power Up, and Sin resource counters.
-
-Don's playable actions in this prototype are **Joust**, **Galloping Tilt**, **For Justice!**, and **Evade**. The battle presentation uses only this project's existing art and original HTML/CSS animation; no UI graphics, sprites, video frames, or audio are copied from the reference video.
-
-### Battle controls
-
-- Click a skill card to swap between the two drawn skills for that speed slot.
-- Click `TARGET` to cycle which enemy action that slot clashes with, or click an enemy intent after focusing a slot.
-- Click `EVADE` to convert a slot to the defensive action.
-- `WIN RATE` chooses safer clash options.
-- `DAMAGE` chooses higher expected damage.
-- Press **START** or **Enter** to resolve the turn.
-- Number keys **1–5** switch the corresponding action slot's skill.
-- **W** = Win Rate auto-select, **D** = Damage auto-select.
-
-### Update GitHub
-
-After replacing the updated files in your existing `Don` repository:
-
-```bash
-git add .
-git commit -m "rebuild forest battle system"
-git push
+```text
+http://localhost:8000
 ```
 
-## Forest Battle V4
+## V51 — Wolf boss battle enabled
 
-The Forest encounter was rebuilt around the interaction model in the supplied gameplay reference rather than the previous large-card prototype.
+After the forest bandit encounter, the Don/Wolf argument now flows directly into a playable one-wave Wolf boss duel.
 
-- Three-bandit encounter with independent HP, stagger state, speed and intents.
-- Solo Don action chain grows from 3 to 6 action slots across turns.
-- Each slot draws two skills; click the rear card to switch, or choose Evade.
-- Click an enemy intent to target it, or drag a Don speed slot onto an enemy intent.
-- Curved targeting lines are colored by clash forecast: Dominating/Favored/Neutral/Struggling/Hopeless/Unopposed.
-- Win Rate and Damage auto-selection modes.
-- Speed-order resolution, clashes, losing coins, SP-based Heads chance, unopposed attacks, defensive evade, stagger, bleed, haste, attack power up, Sin resources and total turn damage.
-- Combat phase collapses command UI and uses close-in attacks, screen shake, clash overlay, coin flips and damage popups.
-- Uses only the existing project art and generated CSS shapes for enemies; no game assets were copied from the reference video.
-
-## V5 battle presentation update
-- Added skill cut-ins, speed streaks, afterimages, weapon trails, impact bursts, coin-break bursts, stronger per-skill movement, and a combat cinematic mode.
-- Uses the project's existing Don character images and original CSS-generated VFX. It does not include ripped sprites, UI art, audio, or other proprietary assets from Limbus Company or the reference video.
-
-## V6 — supplied battle sprite integration
-
-The Forest battle now uses the Don Quixote battle assets supplied directly with this project update:
-
-- `assets/battle/don/idle-animation.gif` / `idle.png` — battle idle
-- `guard.png` — clash-ready stance
-- `hurt.png` — damage reaction
-- `evade.png` / `moving.png` — defensive movement
-- `dead.png` — defeat state
-- `skill-1.gif` — Joust animation
-- `skill-2.gif` — Galloping Tilt animation
-- `skill-3.gif` — For Justice! animation
-
-Skill GIFs are replayed as the actual combat animation layer, with damage/coin hits synchronized to the supplied animation timing. The normal story sprites remain unchanged.
+- Wolf uses the six supplied skills in rotation: Sever, Indigo Blade, Azure Rend, Shimmering Cleave, Mirage Slash, and Exhaust.
+- The battle uses the existing command/target/clash system and the supplied Wolf portrait as the temporary battlefield sprite.
+- Wolf's source screenshots did not show an HP value, so this build uses a temporary tuning value of **360 HP** with stagger thresholds at **230 / 115**. These are balancing values, not source-derived stats.
+- Mirage Slash applies its displayed -4 opponent Clash Power rule and self-staggers on Clash Lose.
+- Azure Rend damages Don's SP instead of HP in this implementation.
+- Indigo Blade applies Bleed using the existing status engine. Poise / Track remain partial/future mechanics because the current battle core does not yet model them fully.
+- Winning the duel sets `wolfBattleWon`, plays a short post-battle exchange, and returns to the map loop.
+- Save resume recognizes the Wolf intro, prep, battle, and post-battle checkpoints.
 
 
-## V7 skill artwork
-- Uses the four skill screenshots supplied by the project owner to create in-game art for Joust, Galloping Tilt, For Justice!, and Evade.
-- Skill artwork now appears on action cards, the hover inspector, Clash UI, and attack cut-in.
-- V6 active HTML/CSS/JS are preserved as index.v6.bak.html, style.v6.bak.css, and script.v6.bak.js.
+## V52 — Poise
+
+Wolf now has a functional Poise system. Poise Potency grants 5% Critical chance per point while Poise Count is above 0. A Critical consumes 1 Count; Count also decays by 1 at turn end, and when Count reaches 0 the Potency is cleared. Standard Wolf Criticals gain +20% damage. Indigo Blade uses +100% Critical damage plus +2% per stored Poise Potency (maximum +50% extra), while Mirage Slash uses +200% Critical damage as shown in the supplied skill references. Sever and Shimmering Cleave now build Poise and the HUD displays Potency / Count / current Critical chance.
 
 
-## V8 update
-- Fixed the backpack tutorial reminder race/delay.
-- Battle turns begin with no automatic targets.
-- WIN RATE / DAMAGE are the only automatic chain/target buttons.
-- Skill cards can be dragged directly onto enemy intents.
-- Added a 3-step first-battle onboarding overlay.
-- START warns if any action slot is still untargeted.
+## V53 NEW GAME FIX
 
-## V9 tutorial visibility fix
-- The first Forest battle turn is prepared before the tutorial overlay opens.
-- Battle rendering self-repairs missing transient Don action slots / enemy intents.
-- WIN RATE / DAMAGE also rebuild missing slots before auto-chain logic runs.
-- First-turn tutorial highlights Don skill cards and enemy intent icons.
-- Cleaned malformed literal `\\n` sequences from the V8 CSS append block.
+- Fixed a JavaScript module parse error in `js/data/story.js` caused by an unescaped apostrophe in Wolf dialogue (`someone else\'s forest`).
+- Updated the `main.js` cache-busting query to `v=53-newgame-fixed`.
+- This parse error prevented `main.js` from loading, so the NEW GAME click handler was never attached.
 
 
-## V10 UI update
-- Added reference-style Clash forecast panel with both skill powers/coins.
-- Added skill keyword and enemy-skill effect panels.
-- Added visible stagger threshold tracks for enemies.
-- Reworked bottom action deck, intent tiles, START/WIN RATE/DAMAGE controls and spacing.
-- Keeps V9 drag targeting/tutorial behavior and all user-supplied Don battle/skill assets.
+## V54 — Wolf sprite integration
 
-
-## v23 project layout
-- `index.html` stays in the project root.
-- HTML backups are in `html/`.
-- Stylesheets are in `css/`.
-- JavaScript files are in `js/`.
-- Battle shortcuts: `P` = WIN RATE, `D` = DAMAGE, `Enter` = START.
-
-
-## V24 asset integration
-
-- Added the supplied Don Quixote base-appearance PNG set and rebuilt Joust, Galloping Tilt, and For Justice as frame-sequence battle animations.
-- Don idle / move / guard / hurt / evade now use the supplied base-appearance sprites.
-- Added supplied Lust, Envy, and Gluttony icons to the SIN HUD and skill cards.
-- Added supplied targeting / attack / sanity icons to battle controls and HUD.
-- Kept all previous story, battle, bandit, elite, wave, hotkey, save, and settings behavior.
-- Custom font binaries are intentionally not bundled. The CSS will try the local font family names `Bebas Kai`, `EXCELSIOR SANS`, `Pretendard`, and `Perfect DOS VGA 437`, then fall back to system fonts. See `assets/fonts/README.txt`.
-
-
-## V36 story UI
-- Reworked visual-novel presentation to a dark translucent cinematic layout inspired by the supplied reference screenshot.
-- Added location plaque, hex menu button, role + speaker tag, half-body character framing, and a wider translucent dialogue box.
-
-
-## V39 gameplay repair
-- WIN RATE, DAMAGE, and START now stay together immediately after the final skill card.
-- Removed malformed V38 CSS that caused default/white controls.
-- Reworked clash presentation and reduced expensive effects for smoother battle animation.
+- Integrated the four Wolf sprite sheets supplied by the user into `assets/images/battle/wolf/`.
+- Extracted normalized transparent battle frames for idle, hurt, Exhaust, Sever, Indigo Blade, Azure Rend, Shimmering Cleave, and Mirage Slash.
+- Wolf now switches to a skill-specific battle sprite when an action resolves, then returns to idle.
+- Original sprite sheets are retained in the Wolf asset folder for later frame-by-frame animation work.
+- Wolf's visual-novel portrait is scaled to match Don's main-speaker size instead of appearing tiny.
+- Preserves V53 NEW GAME fix, V52 Poise, Wolf boss battle, Don/enemy SFX, battle BGM, save/load and modular structure.

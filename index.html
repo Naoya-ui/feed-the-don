@@ -8,7 +8,7 @@
     />
     <meta name="theme-color" content="#0b0d10" />
     <title>Raise Don Quixote — HTML Edition</title>
-    <link rel="icon" href="assets/ui/window-icon.png" />
+    <link rel="icon" href="assets/images/ui/window-icon.png" />
     <link rel="stylesheet" href="css/style.css" />
   </head>
   <body>
@@ -52,14 +52,14 @@
         aria-label="Open inventory"
         hidden
       >
-        <img src="assets/ui/backpack.webp" alt="" />
+        <img src="assets/images/ui/backpack.webp" alt="" />
         <span id="backpackCount" class="backpack-count">0</span>
       </button>
 
       <img
         id="character"
         class="character"
-        src="assets/characters/idle.png?v=vnclassic31"
+        src="assets/images/characters/idle.png?v=vnclassic31"
         alt="Don Quixote"
         hidden
       />
@@ -110,7 +110,7 @@
 
         <aside id="battleInspector" class="lc4-inspector" hidden>
           <div class="lc4-inspector-head"><span>SKILL EFFECTS</span><b id="inspectorName">Joust</b></div>
-          <img id="inspectorArt" class="lc7-inspector-art" src="assets/battle/skills/joust-badge.png" alt="Joust skill art" />
+          <img id="inspectorArt" class="lc7-inspector-art" src="assets/images/battle/skills/joust-badge.png" alt="Joust skill art" />
           <div id="inspectorPower" class="lc4-inspector-power">4 + 7 · 1 Coin</div>
           <p id="inspectorText"></p>
           <div id="inspectorKeywords" class="lc4-keywords"></div>
@@ -124,7 +124,7 @@
 
         <section id="battleMatchup" class="lc10-matchup" hidden aria-live="polite">
           <div class="lc10-match-side lc10-match-don">
-            <img id="matchDonArt" src="assets/battle/skills/joust-icon.png" alt="" />
+            <img id="matchDonArt" src="assets/images/battle/skills/joust-icon.png" alt="" />
             <div><small id="matchDonSpeed">SPD 4</small><b id="matchDonSkill">Joust</b><span id="matchDonCoins"></span></div>
             <strong id="matchDonPower">11</strong>
           </div>
@@ -159,9 +159,9 @@
 
         <aside class="lc4-sin-panel" aria-label="Sin resources">
           <b>SIN</b>
-          <span class="sin-lust"><img src="assets/battle/icons/sins/lust.png" alt="Lust" /><i id="sinLust">0</i></span>
-          <span class="sin-envy"><img src="assets/battle/icons/sins/envy.png" alt="Envy" /><i id="sinEnvy">0</i></span>
-          <span class="sin-gluttony"><img src="assets/battle/icons/sins/gluttony.png" alt="Gluttony" /><i id="sinGluttony">0</i></span>
+          <span class="sin-lust"><img src="assets/images/battle/icons/sins/lust.png" alt="Lust" /><i id="sinLust">0</i></span>
+          <span class="sin-envy"><img src="assets/images/battle/icons/sins/envy.png" alt="Envy" /><i id="sinEnvy">0</i></span>
+          <span class="sin-gluttony"><img src="assets/images/battle/icons/sins/gluttony.png" alt="Gluttony" /><i id="sinGluttony">0</i></span>
         </aside>
 
         <svg id="targetLines" class="lc4-target-lines" aria-hidden="true">
@@ -180,12 +180,12 @@
             <div class="lc4-don-plate">
               <div class="lc4-don-title"><small>LCB SINNER</small><b>DON QUIXOTE</b></div>
               <div class="lc4-mini-meter"><span>HP</span><i><em id="donHpBar"></em></i><b id="donHpText">203/203</b></div>
-              <div class="lc4-mini-meter"><span class="lc24-sp-label"><img src="assets/battle/icons/skills/sanity.png" alt="" />SP</span><i><em id="donSpBar"></em></i><b id="donSpText">0</b></div>
+              <div class="lc4-mini-meter"><span class="lc24-sp-label"><img src="assets/images/battle/icons/skills/sanity.png" alt="" />SP</span><i><em id="donSpBar"></em></i><b id="donSpText">0</b></div>
               <div class="lc4-unit-sub"><span>SPD <b id="donSpeed">3</b></span><span id="donStatus">READY</span></div>
             </div>
             <div class="lc4-don-stage">
               <div class="lc4-shadow"></div>
-              <img id="battleDon" class="lc4-don lc6-don-base" src="assets/battle/don/base/idle.png" alt="Don Quixote" />
+              <img id="battleDon" class="lc4-don lc6-don-base" src="assets/images/battle/don/base/idle.png" alt="Don Quixote" />
               <img id="donActionSprite" class="lc6-don-action-sprite" alt="" hidden />
               <div id="donDamage" class="lc4-float" hidden></div>
             </div>
@@ -197,7 +197,7 @@
 
         <footer id="planningPanel" class="lc4-planning">
           <div class="lc4-manager">
-            <div class="lc4-manager-orbit"><img src="assets/battle/icons/portrait/don-quixote.png" alt="Don Quixote" /></div>
+            <div class="lc4-manager-orbit"><img src="assets/images/battle/icons/portrait/don-quixote.png" alt="Don Quixote" /></div>
             <span>DON</span>
             <b id="managerSp">0 SP</b>
           </div>
@@ -205,8 +205,8 @@
           <div class="lc4-command">
             <button id="startCombatBtn" class="lc4-start" type="button"><span>START</span><small>ENTER</small></button>
             <div class="lc4-auto">
-              <button id="autoDamageBtn" type="button"><img class="lc24-command-icon" src="assets/battle/icons/skills/attack.png" alt="" /><span>DAMAGE</span><kbd>D</kbd></button>
-              <button id="autoWinBtn" type="button"><img class="lc24-command-icon" src="assets/battle/icons/ui/target.png" alt="" /><span>WIN RATE</span><kbd>P</kbd></button>
+              <button id="autoDamageBtn" type="button"><img class="lc24-command-icon" src="assets/images/battle/icons/skills/attack.png" alt="" /><span>DAMAGE</span><kbd>D</kbd></button>
+              <button id="autoWinBtn" type="button"><img class="lc24-command-icon" src="assets/images/battle/icons/ui/target.png" alt="" /><span>WIN RATE</span><kbd>P</kbd></button>
             </div>
           </div>
         </footer>
@@ -214,7 +214,7 @@
         <div id="clashOverlay" class="lc4-clash" hidden>
           <div class="lc4-clash-side lc4-clash-don">
             <small>DON QUIXOTE</small>
-            <img id="clashDonArt" class="lc7-clash-art" src="assets/battle/skills/joust-icon.png" alt="" />
+            <img id="clashDonArt" class="lc7-clash-art" src="assets/images/battle/skills/joust-icon.png" alt="" />
             <b id="clashDonSkill">Joust</b>
             <div id="clashDonPower" class="lc4-clash-power">0</div>
             <div id="clashCoinsDon" class="lc4-coins"></div>
@@ -223,7 +223,7 @@
           <div class="lc35-clash-curtain" aria-hidden="true"></div>
           <div class="lc4-clash-side lc4-clash-enemy">
             <small>ENEMY</small>
-            <img id="clashEnemyArt" class="lc35-clash-enemy-art" src="assets/battle/enemy-skills/clumsy-chop.png" alt="" />
+            <img id="clashEnemyArt" class="lc35-clash-enemy-art" src="assets/images/battle/enemy-skills/clumsy-chop.png" alt="" />
             <b id="clashEnemySkill">Dirty Swing</b>
             <div id="clashEnemyPower" class="lc4-clash-power">0</div>
             <div id="clashCoinsEnemy" class="lc4-coins"></div>
@@ -236,7 +236,7 @@
 
         <div id="battleFxLayer" class="lc5-fx-layer" aria-hidden="true">
           <div id="skillCutin" class="lc5-skill-cutin" hidden>
-            <img id="skillCutinArt" class="lc7-cutin-art" src="assets/battle/skills/joust-badge.png" alt="" />
+            <img id="skillCutinArt" class="lc7-cutin-art" src="assets/images/battle/skills/joust-badge.png" alt="" />
             <span id="skillCutinAffinity">LUST · PIERCE</span>
             <b id="skillCutinName">JOUST</b>
             <i></i>
@@ -353,7 +353,9 @@
 
       <nav id="quickMenu" class="quick-menu" hidden aria-label="Quick menu">
         <button id="mapBtn" title="Map">MAP</button>
-        <button id="systemBtn" title="System menu">MENU</button>
+        <button id="quickSaveBtn" title="Quick save">SAVE</button>
+        <button id="quickLoadBtn" title="Quick load">LOAD</button>
+        <button id="systemBtn" title="System menu">SET</button>
       </nav>
 
       <audio
@@ -364,6 +366,6 @@
       ></audio>
     </main>
 
-    <script src="js/script.js"></script>
+    <script type="module" src="js/main.js?v=54-wolf-sprites"></script>
   </body>
 </html>

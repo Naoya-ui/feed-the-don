@@ -363,7 +363,7 @@ button { -webkit-tap-highlight-color: transparent; }
   position:absolute; inset:0; z-index:80; overflow:hidden;
   background:#120b0b; color:#f1ece3; font-family:Arial,Helvetica,sans-serif;
 }
-.lc-scene-bg { position:absolute; inset:-3%; background:url("../assets/backgrounds/forest.jpeg") center/cover no-repeat; filter:brightness(.27) saturate(.65) sepia(.28) hue-rotate(330deg); transform:scale(1.05); }
+.lc-scene-bg { position:absolute; inset:-3%; background:url("../assets/images/backgrounds/forest.jpeg") center/cover no-repeat; filter:brightness(.27) saturate(.65) sepia(.28) hue-rotate(330deg); transform:scale(1.05); }
 .lc-red-wash { position:absolute; inset:0; background:radial-gradient(circle at 52% 43%,rgba(112,18,20,.12),rgba(37,4,6,.68) 74%,rgba(5,2,2,.94)),linear-gradient(90deg,rgba(77,8,10,.54),transparent 35%,transparent 64%,rgba(62,5,6,.44)); mix-blend-mode:screen; pointer-events:none; }
 .lc-grain { position:absolute; inset:0; pointer-events:none; opacity:.2; background-image:repeating-radial-gradient(circle at 0 0,transparent 0 2px,rgba(255,255,255,.06) 3px 4px); background-size:7px 7px; mix-blend-mode:overlay; }
 .lc-scratch { position:absolute; left:-4%; right:-4%; height:18px; z-index:30; pointer-events:none; background:linear-gradient(8deg,transparent 12%,#f4dfa0 18% 24%,transparent 29% 39%,#dbc06b 42% 48%,transparent 53% 65%,#f4dfa0 70% 75%,transparent 81%); filter:drop-shadow(0 0 5px #000); opacity:.95; }
@@ -564,7 +564,7 @@ button { -webkit-tap-highlight-color: transparent; }
   user-select:none;
 }
 .lc4-battle button{font:inherit}
-.lc4-scene-bg{position:absolute;inset:-3%;background:url("../assets/backgrounds/forest.jpeg") center/cover no-repeat;filter:brightness(.34) saturate(.72) contrast(1.15);transform:scale(1.05)}
+.lc4-scene-bg{position:absolute;inset:-3%;background:url("../assets/images/backgrounds/forest.jpeg") center/cover no-repeat;filter:brightness(.34) saturate(.72) contrast(1.15);transform:scale(1.05)}
 .lc4-red-wash{position:absolute;inset:0;background:linear-gradient(90deg,rgba(55,0,0,.63),rgba(84,8,8,.38) 42%,rgba(30,0,0,.62)),radial-gradient(circle at 51% 42%,transparent 0 34%,rgba(0,0,0,.82) 83%);mix-blend-mode:multiply;pointer-events:none}
 .lc4-vignette{position:absolute;inset:0;box-shadow:inset 0 0 180px #000,inset 0 -110px 130px #000a;pointer-events:none}
 .lc4-grain{position:absolute;inset:0;opacity:.14;pointer-events:none;background-image:repeating-linear-gradient(0deg,transparent 0 2px,#fff1 3px,transparent 4px),repeating-linear-gradient(90deg,#0001 0 3px,transparent 4px 7px)}
@@ -861,7 +861,7 @@ body.lc4-targeting .lc4-intent{transform:translateY(-4px) scale(1.08);transition
   inset:0;
   background:
     linear-gradient(180deg, rgba(1,6,8,.18) 0%, rgba(2,8,11,.12) 34%, rgba(3,5,7,.50) 74%, rgba(2,2,2,.86) 100%),
-    url("../assets/backgrounds/forest-battle.png") center top/cover no-repeat;
+    url("../assets/images/backgrounds/forest-battle.png") center top/cover no-repeat;
   filter:brightness(.68) saturate(.92) contrast(1.05);
   transform:scale(1.015);
 }
@@ -4133,3 +4133,137 @@ body{font-family:var(--lc-body-font)}
 #battleScreen .lc4-don.lc5-gallop,
 #battleScreen .lc4-don.lc5-justice{transform:none!important}
 #battleScreen .lc4-don-stage{overflow:visible!important}
+
+
+/* V46: taller VN sprite, typewriter dialogue, quick save/load buttons, restored clash cinematic */
+.game.story-mode #character.character{bottom:-25vh!important;height:min(118vh,1220px)!important;}
+@media (max-width:900px){.game.story-mode #character.character{height:min(96vh,860px)!important;bottom:-10vh!important;}}
+.dialogue-box.is-typing .advance-indicator{opacity:0!important;animation:none!important;}
+.quick-menu{gap:9px!important;flex-wrap:wrap;justify-content:flex-end;}
+.quick-menu button{min-width:62px;padding:0 12px!important;}
+.game.story-mode .quick-menu{right:22px!important;bottom:20px!important;z-index:21!important;}
+#battleScreen.lc35-clash-cinematic .lc4-clash{inset:0!important;padding:0 7vw!important;background:radial-gradient(circle at center,rgba(56,23,12,.58) 0,rgba(8,5,4,.82) 46%,rgba(1,1,1,.95) 84%)!important;grid-template-columns:1fr 150px 1fr!important;align-items:center!important;}
+#battleScreen.lc35-clash-cinematic .lc35-clash-curtain{display:block!important;opacity:.3!important;}
+#battleScreen.lc35-clash-cinematic .lc4-clash-side{min-height:260px!important;padding-top:0!important;gap:8px!important;align-self:center!important;}
+#battleScreen.lc35-clash-cinematic .lc4-clash-side>b{font-size:clamp(22px,2.5vw,36px)!important;line-height:1.03!important;max-width:22vw!important;}
+#battleScreen.lc35-clash-cinematic .lc4-clash-power{width:92px!important;height:92px!important;min-width:92px!important;min-height:92px!important;font-size:54px!important;}
+#battleScreen.lc35-clash-cinematic .lc4-clash-mid{padding-top:0!important;gap:8px!important;align-self:center!important;}
+#battleScreen.lc35-clash-cinematic .lc4-clash-mid span{font-size:12px!important;min-width:108px!important;padding:8px 12px!important;}
+#battleScreen.lc35-clash-cinematic .lc4-clash-mid i{height:170px!important;width:4px!important;}
+#battleScreen.lc35-clash-cinematic .lc7-clash-art,#battleScreen.lc35-clash-cinematic .lc35-clash-enemy-art{display:block!important;width:118px!important;height:86px!important;}
+
+/* V47 modular battle fixes */
+#battleScreen.lc35-clash-cinematic .lc4-clash{display:grid!important;}
+#battleScreen .lc4-status.rupture{border-color:#68b7b0!important;color:#b9ffef!important;background:rgba(21,74,72,.78)!important;box-shadow:0 0 8px rgba(78,210,196,.18)!important;}
+#battleScreen .lc4-status.bleed{border-color:#a43b3b!important;color:#ffd0c8!important;}
+
+/* V50: Wolf visual-novel portrait */
+.game.story-mode #character.character.wolf-portrait{
+  width:min(31vw,410px)!important;
+  height:auto!important;
+  max-height:88vh!important;
+  bottom:-3vh!important;
+  object-fit:contain!important;
+  object-position:center bottom!important;
+  filter:drop-shadow(0 18px 28px rgba(0,0,0,.62));
+}
+@media (max-width:900px){
+  .game.story-mode #character.character.wolf-portrait{
+    width:min(60vw,350px)!important;
+    max-width:80vw!important;
+    max-height:72vh!important;
+    bottom:0!important;
+  }
+}
+
+/* V51: Wolf boss encounter */
+#battleScreen .lc4-enemy-roster[data-count="3"] .lc4-enemy:only-child{
+  grid-column:2;
+}
+#battleScreen .lc4-bandit.sprite-wolf{
+  width:min(16vw,230px)!important;
+  height:min(43vh,390px)!important;
+  max-width:230px!important;
+  filter:drop-shadow(0 14px 18px rgba(0,0,0,.82)) drop-shadow(0 0 12px rgba(81,97,142,.16))!important;
+}
+#battleScreen .lc4-bandit.sprite-wolf .lc4-bandit-sprite{
+  max-width:100%!important;
+  max-height:100%!important;
+  object-fit:contain!important;
+  object-position:center bottom!important;
+}
+#battleScreen .lc4-enemy:has(.sprite-wolf) .lc4-enemy-name b{
+  font-size:13px!important;
+  color:#d9def4!important;
+}
+#battleScreen .lc4-enemy:has(.sprite-wolf) .lc34-enemy-tag{
+  color:#b3a7e8!important;
+  border-color:#645a91!important;
+}
+#battleScreen.is-resolving .lc4-bandit.sprite-wolf,
+#battleScreen.lc40-clash-hud .lc4-bandit.sprite-wolf,
+#battleScreen.lc42-clash-rush .lc4-bandit.sprite-wolf{
+  width:min(16vw,230px)!important;
+  height:min(43vh,390px)!important;
+}
+@media(max-width:900px){
+  #battleScreen .lc4-bandit.sprite-wolf{
+    width:min(24vw,190px)!important;
+    height:min(38vh,320px)!important;
+  }
+}
+
+/* V52: Poise status / critical system */
+#battleScreen .lc4-status.poise{
+  display:inline-flex!important;
+  align-items:center!important;
+  gap:3px!important;
+  border-color:#c7a847!important;
+  color:#ffe59a!important;
+  background:rgba(63,46,12,.82)!important;
+  box-shadow:0 0 8px rgba(231,194,75,.18)!important;
+}
+
+#battleScreen .lc4-statuses{display:flex!important}
+
+/* V54: Wolf sprite sheets + VN size parity with Don */
+.game.story-mode #character.character.wolf-portrait{
+  width:auto!important;
+  height:min(118vh,1220px)!important;
+  max-height:none!important;
+  max-width:min(62vw,760px)!important;
+  bottom:-25vh!important;
+  left:50%!important;
+  transform:translateX(-50%)!important;
+  object-fit:contain!important;
+  object-position:center bottom!important;
+}
+#battleScreen .lc4-bandit.sprite-wolf{
+  width:min(20vw,290px)!important;
+  height:min(48vh,440px)!important;
+  max-width:290px!important;
+}
+#battleScreen .lc4-bandit.sprite-wolf.pose-mirageSlash,
+#battleScreen .lc4-bandit.sprite-wolf.pose-shimmeringCleave,
+#battleScreen .lc4-bandit.sprite-wolf.pose-azureRend,
+#battleScreen .lc4-bandit.sprite-wolf.pose-indigoBlade,
+#battleScreen .lc4-bandit.sprite-wolf.pose-sever,
+#battleScreen .lc4-bandit.sprite-wolf.pose-exhaust{
+  width:min(24vw,350px)!important;
+  height:min(52vh,480px)!important;
+  filter:drop-shadow(0 14px 20px rgba(0,0,0,.86)) drop-shadow(0 0 14px rgba(89,106,164,.28))!important;
+}
+#battleScreen .lc4-bandit.sprite-wolf.pose-mirageSlash .lc4-bandit-sprite{
+  filter:brightness(1.08) drop-shadow(0 0 12px rgba(126,75,218,.4));
+}
+@media(max-width:900px){
+  .game.story-mode #character.character.wolf-portrait{
+    height:min(96vh,860px)!important;
+    max-width:78vw!important;
+    bottom:-10vh!important;
+  }
+  #battleScreen .lc4-bandit.sprite-wolf{
+    width:min(30vw,230px)!important;
+    height:min(41vh,350px)!important;
+  }
+}
