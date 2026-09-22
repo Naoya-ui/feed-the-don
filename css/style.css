@@ -4267,3 +4267,203 @@ body{font-family:var(--lc-body-font)}
     height:min(41vh,350px)!important;
   }
 }
+
+
+/* V55: user coin art + Limbus-style status icons + Wolf size parity */
+#battleScreen .lc4-unit-sub{align-items:flex-start!important;gap:8px!important;}
+#battleScreen #donStatus{display:flex!important;flex-wrap:wrap!important;justify-content:flex-end!important;gap:4px!important;max-width:100%!important;}
+#battleScreen .lc4-statuses{display:flex!important;flex-wrap:wrap!important;justify-content:center!important;align-items:center!important;gap:4px!important;min-height:18px!important;}
+#battleScreen .lc4-status{
+  display:inline-flex!important;
+  align-items:center!important;
+  gap:4px!important;
+  padding:2px 6px!important;
+  border-radius:999px!important;
+  font-size:6px!important;
+  font-weight:900!important;
+  letter-spacing:.03em!important;
+  background:rgba(12,10,8,.92)!important;
+}
+#battleScreen .lc4-status-icon,
+#battleScreen .lc21-effect-icon{width:14px!important;height:14px!important;object-fit:contain!important;flex:0 0 auto!important;filter:drop-shadow(0 1px 2px rgba(0,0,0,.45));}
+#battleScreen .lc4-status.ready{border-color:#645240!important;color:#d7c7a7!important;}
+#battleScreen .lc4-status.haste{border-color:#dba742!important;color:#ffeba0!important;background:rgba(68,46,8,.92)!important;box-shadow:0 0 8px rgba(218,167,66,.18)!important;}
+#battleScreen .lc4-status.attackUp,
+#battleScreen .lc4-status.damageUp{border-color:#ff8d4c!important;color:#ffd1a6!important;background:rgba(88,33,12,.9)!important;box-shadow:0 0 8px rgba(255,140,76,.14)!important;}
+#battleScreen .lc4-status.stagger{border-color:#d9b157!important;color:#ffe89d!important;background:rgba(71,49,9,.9)!important;box-shadow:0 0 8px rgba(217,177,87,.18)!important;}
+#battleScreen .lc4-status.poise{border-color:#a98cff!important;color:#efe5ff!important;background:rgba(42,23,74,.88)!important;box-shadow:0 0 8px rgba(169,140,255,.18)!important;}
+#battleScreen .lc4-status.rupture{border-color:#4ed2c4!important;color:#cefff6!important;background:rgba(14,63,66,.88)!important;box-shadow:0 0 8px rgba(78,210,196,.18)!important;}
+#battleScreen .lc4-status.bleed{border-color:#cf5858!important;color:#ffd0cd!important;background:rgba(74,20,24,.88)!important;box-shadow:0 0 8px rgba(207,88,88,.18)!important;}
+#battleScreen .lc21-skillfx-row b{display:flex!important;align-items:center!important;gap:6px!important;line-height:1.3!important;}
+#battleScreen .lc4-coin-img{width:100%!important;height:100%!important;object-fit:contain!important;filter:drop-shadow(0 2px 4px rgba(0,0,0,.4));}
+.game.story-mode #character.character.wolf-portrait{
+  width:min(40vw,520px)!important;
+  max-width:min(58vw,620px)!important;
+  height:min(118vh,1220px)!important;
+  max-height:none!important;
+  bottom:-25vh!important;
+  left:50%!important;
+  transform:translateX(-50%)!important;
+  object-fit:contain!important;
+  object-position:center bottom!important;
+}
+#battleScreen .lc4-bandit.sprite-wolf{
+  width:min(24vw,340px)!important;
+  height:min(56vh,520px)!important;
+  max-width:340px!important;
+}
+#battleScreen .lc4-bandit.sprite-wolf.pose-mirageSlash,
+#battleScreen .lc4-bandit.sprite-wolf.pose-shimmeringCleave,
+#battleScreen .lc4-bandit.sprite-wolf.pose-azureRend,
+#battleScreen .lc4-bandit.sprite-wolf.pose-indigoBlade,
+#battleScreen .lc4-bandit.sprite-wolf.pose-sever,
+#battleScreen .lc4-bandit.sprite-wolf.pose-exhaust{
+  width:min(27vw,400px)!important;
+  height:min(61vh,570px)!important;
+}
+@media (max-width:900px){
+  .game.story-mode #character.character.wolf-portrait{width:min(72vw,390px)!important;max-width:82vw!important;height:min(96vh,860px)!important;bottom:-8vh!important;}
+  #battleScreen .lc4-bandit.sprite-wolf{width:min(34vw,250px)!important;height:min(47vh,390px)!important;}
+  #battleScreen .lc4-bandit.sprite-wolf.pose-mirageSlash,
+  #battleScreen .lc4-bandit.sprite-wolf.pose-shimmeringCleave,
+  #battleScreen .lc4-bandit.sprite-wolf.pose-azureRend,
+  #battleScreen .lc4-bandit.sprite-wolf.pose-indigoBlade,
+  #battleScreen .lc4-bandit.sprite-wolf.pose-sever,
+  #battleScreen .lc4-bandit.sprite-wolf.pose-exhaust{width:min(42vw,300px)!important;height:min(52vh,430px)!important;}
+}
+
+
+/* V56: clearer arrows, Don intent anchor, placeholder E.G.O button */
+#battleScreen .lc4-target-lines{z-index:19!important}
+#battleScreen .lc4-link-shadow{display:block!important;stroke-width:6px!important;opacity:.16!important;filter:blur(1.4px)!important;stroke-linecap:round!important;fill:none!important}
+#battleScreen .lc4-link-origin{display:block!important;r:3px!important;opacity:.92!important;filter:drop-shadow(0 0 3px currentColor)!important}
+#battleScreen .lc4-link{stroke-width:2.6px!important;opacity:.92!important;filter:drop-shadow(0 0 1px currentColor)!important;fill:none!important;animation:none!important;stroke-linecap:round!important;stroke-linejoin:round!important}
+#battleScreen .lc4-link.is-secondary{opacity:.72!important;stroke-width:2.15px!important}
+#battleScreen .lc4-link.is-focus{opacity:1!important;stroke-width:3.1px!important}
+#battleScreen .lc4-link.hostile,#battleScreen .lc4-link-shadow.hostile,#battleScreen .lc4-link-origin.hostile{stroke:#c97869!important;color:#c97869!important;fill:#c97869!important}
+#battleScreen .lc4-link.dragging{stroke-dasharray:6 5!important}
+#battleScreen .lc4-intent-player{z-index:22!important;pointer-events:none!important;width:74px!important;height:70px!important;transform:translateX(-50%)!important;background:linear-gradient(180deg,rgba(23,18,14,.98),rgba(8,7,6,.99))!important;border:1px solid #8b6c44!important;box-shadow:0 10px 16px rgba(0,0,0,.42),0 0 18px rgba(201,155,95,.15)!important}
+#battleScreen .lc4-intent-player .lc34-intent-sigil{top:13px!important;left:50%!important;transform:translateX(-50%)!important;width:28px!important;height:28px!important}
+#battleScreen .lc4-intent-player .lc34-intent-glyph{font-size:11px!important}
+#battleScreen .lc4-intent-player > b{top:46px!important;left:50%!important;transform:translateX(-50%)!important;width:88%!important;text-align:center!important;font-size:5px!important;line-height:1.05!important;color:#e7d4af!important}
+#battleScreen .lc4-intent-player > small{display:block!important;bottom:-12px!important;font-size:4.8px!important;letter-spacing:.08em!important;color:#cdb893!important}
+#battleScreen .lc4-intent-player .lc4-intent-speed{top:-10px!important;right:-4px!important;left:auto!important;transform:none!important}
+#battleScreen .lc4-intent-player.ego-live{box-shadow:0 0 0 1px rgba(214,167,75,.88),0 0 22px rgba(236,189,73,.24),0 10px 16px rgba(0,0,0,.45)!important}
+#battleScreen .lc4-ego-btn{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;width:62px;height:62px;border:2px solid #b99555;background:radial-gradient(circle at 35% 30%,#5a4218,#24170b 70%,#120b06 100%);color:#f6e0a4;clip-path:polygon(18% 0,82% 0,100% 18%,100% 82%,82% 100%,18% 100%,0 82%,0 18%);box-shadow:0 0 0 1px rgba(0,0,0,.55),0 8px 16px rgba(0,0,0,.3),0 0 18px rgba(212,169,79,.15);font-family:Georgia,serif;cursor:pointer;transition:transform .15s ease,filter .15s ease,opacity .15s ease}
+#battleScreen .lc4-ego-btn:hover{transform:translateY(-2px) scale(1.03);filter:brightness(1.08)}
+#battleScreen .lc4-ego-btn span{font:900 12px/1 Georgia,serif;letter-spacing:.08em}
+#battleScreen .lc4-ego-btn small{margin-top:4px;font:700 6px/1 Georgia,serif;letter-spacing:.1em;color:#f2d08d}
+#battleScreen .lc4-ego-btn.is-active{border-color:#ebc96d;background:radial-gradient(circle at 35% 30%,#806325,#3a2810 68%,#171009 100%);box-shadow:0 0 0 1px rgba(0,0,0,.55),0 10px 18px rgba(0,0,0,.36),0 0 24px rgba(235,201,109,.32)}
+#battleScreen .lc4-ego-btn[hidden]{display:none!important}
+#battleScreen .lc4-status.ego{border-color:#e0b65d!important;color:#ffe8b3!important;background:rgba(86,55,10,.88)!important;box-shadow:0 0 8px rgba(224,182,93,.22)!important}
+@media (max-width:900px){
+  #battleScreen .lc4-intent-player{width:60px!important;height:56px!important}
+  #battleScreen .lc4-ego-btn{width:54px!important;height:54px!important}
+  #battleScreen .lc4-ego-btn span{font-size:10px!important}
+}
+
+
+/* V57: E.G.O frame, manifest modal, cinematic video, custom card */
+.lc4-aff-ego{--aff:#b53030}
+.lc5-cutin-ego{--cutin:#9c1d1d}
+.ego-manifest-modal{backdrop-filter:blur(5px)}
+.ego-manifest-card{position:relative;width:min(1040px,94vw);padding:18px 18px 16px;border:1px solid #8f6d3b;background:linear-gradient(180deg,#090909,#12100f 60%,#0a0908);box-shadow:0 22px 60px rgba(0,0,0,.55),0 0 0 1px rgba(198,151,72,.18) inset;color:#efe3c6}
+.ego-manifest-grid{display:grid;grid-template-columns:minmax(320px,44%) 1fr;gap:18px;align-items:start}.ego-close{position:absolute;right:12px;top:12px;z-index:3}
+.ego-left-panel{position:relative;min-height:600px;border:1px solid #4f3a20;overflow:hidden;background:radial-gradient(circle at 40% 18%,rgba(120,90,40,.14),transparent 34%),linear-gradient(180deg,#050505,#0b0a09)}
+.ego-preview-frame{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:.4;mix-blend-mode:screen;pointer-events:none}
+.ego-preview-art{position:absolute;left:0;right:0;bottom:0;width:100%;height:100%;object-fit:cover;object-position:center bottom;filter:saturate(1.03) contrast(1.03)}
+.ego-preview-shatter{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:.14;mix-blend-mode:screen;pointer-events:none}
+.ego-panel-label{position:absolute;left:16px;top:14px;padding:7px 10px;border:1px solid #7a5736;background:rgba(18,11,8,.76);font:800 11px/1.1 Georgia,serif;letter-spacing:.18em;color:#f5d58b}
+.ego-right-panel{display:flex;flex-direction:column;gap:12px;padding-top:8px}.ego-right-panel h2{margin:0;font:700 clamp(28px,3vw,42px)/1.02 Georgia,serif;color:#f3e2bc;text-shadow:0 2px 0 #000}.ego-meta-row{display:flex;gap:8px;flex-wrap:wrap}.ego-chip{padding:6px 10px;border:1px solid #745637;background:#170f0c;color:#efcf87;font:700 11px/1.1 sans-serif;letter-spacing:.12em}.ego-info-card{display:grid;grid-template-columns:124px 1fr;gap:12px;padding:10px;border:1px solid #5f4127;background:linear-gradient(180deg,rgba(52,20,18,.65),rgba(18,10,8,.8))}.ego-info-card img{width:124px;height:124px;object-fit:cover;border:1px solid #6f4f2d;background:#000}.ego-info-card b{display:block;margin-bottom:6px;font:800 22px/1.1 Georgia,serif;color:#ffd884}.ego-info-card p{margin:0 0 6px;color:#f0eadf}.ego-info-card small{color:#cdb48f}.ego-bleed-inline{color:#ff6767;font-weight:700}.ego-preview-info{width:min(520px,100%);border:1px solid #5c4024;background:#090707;align-self:flex-start}.ego-manifest-text{padding:10px 12px;border:1px solid #403022;background:#0f0b08;color:#e5d8ba}.ego-manifest-text p{margin:0 0 8px}.ego-manifest-text ul{margin:8px 0 0 18px;padding:0}.ego-manifest-text li{margin-bottom:4px}.ego-actions{justify-content:flex-end}.ego-cinematic{position:fixed;inset:0;z-index:70;display:grid;place-items:center;background:rgba(0,0,0,.88)}.ego-cinematic-frame{position:absolute;inset:0;background:radial-gradient(circle at 50% 50%,rgba(255,234,166,.08),transparent 44%),linear-gradient(180deg,rgba(102,25,25,.12),transparent 38%,rgba(0,0,0,.45))}.ego-cinematic-video{position:relative;z-index:2;max-width:min(92vw,1320px);max-height:82vh;border:2px solid #7a5327;box-shadow:0 18px 60px rgba(0,0,0,.6),0 0 0 1px rgba(238,184,93,.18) inset;background:#000}.ego-cinematic-portrait{position:absolute;left:18px;bottom:24px;z-index:1;width:min(24vw,280px);filter:drop-shadow(0 12px 24px rgba(0,0,0,.6));opacity:.9}.ego-skip{position:absolute;right:18px;top:18px;z-index:3}.lc4-status.ego img{filter:saturate(1.15)}
+@media (max-width:920px){.ego-manifest-grid{grid-template-columns:1fr}.ego-left-panel{min-height:420px}.ego-info-card{grid-template-columns:1fr}.ego-info-card img{width:100%;height:auto;max-width:180px}.ego-cinematic-portrait{display:none}}
+\n\n/* V59 — stable E.G.O frame + sprite cinematic + startup-safe build */\n#egoManifestModal .ego-manifest-card{width:min(1120px,95vw);max-height:92dvh;overflow:auto}\n#egoManifestModal .ego-manifest-grid{grid-template-columns:minmax(330px,430px) 1fr;gap:22px}\n#egoManifestModal .ego-left-panel{min-height:650px;background:#040506;border:1px solid #604827;display:grid;place-items:center;overflow:hidden}\n#egoManifestModal .ego-preview-card{display:block;width:100%;height:100%;max-height:650px;object-fit:contain;filter:drop-shadow(0 16px 28px rgba(0,0,0,.55))}\n#egoManifestModal .ego-panel-label{left:18px;top:16px;z-index:3}\n#egoManifestModal .ego-info-card{grid-template-columns:112px 1fr}\n#egoManifestModal .ego-info-card img{width:112px;height:112px}\n#egoCinematic.ego-cinematic{position:fixed;inset:0;z-index:90;display:grid;place-items:center;overflow:hidden;background:#060606}\n#egoCinematic[hidden]{display:none!important}\n#egoCinematic .ego-cinematic-frame{position:absolute;inset:0;background:radial-gradient(circle at 52% 48%,rgba(171,28,24,.24),transparent 46%),linear-gradient(180deg,#090603 0,#1a0a08 58%,#020202 100%)}\n#egoCinematic .ego-cinematic-backdrop{position:absolute;inset:-5%;width:110%;height:110%;object-fit:cover;filter:brightness(.26) saturate(.72) contrast(1.15);opacity:.72;transform:scale(1.04)}\n#egoCinematic .ego-cinematic-shatter{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;mix-blend-mode:screen;opacity:0;transition:opacity .12s ease}\n#egoCinematic .ego-cinematic-shatter.show{opacity:.48}\n#egoCinematic .ego-cinematic-sprite{position:relative;z-index:3;width:min(78vw,980px);height:min(78vh,720px);object-fit:contain;filter:drop-shadow(0 20px 26px rgba(0,0,0,.7));will-change:transform,filter}\n#egoCinematic .ego-cinematic-sprite.ego-frame-pop{animation:lc59EgoFrame .15s ease-out}\n@keyframes lc59EgoFrame{0%{transform:translateX(-14px) scale(.97);filter:brightness(1.55) drop-shadow(0 20px 26px rgba(0,0,0,.7))}100%{transform:translateX(0) scale(1);filter:brightness(1) drop-shadow(0 20px 26px rgba(0,0,0,.7))}}\n#egoCinematic .ego-cinematic-title{position:absolute;z-index:5;left:4.5%;top:5%;display:grid;gap:3px;transform:skewX(-8deg);text-shadow:0 3px 0 #000,0 0 16px rgba(202,43,35,.35)}\n#egoCinematic .ego-cinematic-title small{font:900 11px/1 Georgia,serif;letter-spacing:.24em;color:#c79a66}\n#egoCinematic .ego-cinematic-title b{font:900 clamp(24px,4vw,54px)/.95 Georgia,serif;letter-spacing:.02em;color:#f3dfba}\n#egoCinematic .ego-blood-slash{position:absolute;z-index:4;inset:-20%;pointer-events:none;opacity:0;transform:rotate(-12deg) scale(.8);background:linear-gradient(172deg,transparent 42%,rgba(255,240,217,.95) 44%,#ba1818 46%,#4e0000 49%,transparent 52%),linear-gradient(7deg,transparent 45%,#7d0505 47%,#df2d23 49%,transparent 52%);mix-blend-mode:screen}\n#egoCinematic .ego-blood-slash.hit{animation:lc59BloodSlash .34s ease-out}\n@keyframes lc59BloodSlash{0%{opacity:0;transform:rotate(-12deg) scale(.7)}25%{opacity:1}100%{opacity:0;transform:rotate(-12deg) scale(1.15)}}\n#egoCinematic .ego-skip{z-index:7;right:20px;top:20px}\n#battleScreen.lc59-ego-shake{animation:lc59BattleShake .32s linear}\n@keyframes lc59BattleShake{0%,100%{transform:translate(0,0)}20%{transform:translate(-7px,3px)}40%{transform:translate(8px,-4px)}60%{transform:translate(-5px,-2px)}80%{transform:translate(4px,2px)}}\n#battleScreen .lc4-hit-slash.ego{width:180px;height:18px;background:linear-gradient(90deg,transparent,#7f0000 16%,#ffdad0 48%,#b50000 70%,transparent);box-shadow:0 0 18px rgba(201,24,20,.65);transform:rotate(-22deg);border-radius:60%}\n@media(max-width:920px){#egoManifestModal .ego-manifest-grid{grid-template-columns:1fr}#egoManifestModal .ego-left-panel{min-height:420px}#egoCinematic .ego-cinematic-sprite{width:94vw;height:70vh}}\n
+/* =========================================================
+   V60 — WOLF POWER PASS + LIMBUS UI ASSET INTEGRATION
+   ========================================================= */
+
+/* Battle loading scene */
+.lc60-loading{
+  position:fixed;inset:0;z-index:120;overflow:hidden;
+  display:grid;place-items:center;
+  background:#030303;color:#e7cf9a;
+  isolation:isolate;
+  transition:opacity .32s ease,filter .32s ease;
+}
+.lc60-loading[hidden]{display:none!important}
+.lc60-loading.is-leaving{opacity:0;filter:brightness(1.35) blur(2px)}
+.lc60-loading-bg{position:absolute;inset:0;z-index:-4;background:
+  radial-gradient(circle at 62% 48%,rgba(105,52,20,.2),transparent 34%),
+  linear-gradient(120deg,rgba(0,0,0,.92),rgba(8,11,10,.86)),
+  url('../assets/images/backgrounds/forest-battle.png') center/cover no-repeat;filter:grayscale(.55) contrast(1.2) brightness(.46)}
+.lc60-loading-grid{position:absolute;inset:0;z-index:-3;opacity:.14;background-image:linear-gradient(#b58a4b22 1px,transparent 1px),linear-gradient(90deg,#b58a4b22 1px,transparent 1px);background-size:42px 42px;transform:perspective(560px) rotateX(58deg) scale(1.4);transform-origin:50% 85%}
+.lc60-loading::before{content:"";position:absolute;inset:0;z-index:-2;background:repeating-linear-gradient(0deg,transparent 0 3px,rgba(255,255,255,.018) 4px);pointer-events:none}
+.lc60-loading-copy{position:relative;width:min(650px,82vw);padding:28px 30px 24px;border-top:1px solid #a47b43;border-bottom:1px solid #4d371f;background:linear-gradient(90deg,transparent,#0a0806e8 12%,#0b0907f4 88%,transparent);text-align:left;clip-path:polygon(3% 0,100% 0,97% 100%,0 100%)}
+.lc60-loading-copy small{display:block;font:900 10px/1 Georgia,serif;letter-spacing:.32em;color:#9a7c53}
+.lc60-loading-copy h2{margin:9px 0 5px;font:900 clamp(28px,4vw,52px)/.95 Georgia,serif;letter-spacing:.04em;color:#f0d79f;text-shadow:3px 3px #000}
+.lc60-loading-copy p{margin:0 0 18px;color:#a99e89;font:700 11px/1.5 Georgia,serif;letter-spacing:.06em}
+.lc60-loading-track{position:relative;height:7px;border:1px solid #70512c;background:#090705;overflow:hidden;clip-path:polygon(5px 0,100% 0,calc(100% - 5px) 100%,0 100%)}
+.lc60-loading-track>i{display:block;width:0;height:100%;background:linear-gradient(90deg,#6f3c20,#d39b4e,#f2d38c);box-shadow:0 0 18px #d4964c88;transition:width .1s linear}
+.lc60-loading-copy>b{display:block;margin-top:7px;text-align:right;font:900 12px/1 Georgia,serif;color:#d7b26c;letter-spacing:.16em}
+.lc60-loading-types{position:absolute;right:26px;top:24px;display:flex;gap:5px;opacity:.45}
+.lc60-loading-types img{width:30px;height:30px;object-fit:contain;filter:sepia(.3) brightness(.9)}
+.lc60-loading-gear{position:absolute;z-index:-1;width:min(36vw,430px);opacity:.2;filter:sepia(.25) brightness(.75);animation:lc60GearSpin 18s linear infinite}
+.lc60-loading-gear-a{left:-8vw;bottom:-16vh}.lc60-loading-gear-b{right:-9vw;top:-18vh;animation-direction:reverse;animation-duration:24s}
+@keyframes lc60GearSpin{to{transform:rotate(360deg)}}
+
+/* Actual Limbus damage-type icons supplied by the user. */
+.lc60-type-icon,.lc60-inspector-type-icon,.lc60-intent-type-icon{object-fit:contain;filter:drop-shadow(0 2px 2px #000)}
+.lc60-inspector-type-icon{width:18px;height:18px;margin-right:5px;vertical-align:middle}
+.lc60-type-chip{display:inline-flex!important;align-items:center;gap:4px}
+#battleScreen .lc34-intent-sigil .lc60-intent-type-icon{position:absolute;inset:7px;width:calc(100% - 14px);height:calc(100% - 14px);z-index:4;opacity:.92}
+#battleScreen .lc24-card-type{width:22px!important;height:22px!important;object-fit:contain!important;filter:drop-shadow(0 2px 2px #000)!important}
+
+/* Use the supplied action-slot frame rather than another generic octagon. */
+#battleScreen .lc4-slot-core{
+  border:0!important;clip-path:none!important;
+  background:url('../assets/images/battle/ui/v60/action-slot-frame.png') center/100% 100% no-repeat!important;
+  box-shadow:none!important;
+}
+#battleScreen .lc4-slot-core::before{content:"";position:absolute;inset:-5px;background:url('../assets/images/battle/ui/v60/action-slot-frame.png') center/contain no-repeat;opacity:.22;filter:blur(1px);z-index:-1}
+
+/* User-supplied battle-unit gauge around Don's manager portrait. */
+#battleScreen .lc4-manager-orbit{border:0!important;background:url('../assets/images/battle/ui/v60/unit-gauge-ring.png') center/contain no-repeat!important;box-shadow:none!important;padding:14px!important}
+#battleScreen .lc4-manager-orbit>img{border-radius:50%;background:#17120e;box-shadow:0 0 0 2px #7b5d35}
+
+/* START gear is now the supplied Limbus gear asset. */
+#battleScreen .lc4-command.lc39-inline-command .lc4-start,
+#battleScreen .lc4-start{
+  border:0!important;border-radius:0!important;clip-path:none!important;
+  background:url('../assets/images/battle/ui/v60/start-gear.png') center/contain no-repeat!important;
+  box-shadow:none!important;color:#2b1507!important;text-shadow:0 1px #e8bd73!important;
+}
+#battleScreen .lc4-start::before,#battleScreen .lc4-start::after{display:none!important}
+#battleScreen .lc4-start:hover{filter:brightness(1.18) drop-shadow(0 0 10px #c2773299)!important}
+#battleScreen .lc4-start span{color:#321b0c!important;text-shadow:0 1px #edcb88!important}
+#battleScreen .lc4-start small{color:#4c2a14!important}
+
+/* E.G.O / lock-on ring from supplied slot art. */
+#battleScreen .lc4-ego-btn{border:0!important;clip-path:none!important;background:url('../assets/images/battle/ui/v60/target-ring.png') center/contain no-repeat!important;box-shadow:none!important;text-shadow:0 2px #000}
+#battleScreen .lc4-ego-btn.is-active{filter:brightness(1.45) drop-shadow(0 0 14px #ffb231aa)}
+#battleScreen .lc4-intent{overflow:visible!important}
+#battleScreen .lc4-intent.is-selected::after{content:"";position:absolute;z-index:-1;left:50%;top:50%;width:112%;aspect-ratio:1;transform:translate(-50%,-50%);background:url('../assets/images/battle/ui/v60/target-ring.png') center/contain no-repeat;opacity:.72;pointer-events:none;animation:lc60TargetRing 5s linear infinite}
+@keyframes lc60TargetRing{to{transform:translate(-50%,-50%) rotate(360deg)}}
+
+/* Strong visual response when a unit crosses a stagger threshold. */
+#battleScreen .lc4-enemy.is-staggered .lc4-enemy-stage::after{content:"";position:absolute;z-index:35;left:50%;top:45%;width:230px;height:230px;transform:translate(-50%,-50%);background:url('../assets/images/battle/ui/v60/stagger-burst.png') center/contain no-repeat;mix-blend-mode:screen;pointer-events:none;animation:lc60StaggerPulse .72s ease-in-out infinite alternate}
+@keyframes lc60StaggerPulse{from{opacity:.4;transform:translate(-50%,-50%) scale(.92)}to{opacity:.85;transform:translate(-50%,-50%) scale(1.05)}}
+
+/* Brush-number damage popup from the supplied ParryingTypo sheet crops. */
+#battleScreen .lc60-brush-damage{font-size:0!important;text-shadow:none!important;min-width:70px;display:flex;justify-content:center;align-items:center}
+#battleScreen .lc60-damage-digits{display:flex;align-items:center;justify-content:center;gap:-2px;filter:drop-shadow(3px 4px 0 #000) drop-shadow(0 0 4px #000)}
+#battleScreen .lc60-damage-digits img{display:block;width:auto;height:54px;object-fit:contain;filter:brightness(1.12) sepia(.15)}
+#battleScreen .lc60-brush-damage.critical .lc60-damage-digits img{height:68px;filter:sepia(1) saturate(2.2) brightness(1.45) drop-shadow(0 0 5px #f2aa22)}
+#battleScreen .lc60-brush-damage.bleed .lc60-damage-digits img{filter:sepia(1) saturate(5) hue-rotate(315deg) brightness(.9)}
+#battleScreen .lc60-brush-damage.don .lc60-damage-digits img{filter:sepia(1) saturate(4) hue-rotate(315deg) brightness(1.05)}
+
+/* Slightly more mechanical intent face using the supplied Operation sheet crop. */
+#battleScreen .lc4-intent-frame{background-image:url('../assets/images/battle/ui/v60/operation-octagon.png')!important;background-size:115% 115%!important;background-position:center!important;background-repeat:no-repeat!important;opacity:.5!important}
+
+@media(max-width:700px){
+  .lc60-loading-copy{width:92vw;padding:22px 18px}.lc60-loading-copy h2{font-size:30px}.lc60-loading-types{right:16px;top:16px}.lc60-loading-types img{width:24px;height:24px}
+  #battleScreen .lc60-damage-digits img{height:40px}
+}

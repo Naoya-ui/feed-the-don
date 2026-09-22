@@ -8,6 +8,7 @@ import { donBattleSkills, keywordDescriptions } from "./data/skills.js";
 import { travelTime, wolfIntroDialogue } from "./data/story.js";
 
   const SAVE_KEY = "raise-don-quixote-html-save-v1";
+  const BUILD_TAG = "v60-wolf-ui-loading";
 
   const battleImagePreload = [
     ...Object.values(battleDonSprites),
@@ -29,6 +30,81 @@ import { travelTime, wolfIntroDialogue } from "./data/story.js";
     Shop: assets.backgrounds.shop,
     Forest: assets.backgrounds.forest,
   };
+
+
+  const STATUS_ICON_ASSETS = {
+    haste: 'assets/images/battle/icons/statuses/haste.png',
+    bleed: 'assets/images/battle/icons/statuses/bleed.png',
+    rupture: 'assets/images/battle/icons/statuses/rupture.png',
+    poise: 'assets/images/battle/icons/statuses/poise.png',
+    attackUp: 'assets/images/battle/icons/statuses/attack-up.png',
+    damageUp: 'assets/images/battle/icons/statuses/damage-up.png',
+    stagger: 'assets/images/battle/icons/statuses/stagger.png',
+    sanity: 'assets/images/battle/icons/statuses/sanity.png',
+    shield: 'assets/images/battle/icons/statuses/shield.png',
+    burn: 'assets/images/battle/icons/statuses/burn.png',
+  };
+
+  const STATUS_HELP = {
+    haste: 'Haste raises Speed next turn.',
+    bleed: 'Bleed deals damage equal to Potency whenever the unit flips coins, reducing Count after each trigger.',
+    rupture: 'Rupture deals bonus damage when the unit is hit, then spends 1 Count.',
+    poise: 'Poise grants a Critical chance based on Potency. A Critical spends 1 Poise Count.',
+    attackUp: 'Attack Up increases Don Quixote\'s outgoing attack power this turn.',
+    damageUp: 'Damage Up increases the final damage dealt by that unit.',
+    stagger: 'A Staggered unit cannot Clash and takes double damage from one-sided attacks.',
+    sanity: 'SP / Sanity affects coin flips and certain skills.',
+    shield: 'A defensive effect that helps absorb pressure.',
+    burn: 'Burn deals damage at turn-based triggers depending on the encounter rules.',
+  };
+
+  Object.values(STATUS_ICON_ASSETS).forEach((src) => {
+    const img = new Image();
+    img.decoding = 'async';
+    img.src = src;
+  });
+
+
+  const DAMAGE_TYPE_ICONS = {
+    Slash: 'assets/images/battle/ui/v60/slash.png',
+    Pierce: 'assets/images/battle/ui/v60/pierce.png',
+    Blunt: 'assets/images/battle/ui/v60/blunt.png',
+  };
+  const V60_UI = {
+    targetRing: 'assets/images/battle/ui/v60/target-ring.png',
+    staggerBurst: 'assets/images/battle/ui/v60/stagger-burst.png',
+    startGear: 'assets/images/battle/ui/v60/start-gear.png',
+    actionSlot: 'assets/images/battle/ui/v60/action-slot-frame.png',
+    unitGauge: 'assets/images/battle/ui/v60/unit-gauge-ring.png',
+  };
+  [...Object.values(DAMAGE_TYPE_ICONS), ...Object.values(V60_UI)].forEach((src) => {
+    const img = new Image();
+    img.decoding = 'async';
+    img.src = src;
+  });
+
+  function damageTypeIcon(type = '') {
+    const label = String(type || '').trim();
+    return DAMAGE_TYPE_ICONS[label] || '';
+  }
+  function damageTypeMarkup(type = '', cls = 'lc60-type-icon') {
+    const src = damageTypeIcon(type);
+    return src ? `<img class="${cls}" src="${src}" alt="${escapeHTML(String(type))}" />` : '';
+  }
+
+  const EGO_ASSETS = {
+    card: 'assets/images/battle/ego/ego-card-composite.png',
+    art: 'assets/images/battle/ego/frame-art.png',
+    info: 'assets/images/battle/ego/skill-info.png',
+    portrait: 'assets/images/battle/ego/cutin-portrait.png',
+    shatter: 'assets/images/battle/ego/shatter.png',
+    frames: Array.from({ length: 7 }, (_, i) => `assets/images/battle/ego/frames/ego_${String(i + 1).padStart(2, '0')}.png`),
+  };
+  [EGO_ASSETS.card, EGO_ASSETS.art, EGO_ASSETS.info, EGO_ASSETS.portrait, EGO_ASSETS.shatter, ...EGO_ASSETS.frames].forEach((src) => {
+    const img = new Image();
+    img.decoding = 'async';
+    img.src = src;
+  });
 
   // Battle mechanics are rebuilt from the uploaded gameplay reference:
   // command phase -> speed/action slots -> targeting lines -> clash resolution -> attack phase.
@@ -79,6 +155,11 @@ import { travelTime, wolfIntroDialogue } from "./data/story.js";
     joust: ["assets/audio/don-skills/028_donquixote_base_skill1_a_v1.wav"],
     gallop: ["assets/audio/don-skills/029_donquixote_base_skill2_a_v1.wav"],
     justice: [
+      "assets/audio/don-skills/030_donquixote_base_skill3-1_a_v1.wav",
+      "assets/audio/don-skills/030_donquixote_base_skill3-2_a_v1.wav",
+      "assets/audio/don-skills/030_donquixote_base_skill3-3_a_v1.wav",
+    ],
+    laSangre: [
       "assets/audio/don-skills/030_donquixote_base_skill3-1_a_v1.wav",
       "assets/audio/don-skills/030_donquixote_base_skill3-2_a_v1.wav",
       "assets/audio/don-skills/030_donquixote_base_skill3-3_a_v1.wav",
@@ -173,8 +254,9 @@ import { travelTime, wolfIntroDialogue } from "./data/story.js";
   function playDonSkillHitSfx(skillKey, hitIndex = 0) {
     const sounds = DON_SKILL_SFX_CACHE[skillKey];
     if (!sounds?.length) return false;
-    if (skillKey !== "justice" && hitIndex > 0) return true;
-    const index = skillKey === "justice" ? Math.min(hitIndex, sounds.length - 1) : 0;
+    const multiCue = skillKey === "justice" || skillKey === "laSangre";
+    if (!multiCue && hitIndex > 0) return true;
+    const index = multiCue ? Math.min(hitIndex, sounds.length - 1) : 0;
     const template = sounds[index];
     if (!template) return false;
     const sound = template.cloneNode(true);
@@ -555,18 +637,23 @@ import { travelTime, wolfIntroDialogue } from "./data/story.js";
       donSlots: [],
       enemySlots: [],
       sins: { Lust: 0, Envy: 0, Gluttony: 0 },
+      egoUnlocked: false,
+      egoActivated: false,
+      egoTutorialShown: false,
+      egoUsed: false,
+      egoSkillReady: false,
     };
   }
 
   function makeWolfBattleState() {
     const wolf = mkBattleEnemy(0, wolfBoss.name, wolfBoss.maxHp || 360, "WOLF", "wolf");
     wolf.thresholds = [...(wolfBoss.staggerThresholds || [230, 115])];
-    wolf.sp = 0;
+    wolf.sp = 10;
     wolf.nextHaste = 0;
     wolf.haste = 0;
-    wolf.damageUp = 0;
-    wolf.poisePotency = 0;
-    wolf.poiseCount = 0;
+    wolf.damageUp = 1;
+    wolf.poisePotency = 2;
+    wolf.poiseCount = 3;
     wolf.mirageUsed = false;
     return {
       active: true,
@@ -584,13 +671,18 @@ import { travelTime, wolfIntroDialogue } from "./data/story.js";
       dragMoved: false,
       suppressSkillClickUntil: 0,
       openHandSlot: null,
-      guideMessage: "BOSS DUEL — Wolf will cycle through her six skills.",
+      guideMessage: "BOSS DUEL — Wolf is empowered. Survive to Turn 6 to awaken E.G.O.",
       autoMode: null,
       don: Object.assign(new Player(characters.donQuixote), { staggered: false }),
       enemies: [wolf],
       donSlots: [],
       enemySlots: [],
       sins: { Lust: 0, Envy: 0, Gluttony: 0 },
+      egoUnlocked: false,
+      egoActivated: false,
+      egoTutorialShown: false,
+      egoUsed: false,
+      egoSkillReady: false,
     };
   }
 
@@ -724,6 +816,7 @@ import { travelTime, wolfIntroDialogue } from "./data/story.js";
       slot.targetIntentId = null;
     });
     battle.autoMode = null;
+    if (battle.egoActivated && !battle.egoUsed) injectEgoSkillIntoTurn();
     battle.guideMessage = "";
     battle.focusSlot = Math.min(battle.focusSlot, Math.max(0, battle.donSlots.length - 1));
   }
@@ -785,6 +878,62 @@ import { travelTime, wolfIntroDialogue } from "./data/story.js";
     return { label: "HOPELESS", cls: "hopeless", delta };
   }
 
+
+  function guessEffectIconKey(text = '') {
+    const value = String(text || '').toLowerCase();
+    if (value.includes('bleed')) return 'bleed';
+    if (value.includes('rupture')) return 'rupture';
+    if (value.includes('poise')) return 'poise';
+    if (value.includes('haste')) return 'haste';
+    if (value.includes('damage up')) return 'damageUp';
+    if (value.includes('attack up')) return 'attackUp';
+    if (value.includes('stagger')) return 'stagger';
+    if (value.includes('sp')) return 'sanity';
+    if (value.includes('shield') || value.includes('guard') || value.includes('defense')) return 'shield';
+    if (value.includes('burn')) return 'burn';
+    return null;
+  }
+
+  function statusBadgeHTML(kind, label, extraClass = '', titleText = '') {
+    const icon = STATUS_ICON_ASSETS[kind];
+    const classes = ['lc4-status', kind, extraClass].filter(Boolean).join(' ');
+    const title = escapeHTML(titleText || STATUS_HELP[kind] || label);
+    return `<span class="${classes}" title="${title}">${icon ? `<img class="lc4-status-icon" src="${icon}" alt="" />` : ''}<span>${escapeHTML(label)}</span></span>`;
+  }
+
+  function formatPoiseLabel(unit) {
+    const chance = BattleSystem.poiseCritChance(unit);
+    return `POISE ${unit.poisePotency}/${unit.poiseCount} · ${chance}%`;
+  }
+
+  function donStatusBadgesHTML() {
+    const badges = [];
+    if (battle.don.haste) badges.push(statusBadgeHTML('haste', `HASTE ${battle.don.haste}`));
+    if (battle.don.attackUp) badges.push(statusBadgeHTML('attackUp', `ATK+ ${battle.don.attackUp}`));
+    if (battle.don.statuses?.bleed?.count > 0) badges.push(statusBadgeHTML('bleed', `BLEED ${battle.don.statuses.bleed.potency}/${battle.don.statuses.bleed.count}`));
+    if (battle.don.poiseCount > 0 && battle.don.poisePotency > 0) badges.push(statusBadgeHTML('poise', formatPoiseLabel(battle.don)));
+    if (battle?.egoActivated) badges.push(statusBadgeHTML('sanity', battle.egoUsed ? 'EGO SPENT' : 'EGO READY', 'ego', 'La Sangre de Sancho is manifested. Using it costs 20 SP.'));
+    if (battle.don.staggered || battle.don.isStaggered) badges.push(statusBadgeHTML('stagger', 'STAGGER'));
+    return badges.join('') || '<span class="lc4-status ready">READY</span>';
+  }
+
+  function enemyStatusBadgesHTML(enemy) {
+    const badges = [];
+    if (enemy.staggered) badges.push(statusBadgeHTML('stagger', 'STAGGER'));
+    if (enemy.bleedCount > 0) badges.push(statusBadgeHTML('bleed', `BLEED ${enemy.bleedPotency}/${enemy.bleedCount}`));
+    if (enemy.ruptureCount > 0) badges.push(statusBadgeHTML('rupture', `RUPTURE ${enemy.rupturePotency}/${enemy.ruptureCount}`));
+    if (enemy.poiseCount > 0 && enemy.poisePotency > 0) badges.push(statusBadgeHTML('poise', formatPoiseLabel(enemy)));
+    if ((enemy.haste || 0) > 0) badges.push(statusBadgeHTML('haste', `HASTE ${enemy.haste}`));
+    if ((enemy.damageUp || 0) > 0) badges.push(statusBadgeHTML('damageUp', `DMG+ ${enemy.damageUp}`));
+    return badges.join('');
+  }
+
+  function decorateEffectText(effectText) {
+    const key = guessEffectIconKey(effectText);
+    const icon = key ? `<img class="lc21-effect-icon" src="${STATUS_ICON_ASSETS[key]}" alt="" />` : '';
+    return `${icon}<span>${escapeHTML(effectText)}</span>`;
+  }
+
   function renderBattleHUD() {
     els.battleWave.textContent = `${battle.wave}/${battle.totalWaves || 1}`;
     els.battleTurn.textContent = String(battle.turn);
@@ -796,13 +945,7 @@ import { travelTime, wolfIntroDialogue } from "./data/story.js";
     els.managerSp.textContent = `${battle.don.sp >= 0 ? "+" : ""}${battle.don.sp} SP`;
     const maxSpeed = battle.donSlots.length ? Math.max(...battle.donSlots.map((slot) => slot.speed)) : 3;
     els.donSpeed.textContent = String(maxSpeed);
-    const statuses = [];
-    if (battle.don.haste) statuses.push(`HASTE ${battle.don.haste}`);
-    if (battle.don.attackUp) statuses.push(`ATK+ ${battle.don.attackUp}`);
-    if (battle.don.statuses?.bleed?.count > 0) statuses.push(`BLEED ${battle.don.statuses.bleed.potency}/${battle.don.statuses.bleed.count}`);
-    if (battle.don.statuses?.rupture?.count > 0) statuses.push(`RUPTURE ${battle.don.statuses.rupture.potency}/${battle.don.statuses.rupture.count}`);
-    if (battle.don.staggered || battle.don.isStaggered) statuses.push('STAGGER');
-    els.donStatus.textContent = statuses.join(" · ") || "READY";
+    if (els.donStatus) els.donStatus.innerHTML = donStatusBadgesHTML();
     els.sinLust.textContent = String(battle.sins.Lust);
     els.sinEnvy.textContent = String(battle.sins.Envy);
     els.sinGluttony.textContent = String(battle.sins.Gluttony);
@@ -830,10 +973,7 @@ import { travelTime, wolfIntroDialogue } from "./data/story.js";
       const hpPct = clamp((enemy.hp / enemy.maxHp) * 100, 0, 100);
       const nextThreshold = enemy.thresholds[enemy.staggerLevel];
       const staggerPct = nextThreshold == null ? 0 : clamp((nextThreshold / enemy.maxHp) * 100, 0, 100);
-      const bleed = enemy.bleedCount > 0 ? `<span class="lc4-status bleed">BLEED ${enemy.bleedPotency}/${enemy.bleedCount}</span>` : "";
-      const rupture = enemy.ruptureCount > 0 ? `<span class="lc4-status rupture">RUPTURE ${enemy.rupturePotency}/${enemy.ruptureCount}</span>` : "";
-      const poiseChance = BattleSystem.poiseCritChance(enemy);
-      const poise = enemy.poiseCount > 0 && enemy.poisePotency > 0 ? `<span class="lc4-status poise" title="Critical chance ${poiseChance}%">POISE ${enemy.poisePotency}/${enemy.poiseCount} · ${poiseChance}%</span>` : "";
+      const statusBadges = enemyStatusBadgesHTML(enemy);
       const staggerText = nextThreshold == null ? "NO STAGGER" : `STAG ${nextThreshold}`;
       card.innerHTML = `
         <div class="lc4-enemy-name"><small>${escapeHTML(enemy.role)}</small><b>${escapeHTML(enemy.name)}</b><span class="lc34-enemy-tag">HOSTILE</span></div>
@@ -842,7 +982,7 @@ import { travelTime, wolfIntroDialogue } from "./data/story.js";
           <div class="lc34-enemy-vital-head"><span>HP</span><b>${Math.max(0, enemy.hp)}/${enemy.maxHp}</b></div>
           <div class="lc4-enemy-hp"><i style="width:${hpPct}%"></i>${nextThreshold == null ? "" : `<em class="lc10-stagger-mark" style="left:${staggerPct}%"></em>`}</div>
           <div class="lc10-stagger-track"><i style="width:${Math.max(0, 100-hpPct)}%"></i><span>${staggerText}</span></div>
-          <div class="lc4-statuses">${enemy.staggered ? '<span class="lc4-status stagger">STAGGER</span>' : ""}${bleed}${rupture}${poise}</div>
+          <div class="lc4-statuses">${statusBadges}</div>
         </div>`;
       if (enemy.hp > 0) {
         card.addEventListener("click", () => {
@@ -912,7 +1052,8 @@ import { travelTime, wolfIntroDialogue } from "./data/story.js";
       btn.dataset.enemyId = String(enemy.id);
 
       const intentGlyph = intentTypeGlyph(slot.skill.type, !!slot.skill.defense);
-      btn.innerHTML = `<span class="lc4-intent-speed">${slot.speed}</span><span class="lc4-intent-frame"></span><span class="lc34-intent-sigil"><span class="lc34-intent-glyph">${intentGlyph}</span></span>${slot.skill.art ? `<img class="lc4-intent-art" src="${escapeHTML(slot.skill.art)}" alt="" />` : ""}<span class="lc32-intent-type">${escapeHTML((slot.skill.type || "ATK").toUpperCase())}</span><span class="lc32-intent-coin">${slot.skill.coins || 1} COIN</span><b title="${escapeHTML(slot.skill.name)}">${escapeHTML(slot.skill.name)}</b><small>${slot.skill.base} + ${slot.skill.coinPower}</small>`;
+      const intentTypeImage = slot.skill.defense ? '' : damageTypeMarkup(slot.skill.type, 'lc60-intent-type-icon');
+      btn.innerHTML = `<span class="lc4-intent-speed">${slot.speed}</span><span class="lc4-intent-frame"></span><span class="lc34-intent-sigil">${intentTypeImage}<span class="lc34-intent-glyph">${intentGlyph}</span></span>${slot.skill.art ? `<img class="lc4-intent-art" src="${escapeHTML(slot.skill.art)}" alt="" />` : ""}<span class="lc32-intent-type">${escapeHTML((slot.skill.type || "ATK").toUpperCase())}</span><span class="lc32-intent-coin">${slot.skill.coins || 1} COIN</span><b title="${escapeHTML(slot.skill.name)}">${escapeHTML(slot.skill.name)}</b><small>${slot.skill.base} + ${slot.skill.coinPower}</small>`;
 
       if (battle.selectedEnemyId === enemy.id) btn.classList.add("is-selected");
 
@@ -985,9 +1126,9 @@ import { travelTime, wolfIntroDialogue } from "./data/story.js";
       ? effects.map((effect) => `
           <div class="lc21-skillfx-row">
             <span class="lc21-skillfx-tag">${escapeHTML(effect.tag)}</span>
-            <b>${escapeHTML(effect.text)}</b>
+            <b>${decorateEffectText(effect.text)}</b>
           </div>`).join("")
-      : `<div class="lc21-skillfx-row"><span class="lc21-skillfx-tag">[Info]</span><b>No special effect.</b></div>`;
+      : `<div class="lc21-skillfx-row"><span class="lc21-skillfx-tag">[Info]</span><b><span>No special effect.</span></b></div>`;
 
     els.enemyInspectorName.textContent = `${enemy?.name || "Enemy"} · ${skill.name}`;
     if (els.enemyInspectorArt) {
@@ -999,8 +1140,8 @@ import { travelTime, wolfIntroDialogue } from "./data/story.js";
       }
     }
     if (els.enemyInspectorType) {
-      els.enemyInspectorType.textContent = typeLabel;
-      els.enemyInspectorType.className = `lc10-chip ${intentTypeClass(skill.type)}`;
+      els.enemyInspectorType.innerHTML = `${damageTypeMarkup(skill.type, 'lc60-inspector-type-icon')}<span>${escapeHTML(typeLabel)}</span>`;
+      els.enemyInspectorType.className = `lc10-chip lc60-type-chip ${intentTypeClass(skill.type)}`;
     }
     if (els.enemyInspectorCoins) els.enemyInspectorCoins.textContent = `${skill.coins} COIN${skill.coins > 1 ? "S" : ""}`;
     els.enemyInspectorPower.textContent = `${skill.base} + ${skill.coinPower} · ${skill.coins} Coin${skill.coins > 1 ? "s" : ""}`;
@@ -1058,10 +1199,7 @@ import { travelTime, wolfIntroDialogue } from "./data/story.js";
   function intentTypeGlyph(type = "", defense = false) {
     const key = String(type).toLowerCase();
     if (defense || key.includes("defense") || key.includes("guard") || key.includes("evade") || key.includes("block")) return "▣";
-    if (key.includes("slash")) return "╱";
-    if (key.includes("pierce")) return "△";
-    if (key.includes("blunt")) return "⬢";
-    return "◆";
+    return damageTypeIcon(type) ? "" : "◆";
   }
 
   function bleedMarkup(textValue) {
@@ -1101,7 +1239,7 @@ import { travelTime, wolfIntroDialogue } from "./data/story.js";
   function skillCardHTML(skill, slot, back = false) {
     const cp = getSkillCoinPower(skill, slot.speed);
     const affinityIcon = battleUiIcons.sins[skill.affinity] || "";
-    const typeIcon = skill.defense ? battleUiIcons.evade : battleUiIcons.attack;
+    const typeIcon = skill.defense ? battleUiIcons.evade : (damageTypeIcon(skill.type) || battleUiIcons.attack);
     return `<img class="lc7-skill-art" src="${escapeHTML(skill.art || "")}" alt="" />
       <span class="lc7-card-shade"></span>
       <span class="lc4-skill-aff">${affinityIcon ? `<img src="${escapeHTML(affinityIcon)}" alt="" />` : ""}${escapeHTML(skill.affinity)}</span>
@@ -1264,86 +1402,257 @@ import { travelTime, wolfIntroDialogue } from "./data/story.js";
     }
   }
 
+
+  function egoCanAppear() {
+    return !!battle && battle.encounter === 'wolf' && battle.turn >= 6;
+  }
+
+  function egoNeedsPrompt() {
+    return egoCanAppear() && !battle.egoActivated;
+  }
+
+  function updateEgoButton() {
+    if (!els.egoActivateBtn) return;
+    const show = !!battle && battle.phase === 'planning' && egoCanAppear();
+    els.egoActivateBtn.hidden = !show;
+    if (!show) return;
+    els.egoActivateBtn.disabled = !!battle.egoActivated;
+    els.egoActivateBtn.classList.toggle('is-active', !!battle.egoActivated);
+    els.egoActivateBtn.querySelector('span').textContent = battle.egoActivated ? 'E.G.O READY' : 'E.G.O';
+    els.egoActivateBtn.querySelector('small').textContent = battle.egoActivated ? (battle.egoUsed ? 'SPENT' : 'MANIFESTED') : 'TURN 6';
+  }
+
+  function positionPlayerIntentAnchor() {
+    if (!els.playerIntentAnchor || !battle || battle.phase !== 'planning' || els.battleScreen.hidden) {
+      if (els.playerIntentAnchor) els.playerIntentAnchor.hidden = true;
+      return;
+    }
+    const rect = els.battleScreen.getBoundingClientRect();
+    const donRect = els.battleDon.getBoundingClientRect();
+    const x = donRect.left + donRect.width * 0.48 - rect.left;
+    const y = donRect.top - rect.top + 8;
+    els.playerIntentAnchor.style.left = `${Math.max(44, x)}px`;
+    els.playerIntentAnchor.style.top = `${Math.max(16, y)}px`;
+  }
+
+  function renderPlayerIntentAnchor() {
+    if (!els.playerIntentAnchor) return;
+    if (!battle || battle.phase !== 'planning') {
+      els.playerIntentAnchor.hidden = true;
+      return;
+    }
+    const slot = battle.donSlots?.[battle.focusSlot] || battle.donSlots?.[0];
+    const speed = slot?.speed ?? battle.donSlots?.[0]?.speed ?? battle.don.speed ?? 0;
+    els.playerIntentAnchor.className = `lc4-intent lc4-intent-player ${battle.egoActivated ? 'ego-live' : ''} type-defense`;
+    els.playerIntentAnchor.innerHTML = `<span class="lc4-intent-speed">${speed}</span><span class="lc4-intent-frame"></span><span class="lc34-intent-sigil"><span class="lc34-intent-glyph">◈</span></span><b>DON QUIXOTE</b><small>${battle.egoActivated ? (battle.egoUsed ? 'E.G.O SPENT' : 'E.G.O READY') : 'TARGET'}</small>`;
+    els.playerIntentAnchor.hidden = false;
+    requestAnimationFrame(positionPlayerIntentAnchor);
+  }
+
+  function openEgoManifest() {
+    if (!battle || !egoCanAppear() || battle.egoActivated || !els.egoManifestModal) return;
+    if (els.egoPreviewCard) els.egoPreviewCard.src = EGO_ASSETS.card;
+    if (els.egoPreviewInfo) els.egoPreviewInfo.src = EGO_ASSETS.info;
+    if (els.egoPreviewIcon) els.egoPreviewIcon.src = EGO_ASSETS.portrait;
+    els.egoManifestModal.hidden = false;
+  }
+
+  function closeEgoManifest() {
+    if (!els.egoManifestModal) return;
+    els.egoManifestModal.hidden = true;
+  }
+
+  function injectEgoSkillIntoTurn() {
+    if (!battle?.donSlots?.length) return;
+    const slot = battle.donSlots[0];
+    if (!slot) return;
+    slot.options = ['laSangre', 'laSangre'];
+    slot.selected = 0;
+    slot.defense = false;
+  }
+
+  function activateEgo() {
+    if (!battle || !egoCanAppear() || battle.egoActivated) return;
+    closeEgoManifest();
+    battle.egoActivated = true;
+    battle.egoSkillReady = true;
+    battle.egoTutorialShown = true;
+    injectEgoSkillIntoTurn();
+    battle.focusSlot = 0;
+    battle.guideMessage = 'E.G.O manifested. Slot 1 is now La Sangre de Sancho. It costs 20 SP when used. Drag it to an enemy intent, then press START.';
+    showNotice('E.G.O MANIFESTED — LA SANGRE DE SANCHO READY · SP COST 20', 3200);
+    renderPlanning();
+  }
+
+  async function playEgoCinematic() {
+    const panel = els.egoCinematic;
+    const sprite = els.egoCinematicSprite;
+    if (!panel || !sprite) {
+      await rawDelay(900);
+      return;
+    }
+
+    let skipped = false;
+    const skip = () => { skipped = true; };
+    els.egoCinematicClose?.addEventListener('click', skip, { once: true });
+    panel.hidden = false;
+    panel.classList.add('is-playing');
+    if (els.egoCinematicBackdrop) els.egoCinematicBackdrop.src = EGO_ASSETS.art;
+    if (els.egoCinematicShatter) els.egoCinematicShatter.src = EGO_ASSETS.shatter;
+
+    const previousBattleVolume = battleBgm.volume;
+    fadeAudio(battleBgm, Math.max(0.04, previousBattleVolume * 0.38), 220);
+
+    for (let i = 0; i < EGO_ASSETS.frames.length && !skipped; i += 1) {
+      sprite.src = EGO_ASSETS.frames[i];
+      sprite.classList.remove('ego-frame-pop');
+      void sprite.offsetWidth;
+      sprite.classList.add('ego-frame-pop');
+
+      if (i === 0 || i === 3 || i === 6) {
+        const cue = i === 0 ? 0 : i === 3 ? 1 : 2;
+        playDonSkillHitSfx('laSangre', cue);
+      }
+      if (i === 3 || i === 5 || i === 6) {
+        els.egoBloodSlash?.classList.remove('hit');
+        void els.egoBloodSlash?.offsetWidth;
+        els.egoBloodSlash?.classList.add('hit');
+        els.battleScreen?.classList.remove('lc59-ego-shake');
+        void els.battleScreen?.offsetWidth;
+        els.battleScreen?.classList.add('lc59-ego-shake');
+        flashBattle();
+      }
+      if (i === 5 && els.egoCinematicShatter) els.egoCinematicShatter.classList.add('show');
+      await rawDelay(i < 3 ? 150 : 115);
+    }
+
+    await rawDelay(skipped ? 0 : 180);
+    panel.classList.remove('is-playing');
+    panel.hidden = true;
+    els.egoCinematicShatter?.classList.remove('show');
+    els.egoBloodSlash?.classList.remove('hit');
+    els.battleScreen?.classList.remove('lc59-ego-shake');
+    fadeAudio(battleBgm, previousBattleVolume, 260);
+  }
+
   function tutorialForTurn() {
     const targeted = battle.donSlots.filter((slot) => !!slot.targetIntentId).length;
     const total = battle.donSlots.length;
     let step = battleTutorialSteps[Math.min(battle.tutorialStep, battleTutorialSteps.length - 1)];
 
-    if (battle.turn === 1) {
+    if (egoNeedsPrompt()) {
+      step = {
+        title: 'E.G.O AWAKENED',
+        text: 'Don survived 5 turns. Click the E.G.O button on the right, review La Sangre de Sancho, then manifest it. The E.G.O skill costs 20 SP when used.'
+      };
+    } else if (battle.turn === 1) {
       if (battle.autoMode) {
         step = {
-          title: battle.autoMode === "win" ? "WIN RATE AUTO-CHAIN" : "DAMAGE AUTO-CHAIN",
-          text: "Automatic targeting is active because you pressed an auto button. Review the arrows, then press START."
+          title: battle.autoMode === 'win' ? 'WIN RATE AUTO-CHAIN' : 'DAMAGE AUTO-CHAIN',
+          text: 'Automatic targeting is active because you pressed an auto button. Review the arrows, then press START.'
         };
       } else if (targeted === 0) {
         step = {
-          title: "SKILLS + ENEMY INTENTS",
-          text: "Your skill cards are at the bottom. Enemy action icons are above the bandits. Drag a skill card onto an enemy action to create a target."
+          title: 'SKILLS + ENEMY INTENTS',
+          text: 'Your skill cards are at the bottom. Enemy action icons are above the bandits. Drag a skill card onto an enemy action to create a target.'
         };
       } else if (targeted < total) {
-        step = { title: `TARGETS ${targeted}/${total}`, text: "Good. Keep dragging skill cards onto enemy actions until every action slot has a target." };
+        step = { title: `TARGETS ${targeted}/${total}`, text: 'Good. Keep dragging skill cards onto enemy actions until every action slot has a target.' };
       } else {
-        step = { title: "CHAIN READY", text: "Every action is targeted. Check the arrow colors and Clash labels, then press START." };
+        step = { title: 'CHAIN READY', text: 'Every action is targeted. Check the arrow colors and Clash labels, then press START.' };
       }
     }
 
     els.tutorialTitle.textContent = step.title;
     els.tutorialText.textContent = battle.guideMessage || step.text;
-    els.battleTutorial.hidden = battle.turn > 4;
-    els.battleScreen.classList.toggle("lc9-show-target-help", battle.turn === 1 && targeted === 0 && !battle.autoMode);
+    els.battleTutorial.hidden = !(battle.turn <= 4 || egoNeedsPrompt());
+    els.battleScreen.classList.toggle('lc9-show-target-help', battle.turn === 1 && targeted === 0 && !battle.autoMode);
   }
 
   function drawTargetLines(pointer = null) {
-    if (!battle || battle.phase !== "planning" || els.battleScreen.hidden) return;
+    if (!battle || battle.phase !== 'planning' || els.battleScreen.hidden) return;
     const svg = els.targetLines;
     const rect = els.battleScreen.getBoundingClientRect();
-    svg.setAttribute("viewBox", `0 0 ${rect.width} ${rect.height}`);
-    [...svg.querySelectorAll("path.lc4-link, path.lc4-link-shadow, circle.lc4-link-origin")].forEach((node) => node.remove());
+    svg.setAttribute('viewBox', `0 0 ${rect.width} ${rect.height}`);
+    [...svg.querySelectorAll('path.lc4-link, path.lc4-link-shadow, circle.lc4-link-origin')].forEach((node) => node.remove());
 
     const getCardStart = (slotIndex) => {
       const card = els.actionRail?.querySelector(`.lc4-action[data-action-slot="${slotIndex}"] .lc4-skill-front`);
       if (card) {
         const c = card.getBoundingClientRect();
-        return { x: c.left + c.width * .5 - rect.left, y: c.top + 8 - rect.top };
+        return { x: c.left + c.width * 0.5 - rect.left, y: c.top + 8 - rect.top };
       }
-      return { x: rect.width * .5, y: rect.height - 130 };
+      return { x: rect.width * 0.5, y: rect.height - 130 };
     };
 
-    const buildCurve = (x1, y1, x2, y2) => {
-      const lift = Math.max(48, Math.min(120, (y1 - y2) * .35 + Math.abs(x2 - x1) * .08));
-      return `M ${x1} ${y1} C ${x1} ${y1 - lift}, ${x2} ${y2 + Math.min(36, lift * .28)}, ${x2} ${y2}`;
+    const getIntentPoint = (btn, biasY = 0.7) => {
+      const b = btn.getBoundingClientRect();
+      return { x: b.left + b.width / 2 - rect.left, y: b.top + b.height * biasY - rect.top };
+    };
+
+    const buildCurve = (x1, y1, x2, y2, hostile = false) => {
+      const dx = x2 - x1;
+      const dy = y2 - y1;
+      const sweep = Math.max(34, Math.min(138, Math.abs(dx) * 0.12 + Math.abs(dy) * 0.06 + 28));
+      const liftA = hostile ? Math.max(10, sweep * 0.15) : sweep;
+      const liftB = hostile ? Math.max(10, sweep * 0.06) : Math.min(34, sweep * 0.28);
+      const c1x = x1 + dx * 0.28;
+      const c2x = x1 + dx * 0.78;
+      const c1y = y1 - liftA;
+      const c2y = y2 + (hostile ? -liftB : liftB);
+      return `M ${x1} ${y1} C ${c1x} ${c1y}, ${c2x} ${c2y}, ${x2} ${y2}`;
+    };
+
+    const appendArrow = (cls, markerId, start, end, focus = false) => {
+      const d = buildCurve(start.x, start.y, end.x, end.y, cls.includes('hostile'));
+      const shadow = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+      shadow.classList.add('lc4-link-shadow', ...cls.split(' '), focus ? 'is-focus' : 'is-secondary');
+      shadow.setAttribute('d', d);
+      svg.appendChild(shadow);
+
+      const origin = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+      origin.classList.add('lc4-link-origin', ...cls.split(' '), focus ? 'is-focus' : 'is-secondary');
+      origin.setAttribute('cx', String(start.x));
+      origin.setAttribute('cy', String(start.y));
+      origin.setAttribute('r', focus ? '3.6' : '2.8');
+      svg.appendChild(origin);
+
+      const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+      path.classList.add('lc4-link', ...cls.split(' '), focus ? 'is-focus' : 'is-secondary');
+      path.setAttribute('d', d);
+      path.setAttribute('marker-end', `url(#${markerId})`);
+      svg.appendChild(path);
     };
 
     battle.donSlots.forEach((slot) => {
       if (!slot.targetIntentId) return;
       const to = els.enemyIntentSlots.querySelector(`[data-intent-id="${slot.targetIntentId}"]`);
       if (!to) return;
-      const b = to.getBoundingClientRect();
-      const { x: x1, y: y1 } = getCardStart(slot.index);
-      const x2 = b.left + b.width / 2 - rect.left;
-      const y2 = b.top + b.height * .76 - rect.top;
+      const from = getCardStart(slot.index);
+      const toPoint = getIntentPoint(to, 0.76);
       const forecast = clashForecast(slot);
-      const marker = forecast.cls === "dominating" || forecast.cls === "favored" ? "arrowGreen" : forecast.cls === "neutral" ? "arrowGold" : forecast.cls === "unopposed" ? "arrowBlue" : "arrowRed";
-      const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
-      path.classList.add("lc4-link", forecast.cls, slot.index === battle.focusSlot ? "is-focus" : "is-secondary");
-      path.setAttribute("d", buildCurve(x1, y1, x2, y2));
-      path.setAttribute("marker-end", `url(#${marker})`);
-      svg.appendChild(path);
+      const marker = forecast.cls === 'dominating' || forecast.cls === 'favored' ? 'arrowGreen' : forecast.cls === 'neutral' ? 'arrowGold' : forecast.cls === 'unopposed' ? 'arrowBlue' : 'arrowRed';
+      appendArrow(forecast.cls, marker, from, toPoint, slot.index === battle.focusSlot);
     });
 
     if (battle.dragSlot !== null && dragHoverIntentId) {
       const hovered = els.enemyIntentSlots.querySelector(`[data-intent-id="${dragHoverIntentId}"]`);
       if (hovered) {
-        const hb = hovered.getBoundingClientRect();
-        const { x: x1, y: y1 } = getCardStart(battle.dragSlot);
-        const x2 = hb.left + hb.width / 2 - rect.left;
-        const y2 = hb.top + hb.height * .76 - rect.top;
-        const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
-        path.classList.add("lc4-link", "dragging", "snap", "is-focus");
-        path.setAttribute("d", buildCurve(x1, y1, x2, y2));
-        path.setAttribute("marker-end", "url(#arrowGold)");
-        svg.appendChild(path);
+        appendArrow('dragging', 'arrowGold', getCardStart(battle.dragSlot), getIntentPoint(hovered, 0.76), true);
       }
+    }
+
+    const anchor = els.playerIntentAnchor;
+    if (anchor && !anchor.hidden) {
+      const anchorPoint = getIntentPoint(anchor, 0.74);
+      const liveEnemySlots = battle.enemySlots.filter((slot) => !slot.consumed && enemyById(slot.enemyId)?.hp > 0);
+      liveEnemySlots.forEach((slot, index) => {
+        const fromBtn = els.enemyIntentSlots.querySelector(`[data-intent-id="${slot.id}"]`);
+        if (!fromBtn) return;
+        const from = getIntentPoint(fromBtn, 0.82);
+        const end = { x: anchorPoint.x - 14 + (index * 10), y: anchorPoint.y + 6 + (index % 2) * 7 };
+        appendArrow('hostile struggling', 'arrowHostile', from, end, battle.selectedEnemyId === slot.enemyId);
+      });
     }
   }
 
@@ -1362,6 +1671,8 @@ import { travelTime, wolfIntroDialogue } from "./data/story.js";
     renderBattleHUD();
     renderEnemies();
     renderEnemyIntents();
+    renderPlayerIntentAnchor();
+    updateEgoButton();
     if (battle.selectedEnemyId != null) setSelectedEnemy(battle.selectedEnemyId);
     renderTurnOrder();
     renderActionRail();
@@ -1369,6 +1680,7 @@ import { travelTime, wolfIntroDialogue } from "./data/story.js";
     tutorialForTurn();
     scheduleTargetLines();
     requestAnimationFrame(positionEnemyIntents);
+    requestAnimationFrame(positionPlayerIntentAnchor);
   }
 
   function autoSelect(mode) {
@@ -1433,7 +1745,8 @@ import { travelTime, wolfIntroDialogue } from "./data/story.js";
     }
     els.actionRail.classList.remove("lc8-needs-target");
     els.targetLines.hidden = true;
-    els.targetLines.innerHTML = "";
+    [...els.targetLines.querySelectorAll('path.lc4-link, path.lc4-link-shadow, circle.lc4-link-origin')].forEach((node) => node.remove());
+    if (els.playerIntentAnchor) els.playerIntentAnchor.hidden = true;
     const resolve = battleInputResolver;
     battleInputResolver = null;
     resolve();
@@ -1560,8 +1873,9 @@ import { travelTime, wolfIntroDialogue } from "./data/story.js";
     if (target === "don") el = els.donDamage;
     else el = els.enemyRoster?.querySelector(`[data-float-enemy="${target}"]`);
     if (!el) return;
-    el.textContent = String(amount);
-    el.className = `lc4-unit-float ${target === "don" ? "don" : ""} ${cls}`;
+    const digitText = String(Math.max(0, Math.round(Number(amount) || 0)));
+    el.innerHTML = `<span class="lc60-damage-digits">${[...digitText].map((d) => `<img src="assets/images/battle/ui/v60/digits/${d}.png" alt="${d}" />`).join('')}</span>`;
+    el.className = `lc4-unit-float lc60-brush-damage ${target === "don" ? "don" : ""} ${cls}`;
     el.hidden = false;
     void el.offsetWidth;
     el.classList.add("pop");
@@ -1860,7 +2174,7 @@ import { travelTime, wolfIntroDialogue } from "./data/story.js";
     if (!motion || !els.battleDon) return;
     const { donStage, dx, dy } = motion;
     els.battleScreen.classList.add("lc5-combat-cinema");
-    els.battleDon.classList.remove("lc5-joust", "lc5-gallop", "lc5-justice", "lc5-evade");
+    els.battleDon.classList.remove("lc5-joust", "lc5-gallop", "lc5-justice", "lc5-evade", "lc5-laSangre");
     els.battleDon.classList.add(`lc5-${skill.key}`);
 
     const meta = battleDonAnimations[skill.key];
@@ -1933,7 +2247,7 @@ import { travelTime, wolfIntroDialogue } from "./data/story.js";
     }
     const { donStage, dx, dy } = motion;
 
-    els.battleDon.classList.remove("lc5-joust", "lc5-gallop", "lc5-justice", "lc5-evade");
+    els.battleDon.classList.remove("lc5-joust", "lc5-gallop", "lc5-justice", "lc5-evade", "lc5-laSangre");
     els.battleDon.classList.add(`lc5-${skill.key}`);
 
     const startTime = performance.now();
@@ -1980,15 +2294,10 @@ import { travelTime, wolfIntroDialogue } from "./data/story.js";
       if (enemy.hp <= 0) return;
       const roll = rollCoins(skill, 1, slot.speed, false);
       const crit = roll.flips[0] && randomInt(1, 100) <= 18;
-      const raw = skill.base + roll.heads * getSkillCoinPower(skill, slot.speed) + battle.don.attackUp + randomInt(1, 4);
+      const variance = skill.key === 'laSangre' ? 0 : randomInt(1, 4);
+      const raw = skill.base + roll.heads * getSkillCoinPower(skill, slot.speed) + battle.don.attackUp + variance;
       let damage = Math.max(1, Math.round(raw * (crit ? 1.35 : 1)));
       if (enemy.staggered) damage = Math.round(damage * 2);
-      const ruptureDamage = enemy.ruptureCount > 0 && enemy.rupturePotency > 0 ? enemy.rupturePotency : 0;
-      if (ruptureDamage) {
-        enemy.ruptureCount -= 1;
-        if (enemy.ruptureCount <= 0) { enemy.ruptureCount = 0; enemy.rupturePotency = 0; }
-        damage += ruptureDamage;
-      }
       enemy.hp = Math.max(0, enemy.hp - damage);
       total += damage;
       battle.totalDamage += damage;
@@ -2003,10 +2312,6 @@ import { travelTime, wolfIntroDialogue } from "./data/story.js";
       void floatDamage(enemy.id, damage, crit ? "critical" : "");
       combatLog(`${skill.name}  ${damage}${crit ? "  CRITICAL" : ""}`, crit ? "critical" : "win");
 
-      if (skill.key === "joust") {
-        enemy.rupturePotency += 2;
-        enemy.ruptureCount += 2;
-      }
       if (skill.key === "gallop" && roll.flips[0]) {
         enemy.bleedPotency += 2;
         enemy.bleedCount += 2;
@@ -2015,12 +2320,28 @@ import { travelTime, wolfIntroDialogue } from "./data/story.js";
         if (roll.flips[0]) enemy.bleedPotency += 1;
         enemy.bleedCount += 1;
       }
+      if (skill.key === 'laSangre' && roll.flips[0]) {
+        enemy.bleedPotency += 4;
+        enemy.bleedCount += 1;
+      }
       if (checkStagger(enemy)) combatLog("STAGGER", "stagger");
       renderEnemies();
       renderBattleHUD();
     };
 
-    await playDonSkillSprite(skill, enemy.id, Math.max(1, coinCount), resolveHit);
+    if (skill.key === 'laSangre') {
+      await playEgoCinematic();
+      for (let i = 0; i < Math.max(1, coinCount); i += 1) await resolveHit(i);
+    } else {
+      await playDonSkillSprite(skill, enemy.id, Math.max(1, coinCount), resolveHit);
+    }
+    if (skill.key === 'laSangre') {
+      battle.egoUsed = true;
+      battle.egoSkillReady = false;
+      battle.don.changeSp?.(-20);
+      combatLog('La Sangre de Sancho · SP -20', 'critical');
+      renderBattleHUD();
+    }
     if (skill.key === "joust" && clashWon) battle.don.nextHaste += 2;
     if (skill.key === "gallop" && clashWon) battle.don.nextAttackUp += 2;
     return total;
@@ -2088,8 +2409,6 @@ import { travelTime, wolfIntroDialogue } from "./data/story.js";
       damage = 0;
       combatLog(`AZURE REND  -${spDamage} SP`, "lose");
     } else {
-      const rupture = BattleSystem.consumeRupture(battle.don);
-      damage += rupture;
       damageResult = battle.don.takeDamage(damage);
       battle.don.staggered = battle.don.isStaggered;
     }
@@ -2216,6 +2535,8 @@ import { travelTime, wolfIntroDialogue } from "./data/story.js";
     els.planningPanel.hidden = true;
     els.targetLines.hidden = true;
     els.enemyIntentSlots.hidden = true;
+    if (els.playerIntentAnchor) els.playerIntentAnchor.hidden = true;
+    if (els.egoActivateBtn) els.egoActivateBtn.hidden = true;
     els.battleTutorial.hidden = true;
     hideSkillInspector();
     if (els.combatTotal) {
@@ -2289,6 +2610,10 @@ import { travelTime, wolfIntroDialogue } from "./data/story.js";
     });
     if (battle.don.staggerTurns > 0) battle.don.staggerTurns -= 1;
     battle.turn += 1;
+    if (battle.encounter === 'wolf' && battle.turn >= 6 && !battle.egoUnlocked) {
+      battle.egoUnlocked = true;
+      battle.guideMessage = 'Don can now awaken E.G.O. Click the E.G.O button before starting the next turn.';
+    }
     battle.tutorialStep = Math.min(battle.tutorialStep + 1, battleTutorialSteps.length - 1);
   }
 
@@ -2350,6 +2675,31 @@ import { travelTime, wolfIntroDialogue } from "./data/story.js";
     await delay(900);
   }
 
+  async function showBattleLoading(encounter = "bandit") {
+    if (!els.battleLoading) return;
+    const wolf = encounter === "wolf";
+    if (els.battleLoadingArea) els.battleLoadingArea.textContent = wolf ? "FOREST // DEEP SECTOR" : "FOREST // OUTSKIRTS";
+    if (els.battleLoadingTitle) els.battleLoadingTitle.textContent = wolf ? "WOLF // BOSS ENCOUNTER" : "BACKSTREET AMBUSH";
+    if (els.battleLoadingHint) els.battleLoadingHint.textContent = wolf
+      ? "High threat detected. E.G.O synchronization available from Turn 6."
+      : "Reading enemy actions and synchronizing combat slots...";
+    if (els.battleLoadingBar) els.battleLoadingBar.style.width = "0%";
+    if (els.battleLoadingPercent) els.battleLoadingPercent.textContent = "00%";
+    els.battleLoading.classList.remove("is-leaving");
+    els.battleLoading.hidden = false;
+
+    const steps = [7, 16, 28, 43, 59, 74, 88, 100];
+    for (const progress of steps) {
+      if (els.battleLoadingBar) els.battleLoadingBar.style.width = `${progress}%`;
+      if (els.battleLoadingPercent) els.battleLoadingPercent.textContent = `${String(progress).padStart(2, "0")}%`;
+      await rawDelay(progress === 100 ? 180 : 80 + Math.round(progress * .45));
+    }
+    els.battleLoading.classList.add("is-leaving");
+    await rawDelay(360);
+    els.battleLoading.hidden = true;
+    els.battleLoading.classList.remove("is-leaving");
+  }
+
   async function startBattleTutorial(encounter = "bandit") {
     const isWolfEncounter = encounter === "wolf";
     battle = isWolfEncounter ? makeWolfBattleState() : makeBattleState();
@@ -2365,6 +2715,8 @@ import { travelTime, wolfIntroDialogue } from "./data/story.js";
     setStoryChromeVisible(false);
     els.backpackBtn.hidden = true;
     els.battleResult.hidden = true;
+    els.battleScreen.hidden = true;
+    await showBattleLoading(encounter);
     els.battleScreen.hidden = false;
     playBattleTheme();
     setBattleDonExpression("idle");
@@ -2968,13 +3320,31 @@ import { travelTime, wolfIntroDialogue } from "./data/story.js";
 
   document.addEventListener("pointerdown", () => { ensureSfxContext(); }, { once: true });
 
-  els.newGameBtn.addEventListener("click", async () => {
-    state = makeInitialState();
-    resetUIForNewGame();
-    launchGameShell();
-    applyVolume();
-    await startStory();
-  });
+  let newGameStarting = false;
+  async function startNewGameFlow() {
+    if (newGameStarting) return;
+    newGameStarting = true;
+    try {
+      state = makeInitialState();
+      resetUIForNewGame();
+      launchGameShell();
+      applyVolume();
+      await startStory();
+    } catch (error) {
+      console.error('[NEW GAME] startup failed:', error);
+      resetUIForNewGame();
+      els.titleScreen.hidden = false;
+      els.hud.hidden = true;
+      els.quickMenu.hidden = true;
+      showNotice('NEW GAME startup error. Open DevTools for details.', 4000);
+    } finally {
+      newGameStarting = false;
+    }
+  }
+  els.newGameBtn?.addEventListener("click", startNewGameFlow);
+  window.__RQ_NEW_GAME_SMOKE__ = startNewGameFlow;
+  window.__RQ_BUILD__ = BUILD_TAG;
+  window.__RQ_LOADING_SMOKE__ = showBattleLoading;
 
   els.continueBtn.addEventListener("click", async () => {
     const saved = loadSave();
@@ -3088,10 +3458,14 @@ import { travelTime, wolfIntroDialogue } from "./data/story.js";
   });
   els.autoWinBtn.addEventListener("click", () => autoSelect("win"));
   els.autoDamageBtn.addEventListener("click", () => autoSelect("damage"));
+  els.egoActivateBtn?.addEventListener('click', openEgoManifest);
+  els.egoManifestClose?.addEventListener('click', closeEgoManifest);
+  els.egoManifestConfirm?.addEventListener('click', activateEgo);
   window.addEventListener("resize", () => {
     if (battle?.phase === "planning" && !els.battleScreen.hidden) {
       scheduleTargetLines();
       requestAnimationFrame(positionEnemyIntents);
+      requestAnimationFrame(positionPlayerIntentAnchor);
     }
   });
 

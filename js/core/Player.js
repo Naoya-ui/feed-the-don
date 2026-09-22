@@ -19,7 +19,6 @@ export class Player {
     this.thresholds = [...(data.staggerThresholds || [120, 50])];
     this.statuses = {
       bleed: { potency: 0, count: 0 },
-      rupture: { potency: 0, count: 0 },
     };
   }
 
