@@ -8,7 +8,7 @@ import { donBattleSkills, keywordDescriptions } from "./data/skills.js";
 import { travelTime, wolfIntroDialogue } from "./data/story.js";
 
   const SAVE_KEY = "raise-don-quixote-html-save-v1";
-  const BUILD_TAG = "v60-wolf-ui-loading";
+  const BUILD_TAG = "v64-wave-arrow-ego-final";
 
   const battleImagePreload = [
     ...Object.values(battleDonSprites),
@@ -671,7 +671,7 @@ import { travelTime, wolfIntroDialogue } from "./data/story.js";
       dragMoved: false,
       suppressSkillClickUntil: 0,
       openHandSlot: null,
-      guideMessage: "BOSS DUEL — Wolf is empowered. Survive to Turn 6 to awaken E.G.O.",
+      guideMessage: "BOSS DUEL — Wolf is empowered. Survive to Turn 4 to awaken E.G.O.",
       autoMode: null,
       don: Object.assign(new Player(characters.donQuixote), { staggered: false }),
       enemies: [wolf],
@@ -942,7 +942,16 @@ import { travelTime, wolfIntroDialogue } from "./data/story.js";
     els.donHpBar.style.width = `${clamp((battle.don.hp / battle.don.maxHp) * 100, 0, 100)}%`;
     els.donSpText.textContent = `${battle.don.sp >= 0 ? "+" : ""}${battle.don.sp}`;
     els.donSpBar.style.width = `${clamp(((battle.don.sp + 45) / 90) * 100, 0, 100)}%`;
-    els.managerSp.textContent = `${battle.don.sp >= 0 ? "+" : ""}${battle.don.sp} SP`;
+    els.managerSp.textContent = `${battle.don.sp >= 0 ? "+" : ""}${battle.don.sp}`;
+    if (els.managerHpText) els.managerHpText.textContent = `${Math.max(0, battle.don.hp)}/${battle.don.maxHp}`;
+    if (els.managerHpBar) els.managerHpBar.style.width = `${clamp((battle.don.hp / battle.don.maxHp) * 100, 0, 100)}%`;
+    if (els.managerSpBar) {
+      const sp = clamp(battle.don.sp, -45, 45);
+      const ratio = Math.abs(sp) / 45;
+      els.managerSpBar.style.width = `${ratio * 50}%`;
+      els.managerSpBar.style.left = sp >= 0 ? '50%' : `${50 - ratio * 50}%`;
+      els.managerSpBar.classList.toggle('negative', sp < 0);
+    }
     const maxSpeed = battle.donSlots.length ? Math.max(...battle.donSlots.map((slot) => slot.speed)) : 3;
     els.donSpeed.textContent = String(maxSpeed);
     if (els.donStatus) els.donStatus.innerHTML = donStatusBadgesHTML();
@@ -1325,10 +1334,8 @@ import { travelTime, wolfIntroDialogue } from "./data/story.js";
         <div class="lc4-forecast ${slot.targetIntentId ? forecast.cls : "unassigned"}">${slot.targetIntentId ? forecast.label : "WIN RATE"}</div>
         <button class="lc4-skill-back lc4-aff-${alternate.css}" type="button" aria-label="Switch to ${escapeHTML(alternate.name)}">${skillCardHTML(alternate, slot, true)}</button>
         <button class="lc4-skill-front lc4-aff-${selected.css}" type="button">${skillCardHTML(selected, slot)}</button>
-        <button class="lc4-slot-core" type="button" aria-label="Drag to target an enemy action">
-          <span class="lc4-speed-die">${slot.speed}</span>
-          <span class="lc4-mini-portrait"><img src="assets/images/battle/don/idle.png" alt="" /></span>
-          <small>${slot.index + 1}</small>
+        <button class="lc4-slot-core lc62-slot-core" type="button" aria-label="Target slot ${slot.index + 1}, speed ${slot.speed}">
+          <span class="lc62-slot-dash">—</span>
         </button>
         <button class="lc4-defense-toggle ${slot.defense ? "active" : ""}" type="button" title="Evade">◇</button>`;
       const front = wrap.querySelector(".lc4-skill-front");
@@ -1404,7 +1411,7 @@ import { travelTime, wolfIntroDialogue } from "./data/story.js";
 
 
   function egoCanAppear() {
-    return !!battle && battle.encounter === 'wolf' && battle.turn >= 6;
+    return !!battle && battle.encounter === 'wolf' && battle.turn >= 4;
   }
 
   function egoNeedsPrompt() {
@@ -1413,13 +1420,20 @@ import { travelTime, wolfIntroDialogue } from "./data/story.js";
 
   function updateEgoButton() {
     if (!els.egoActivateBtn) return;
-    const show = !!battle && battle.phase === 'planning' && egoCanAppear();
+    const show = !!battle && battle.phase === 'planning' && battle.encounter === 'wolf';
     els.egoActivateBtn.hidden = !show;
     if (!show) return;
-    els.egoActivateBtn.disabled = !!battle.egoActivated;
+    const unlocked = egoCanAppear();
+    if (unlocked && battle.don.sp < 45 && !battle.egoActivated) battle.don.sp = 45;
+    els.egoActivateBtn.disabled = !!battle.egoActivated ? true : !unlocked;
+    els.egoActivateBtn.setAttribute('aria-disabled', els.egoActivateBtn.disabled ? 'true' : 'false');
+    els.egoActivateBtn.classList.toggle('is-locked', !unlocked);
+    els.egoActivateBtn.classList.toggle('is-ready', unlocked && !battle.egoActivated);
     els.egoActivateBtn.classList.toggle('is-active', !!battle.egoActivated);
-    els.egoActivateBtn.querySelector('span').textContent = battle.egoActivated ? 'E.G.O READY' : 'E.G.O';
-    els.egoActivateBtn.querySelector('small').textContent = battle.egoActivated ? (battle.egoUsed ? 'SPENT' : 'MANIFESTED') : 'TURN 6';
+    const label = els.egoActivateBtn.querySelector('.lc61-ego-label');
+    const state = els.egoActivateBtn.querySelector('.lc61-ego-state');
+    if (label) label.textContent = battle.egoActivated ? 'E.G.O READY' : 'E.G.O';
+    if (state) state.textContent = battle.egoActivated ? (battle.egoUsed ? 'SPENT' : 'MANIFESTED') : (unlocked ? 'CLICK' : 'TURN 4');
   }
 
   function positionPlayerIntentAnchor() {
@@ -1429,10 +1443,14 @@ import { travelTime, wolfIntroDialogue } from "./data/story.js";
     }
     const rect = els.battleScreen.getBoundingClientRect();
     const donRect = els.battleDon.getBoundingClientRect();
-    const x = donRect.left + donRect.width * 0.48 - rect.left;
-    const y = donRect.top - rect.top + 8;
-    els.playerIntentAnchor.style.left = `${Math.max(44, x)}px`;
-    els.playerIntentAnchor.style.top = `${Math.max(16, y)}px`;
+    if (!donRect.width || !donRect.height) {
+      els.playerIntentAnchor.hidden = true;
+      return;
+    }
+    const x = donRect.left + donRect.width * 0.5 - rect.left;
+    const y = donRect.top + donRect.height * 0.42 - rect.top;
+    els.playerIntentAnchor.style.left = `${Math.max(72, Math.min(rect.width - 72, x))}px`;
+    els.playerIntentAnchor.style.top = `${Math.max(78, Math.min(rect.height - 120, y))}px`;
   }
 
   function renderPlayerIntentAnchor() {
@@ -1543,7 +1561,7 @@ import { travelTime, wolfIntroDialogue } from "./data/story.js";
     if (egoNeedsPrompt()) {
       step = {
         title: 'E.G.O AWAKENED',
-        text: 'Don survived 5 turns. Click the E.G.O button on the right, review La Sangre de Sancho, then manifest it. The E.G.O skill costs 20 SP when used.'
+        text: 'Turn 4: E.G.O is ready. Click Don’s E.G.O icon at the bottom-left, review La Sangre de Sancho, then manifest it before START. The E.G.O skill costs 20 SP when used.'
       };
     } else if (battle.turn === 1) {
       if (battle.autoMode) {
@@ -1644,13 +1662,16 @@ import { travelTime, wolfIntroDialogue } from "./data/story.js";
 
     const anchor = els.playerIntentAnchor;
     if (anchor && !anchor.hidden) {
-      const anchorPoint = getIntentPoint(anchor, 0.74);
+      const anchorRect = anchor.getBoundingClientRect();
+      const anchorPoint = (anchorRect.width > 10 && anchorRect.height > 10)
+        ? { x: anchorRect.left + anchorRect.width * 0.5 - rect.left, y: anchorRect.top + anchorRect.height * 0.56 - rect.top }
+        : { x: rect.width * 0.18, y: rect.height * 0.58 };
       const liveEnemySlots = battle.enemySlots.filter((slot) => !slot.consumed && enemyById(slot.enemyId)?.hp > 0);
       liveEnemySlots.forEach((slot, index) => {
         const fromBtn = els.enemyIntentSlots.querySelector(`[data-intent-id="${slot.id}"]`);
         if (!fromBtn) return;
         const from = getIntentPoint(fromBtn, 0.82);
-        const end = { x: anchorPoint.x - 14 + (index * 10), y: anchorPoint.y + 6 + (index % 2) * 7 };
+        const end = { x: anchorPoint.x - 6 + (index * 7), y: anchorPoint.y + 3 + (index % 2) * 5 };
         appendArrow('hostile struggling', 'arrowHostile', from, end, battle.selectedEnemyId === slot.enemyId);
       });
     }
@@ -1659,6 +1680,12 @@ import { travelTime, wolfIntroDialogue } from "./data/story.js";
 
   function renderPlanning() {
     if (!battle) return;
+    if (battle.encounter === 'wolf' && battle.turn >= 4 && !battle.egoUnlocked) {
+      battle.egoUnlocked = true;
+      battle.egoPromptAutoOpen = true;
+      battle.don.sp = 45;
+      battle.guideMessage = 'E.G.O READY: Don restored to +45 SP. Click the glowing E.G.O icon, manifest La Sangre de Sancho, then assign it before pressing START.';
+    }
     ensureBattleTurnSlots();
     battle.phase = "planning";
     els.battleScreen.classList.remove("is-resolving", "hit-shake");
@@ -1673,9 +1700,19 @@ import { travelTime, wolfIntroDialogue } from "./data/story.js";
     renderEnemyIntents();
     renderPlayerIntentAnchor();
     updateEgoButton();
+    if (battle.egoPromptAutoOpen && !battle.egoActivated) {
+      battle.egoPromptAutoOpen = false;
+      setTimeout(() => {
+        if (battle && battle.phase === 'planning' && egoCanAppear() && !battle.egoActivated) openEgoManifest();
+      }, 120);
+    }
     if (battle.selectedEnemyId != null) setSelectedEnemy(battle.selectedEnemyId);
     renderTurnOrder();
     renderActionRail();
+    const liveIntents = battle.enemySlots.filter((intent) => !intent.consumed && enemyById(intent.enemyId)?.hp > 0);
+    const chainReady = !liveIntents.length || battle.donSlots.every((slot) => !!slot.targetIntentId);
+    els.startCombatBtn?.classList.toggle('is-ready', chainReady);
+    els.startCombatBtn?.setAttribute('aria-label', chainReady ? 'Start combat — chain ready' : 'Start combat — assign all targets first');
     renderMatchupPreview();
     tutorialForTurn();
     scheduleTargetLines();
@@ -2610,9 +2647,12 @@ import { travelTime, wolfIntroDialogue } from "./data/story.js";
     });
     if (battle.don.staggerTurns > 0) battle.don.staggerTurns -= 1;
     battle.turn += 1;
-    if (battle.encounter === 'wolf' && battle.turn >= 6 && !battle.egoUnlocked) {
+    if (battle.encounter === 'wolf' && battle.turn >= 4 && !battle.egoUnlocked) {
       battle.egoUnlocked = true;
-      battle.guideMessage = 'Don can now awaken E.G.O. Click the E.G.O button before starting the next turn.';
+      battle.egoPromptAutoOpen = true;
+      if (battle.don?.sp < 45) battle.don.sp = 45;
+      battle.guideMessage = 'E.G.O READY: Don restored to +45 SP. Click the glowing E.G.O icon, manifest La Sangre de Sancho, then assign it before pressing START.';
+      showNotice('TURN 4 — DON RESTORED TO +45 SP · E.G.O READY', 2600);
     }
     battle.tutorialStep = Math.min(battle.tutorialStep + 1, battleTutorialSteps.length - 1);
   }
@@ -2681,7 +2721,7 @@ import { travelTime, wolfIntroDialogue } from "./data/story.js";
     if (els.battleLoadingArea) els.battleLoadingArea.textContent = wolf ? "FOREST // DEEP SECTOR" : "FOREST // OUTSKIRTS";
     if (els.battleLoadingTitle) els.battleLoadingTitle.textContent = wolf ? "WOLF // BOSS ENCOUNTER" : "BACKSTREET AMBUSH";
     if (els.battleLoadingHint) els.battleLoadingHint.textContent = wolf
-      ? "High threat detected. E.G.O synchronization available from Turn 6."
+      ? "High threat detected. E.G.O synchronization available from Turn 4."
       : "Reading enemy actions and synchronizing combat slots...";
     if (els.battleLoadingBar) els.battleLoadingBar.style.width = "0%";
     if (els.battleLoadingPercent) els.battleLoadingPercent.textContent = "00%";
@@ -3458,7 +3498,8 @@ import { travelTime, wolfIntroDialogue } from "./data/story.js";
   });
   els.autoWinBtn.addEventListener("click", () => autoSelect("win"));
   els.autoDamageBtn.addEventListener("click", () => autoSelect("damage"));
-  els.egoActivateBtn?.addEventListener('click', openEgoManifest);
+  els.egoActivateBtn?.addEventListener('pointerdown', (event) => { if (egoCanAppear() && !battle?.egoActivated) event.stopPropagation(); });
+  els.egoActivateBtn?.addEventListener('click', (event) => { event.preventDefault(); event.stopPropagation(); openEgoManifest(); });
   els.egoManifestClose?.addEventListener('click', closeEgoManifest);
   els.egoManifestConfirm?.addEventListener('click', activateEgo);
   window.addEventListener("resize", () => {

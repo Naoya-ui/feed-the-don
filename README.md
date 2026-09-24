@@ -11,7 +11,7 @@ V60 keeps the stable modular/New Game fixes from v59 and adds the requested Wolf
   - Starts with **2 Poise Potency / 3 Poise Count** and **Damage Up 1**
   - Gains a second action from Turn 4 onward
   - Wolf Speed range is now 4–7
-  - Goal: the duel lasts long enough for Don's E.G.O tutorial/unlock at Turn 6.
+  - Goal: the duel lasts long enough for Don's E.G.O tutorial/unlock at Turn 4.
 
 - **Rupture removed from Don**
   - Joust no longer applies Rupture.
@@ -21,7 +21,7 @@ V60 keeps the stable modular/New Game fixes from v59 and adds the requested Wolf
 
 - **Battle loading scene**
   - Plays before both bandit and Wolf battles.
-  - Wolf loading copy warns that E.G.O synchronization becomes available at Turn 6.
+  - Wolf loading copy warns that E.G.O synchronization becomes available at Turn 4.
   - Uses supplied gear imagery plus Slash / Pierce / Blunt icons.
 
 - **New supplied UI assets integrated**
@@ -36,7 +36,7 @@ V60 keeps the stable modular/New Game fixes from v59 and adds the requested Wolf
 
 ## E.G.O
 
-- La Sangre de Sancho is still unlocked from **Turn 6** in the Wolf encounter.
+- La Sangre de Sancho is still unlocked from **Turn 4** in the Wolf encounter.
 - 12 base power, +11 Coin Power, 1 Coin.
 - Costs 20 SP when used.
 - Heads Hit inflicts 4 Bleed.
@@ -52,3 +52,20 @@ V60 keeps the stable modular/New Game fixes from v59 and adds the requested Wolf
 - Mock-DOM **Wolf battle loading scene** test reached 100%, used the Wolf title, and closed cleanly.
 - Static assertions verify Wolf HP / thresholds and confirm Don's skill/player files contain no Rupture.
 - ZIP integrity is tested after packaging.
+
+
+## v61 UI pass
+- Replaced hand-drawn WAVE/TURN HUD with crops from the supplied BattleUI_UpperLeft_1 sheet.
+- WIN RATE is above DAMAGE.
+- Enemy intent uses the supplied horizontal-bar action slot art.
+- START glows only when the current chain is fully targeted.
+- Don E.G.O control moved to the bottom-left and unlocks on Turn 4 with tutorial guidance.
+- Added compact Don HP and -45..+45 Sanity gauges under the E.G.O control.
+
+
+## v64
+- Fixed WAVE/TURN frame placement and clipping.
+- Removed the Roman numeral rail from markup.
+- Fixed hostile SVG arrow fill bug that created a giant red band.
+- Centered Don HP/SP panel under Don.
+- Made E.G.O unlock robust at Turn 4, restores SP to +45, auto-opens tutorial once, and keeps the E.G.O button clickable.

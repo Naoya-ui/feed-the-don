@@ -9,7 +9,7 @@
     <meta name="theme-color" content="#0b0d10" />
     <title>Raise Don Quixote — HTML Edition</title>
     <link rel="icon" href="assets/images/ui/window-icon.png" />
-    <link rel="stylesheet" href="css/style.css?v=60-wolf-ui-loading" />
+    <link rel="stylesheet" href="css/style.css?v=64-wave-arrow-ego-final" />
   </head>
   <body>
     <main id="game" class="game" aria-label="Raise Don Quixote visual novel">
@@ -92,9 +92,15 @@
         <div class="lc4-brush lc4-brush-b" aria-hidden="true"></div>
 
         <header class="lc4-topbar">
-          <div class="lc4-wavebox">
-            <span>WAVE <b id="battleWave">1/1</b></span>
-            <span>TURN <b id="battleTurn">1</b></span>
+          <div class="lc4-wavebox lc61-wavebox">
+            <div class="lc61-hud-chip lc61-wave-chip">
+              <img src="assets/images/battle/ui/v61-wave-frame.png" alt="Wave" />
+              <b id="battleWave">1/1</b>
+            </div>
+            <div class="lc61-hud-chip lc61-turn-chip">
+              <img src="assets/images/battle/ui/v61-turn-frame.png" alt="Turn" />
+              <b id="battleTurn">1</b>
+            </div>
           </div>
           <div class="lc4-phase" id="phaseLabel">COMMAND PHASE</div>
           <div class="lc4-top-actions">
@@ -168,17 +174,11 @@
               <b id="enemyInspectorName">Dirty Swing</b>
               <div class="lc10-enemy-meta"><span id="enemyInspectorType">BLUNT</span><span id="enemyInspectorCoins">1 COIN</span></div>
               <div id="enemyInspectorPower" class="lc10-enemy-power">3 + 5 · 1 Coin</div>
-              <button id="egoActivateBtn" class="lc4-ego-btn" type="button" hidden><span>E.G.O</span><small>TURN 6</small></button>
             </div>
           </div>
           <div id="enemyInspectorText">A direct Blunt attack. Win the Clash to prevent the hit.</div>
         </aside>
-
-        <aside class="lc4-left-rail" aria-hidden="true">
-          <i>Ⅰ</i><i>Ⅱ</i><i>Ⅲ</i><i>Ⅳ</i><i>Ⅴ</i><i>Ⅵ</i>
-        </aside>
-
-        <aside class="lc4-sin-panel" aria-label="Sin resources">
+<aside class="lc4-sin-panel" aria-label="Sin resources">
           <b>SIN</b>
           <span class="sin-lust"><img src="assets/images/battle/icons/sins/lust.png" alt="Lust" /><i id="sinLust">0</i></span>
           <span class="sin-envy"><img src="assets/images/battle/icons/sins/envy.png" alt="Envy" /><i id="sinEnvy">0</i></span>
@@ -219,17 +219,23 @@
         </main>
 
         <footer id="planningPanel" class="lc4-planning">
-          <div class="lc4-manager">
-            <div class="lc4-manager-orbit"><img src="assets/images/battle/icons/portrait/don-quixote.png" alt="Don Quixote" /></div>
-            <span>DON</span>
-            <b id="managerSp">0 SP</b>
+          <div class="lc4-manager lc61-manager">
+            <button id="egoActivateBtn" class="lc4-ego-btn lc61-ego-button is-locked" type="button" disabled aria-label="Don Quixote E.G.O">
+              <span class="lc61-ego-frame"><img src="assets/images/battle/ego/ego-icon-v61.png" alt="La Sangre de Sancho" /></span>
+              <b class="lc61-ego-label">E.G.O</b>
+              <small class="lc61-ego-state">TURN 4</small>
+            </button>
+            <div class="lc61-don-gauges">
+              <div class="lc61-gauge-row lc61-hp-row"><span>HP</span><i><em id="managerHpBar"></em></i><b id="managerHpText">203/203</b></div>
+              <div class="lc61-gauge-row lc61-sp-row"><span>SP</span><i><em id="managerSpBar"></em><u></u></i><b id="managerSp">+0</b></div>
+            </div>
           </div>
           <div id="actionRail" class="lc4-action-rail" aria-label="Don Quixote action chain"></div>
           <div class="lc4-command">
             <button id="startCombatBtn" class="lc4-start" type="button"><span>START</span><small>ENTER</small></button>
             <div class="lc4-auto">
-              <button id="autoDamageBtn" type="button"><img class="lc24-command-icon" src="assets/images/battle/icons/skills/attack.png" alt="" /><span>DAMAGE</span><kbd>D</kbd></button>
               <button id="autoWinBtn" type="button"><img class="lc24-command-icon" src="assets/images/battle/icons/ui/target.png" alt="" /><span>WIN RATE</span><kbd>P</kbd></button>
+              <button id="autoDamageBtn" type="button"><img class="lc24-command-icon" src="assets/images/battle/icons/skills/attack.png" alt="" /><span>DAMAGE</span><kbd>D</kbd></button>
             </div>
           </div>
         </footer>
@@ -388,7 +394,7 @@
               <div class="ego-meta-row">
                 <span class="ego-chip">PIERCE</span>
                 <span class="ego-chip">LUST</span>
-                <span class="ego-chip">TURN 6+</span>
+                <span class="ego-chip">TURN 4+</span>
               </div>
               <div class="ego-info-card">
                 <img id="egoPreviewIcon" src="assets/images/battle/ego/cutin-portrait.png" alt="Skill icon" />
@@ -441,6 +447,6 @@
       ></audio>
     </main>
 
-    <script type="module" src="js/main.js?v=60-wolf-ui-loading"></script>
+    <script type="module" src="js/main.js?v=64-wave-arrow-ego-final"></script>
   </body>
 </html>

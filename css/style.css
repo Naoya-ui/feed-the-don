@@ -4467,3 +4467,399 @@ body{font-family:var(--lc-body-font)}
   .lc60-loading-copy{width:92vw;padding:22px 18px}.lc60-loading-copy h2{font-size:30px}.lc60-loading-types{right:16px;top:16px}.lc60-loading-types img{width:24px;height:24px}
   #battleScreen .lc60-damage-digits img{height:40px}
 }
+
+
+/* ============================================================
+   V61 — supplied UpperLeft HUD + E.G.O manager + clean intents
+   ============================================================ */
+/* Use the supplied WAVE / TURN art instead of the hand-drawn boxes. */
+#battleScreen .lc4-wavebox.lc61-wavebox{
+  display:flex!important;flex-direction:column!important;gap:2px!important;
+  min-width:0!important;padding:0!important;border:0!important;background:none!important;
+  box-shadow:none!important;clip-path:none!important;overflow:visible!important;
+}
+#battleScreen .lc61-hud-chip{position:relative;width:154px;height:auto;line-height:0;filter:drop-shadow(0 4px 4px rgba(0,0,0,.62))}
+#battleScreen .lc61-hud-chip img{display:block;width:100%;height:auto;object-fit:contain}
+#battleScreen .lc61-hud-chip b{position:absolute;right:16px;top:50%;transform:translateY(-50%);min-width:54px;text-align:center;color:#f6ddb0!important;font:900 17px/1 Georgia,serif!important;letter-spacing:.02em;text-shadow:0 2px 0 #000,0 0 5px rgba(255,191,85,.24)}
+#battleScreen .lc61-turn-chip{width:154px;margin-top:-7px}
+
+/* Enemy intent: the user's slotted quadrilateral with the horizontal bar. */
+#battleScreen .lc4-intent{
+  width:86px!important;height:82px!important;border:0!important;background:transparent!important;
+  box-shadow:none!important;clip-path:none!important;filter:drop-shadow(0 7px 9px rgba(0,0,0,.65))!important;
+}
+#battleScreen .lc4-intent-frame{
+  display:block!important;inset:0!important;border:0!important;clip-path:none!important;opacity:1!important;
+  background:url('../assets/images/battle/ui/v60/action-slot-frame.png') center/100% 100% no-repeat!important;
+}
+#battleScreen .lc4-intent.is-selected::after{display:none!important}
+#battleScreen .lc4-intent.is-selected{filter:drop-shadow(0 0 7px rgba(237,195,105,.6)) drop-shadow(0 7px 9px rgba(0,0,0,.65))!important}
+#battleScreen .lc4-intent-speed{right:-3px!important;left:auto!important;top:-8px!important;transform:none!important;z-index:7!important}
+#battleScreen .lc34-intent-sigil{top:16px!important;width:27px!important;height:27px!important;border:0!important;background:rgba(7,7,7,.62)!important;box-shadow:none!important;transform:translateX(-50%)!important;z-index:4!important}
+#battleScreen .lc34-intent-glyph{display:none!important}
+#battleScreen .lc4-intent-art{top:11px!important;width:50px!important;height:28px!important;opacity:.36!important;mix-blend-mode:screen!important}
+#battleScreen .lc32-intent-type{bottom:16px!important;background:rgba(10,8,6,.78)!important;border:0!important;color:#dbc395!important;font-size:4.7px!important}
+#battleScreen .lc32-intent-coin{bottom:4px!important;border:0!important;background:rgba(10,8,6,.76)!important;color:#e6c66f!important;font-size:5px!important}
+#battleScreen .lc4-intent>b,#battleScreen .lc4-intent>small{display:none!important}
+body.lc4-targeting #battleScreen .lc4-intent{filter:drop-shadow(0 0 8px rgba(255,222,120,.82)) brightness(1.08)!important}
+
+/* Bottom-left is now the actual Don E.G.O control plus HP/Sanity gauges. */
+#battleScreen .lc61-manager{
+  width:154px!important;height:132px!important;align-self:end!important;display:grid!important;
+  grid-template-columns:74px 1fr!important;grid-template-rows:82px 42px!important;
+  align-items:end!important;justify-items:start!important;gap:3px 7px!important;transform:none!important;
+}
+#battleScreen .lc61-ego-button{
+  grid-column:1!important;grid-row:1!important;position:relative!important;inset:auto!important;
+  width:74px!important;height:82px!important;padding:0!important;border:0!important;background:none!important;
+  clip-path:none!important;box-shadow:none!important;color:#f2d5a0!important;cursor:pointer!important;overflow:visible!important;
+}
+#battleScreen .lc61-ego-frame{position:absolute;left:2px;top:0;width:70px;height:70px;background:url('../assets/images/battle/ui/ego-frame-v61.png') center/contain no-repeat;display:grid;place-items:center;transition:filter .18s ease,transform .18s ease}
+#battleScreen .lc61-ego-frame img{width:43px;height:43px;border-radius:50%;object-fit:cover;object-position:20% 36%;clip-path:circle(48%);filter:saturate(.92) contrast(1.03)}
+#battleScreen .lc61-ego-label{position:absolute;left:0;right:0;bottom:8px;font:900 8px/1 Georgia,serif!important;letter-spacing:.14em;color:#e7c987;text-align:center;text-shadow:0 2px #000}
+#battleScreen .lc61-ego-state{position:absolute;left:0;right:0;bottom:-3px;font:800 6px/1 Inter,Arial,sans-serif!important;color:#9c8461;text-align:center;letter-spacing:.08em}
+#battleScreen .lc61-ego-button.is-locked{opacity:.42!important;filter:grayscale(.55)!important;cursor:default!important}
+#battleScreen .lc61-ego-button.is-ready{opacity:1!important;animation:lc61EgoReady 1.05s ease-in-out infinite!important}
+#battleScreen .lc61-ego-button.is-ready .lc61-ego-frame{filter:brightness(1.3) saturate(1.2) drop-shadow(0 0 10px rgba(255,111,55,.8));}
+#battleScreen .lc61-ego-button.is-active .lc61-ego-frame{filter:brightness(1.45) saturate(1.35) drop-shadow(0 0 12px rgba(255,75,48,.92))}
+@keyframes lc61EgoReady{0%,100%{transform:translateY(0)}50%{transform:translateY(-2px)}}
+#battleScreen .lc61-don-gauges{grid-column:1 / 3!important;grid-row:2!important;width:150px;display:grid;gap:4px;align-self:start}
+#battleScreen .lc61-gauge-row{height:17px;display:grid;grid-template-columns:20px 1fr 38px;align-items:center;gap:3px;color:#d9ccb1;font:800 6px/1 Inter,Arial,sans-serif;letter-spacing:.05em}
+#battleScreen .lc61-gauge-row>span{color:#c9aa72}
+#battleScreen .lc61-gauge-row>i{position:relative;display:block;height:8px;background:#151311;border:1px solid #5b4930;overflow:hidden;clip-path:polygon(3px 0,100% 0,calc(100% - 3px) 100%,0 100%)}
+#battleScreen .lc61-gauge-row>i>em{position:absolute;top:0;bottom:0;left:0;width:0;background:linear-gradient(90deg,#8e211e,#c24a3c,#dc7453)}
+#battleScreen .lc61-sp-row>i{overflow:visible;background:linear-gradient(90deg,#10151b,#0d1014)}
+#battleScreen .lc61-sp-row>i>u{position:absolute;left:50%;top:-1px;bottom:-1px;width:1px;background:#6f665b;z-index:3;text-decoration:none}
+#battleScreen .lc61-sp-row>i>em{left:50%;background:linear-gradient(90deg,#426893,#65bde7);transition:left .16s ease,width .16s ease;background-color:#65bde7}
+#battleScreen .lc61-sp-row>i>em.negative{background:linear-gradient(90deg,#6e596d,#55647f)}
+#battleScreen .lc61-gauge-row>b{text-align:right;color:#dfd6c7;font-size:6px;white-space:nowrap}
+
+/* START communicates readiness only after every current action has a target. */
+#battleScreen .lc4-start.is-ready{filter:brightness(1.24) saturate(1.18) drop-shadow(0 0 9px rgba(255,171,49,.72))!important;animation:lc61StartReady 1.05s ease-in-out infinite!important}
+#battleScreen .lc4-start.is-ready span{color:#5b2407!important;text-shadow:0 1px #ffe09b,0 0 5px #ffc04c!important}
+@keyframes lc61StartReady{0%,100%{transform:scale(1)}50%{transform:scale(1.045)}}
+
+/* WIN RATE goes above DAMAGE as in the user's requested command hierarchy. */
+#battleScreen .lc4-command.lc39-inline-command #autoWinBtn{grid-row:1!important}
+#battleScreen .lc4-command.lc39-inline-command #autoDamageBtn{grid-row:2!important}
+
+/* The circular target-ring asset is reserved for the E.G.O icon frame now. */
+#battleScreen .lc4-intent.is-selected::after{content:none!important}
+
+@media(max-width:900px){
+  #battleScreen .lc61-hud-chip,#battleScreen .lc61-turn-chip{width:124px}
+  #battleScreen .lc61-hud-chip b{right:12px;font-size:14px!important}
+  #battleScreen .lc61-manager{width:122px!important;grid-template-columns:62px 1fr!important;transform:scale(.88)!important;transform-origin:left bottom!important}
+  #battleScreen .lc61-don-gauges{width:122px}
+}
+
+/* V61 layout room for the wider bottom-left Don/E.G.O module. */
+#battleScreen .lc4-planning{grid-template-columns:158px 1fr 132px!important}
+@media(max-width:900px){#battleScreen .lc4-planning{grid-template-columns:128px 1fr 110px!important}}
+@media(max-width:700px){#battleScreen .lc4-planning{grid-template-columns:106px 1fr 72px!important}#battleScreen .lc61-manager{transform:scale(.72)!important;transform-origin:left bottom!important}}
+
+/* ============================================================
+   V62 — edge cleanup, simpler slot core, better wolf motion
+   ============================================================ */
+#battleScreen .lc4-top-actions{display:none!important;}
+#battleScreen .lc4-topbar{left:12px!important;right:12px!important;top:10px!important;height:44px!important;}
+#battleScreen .lc4-wavebox.lc61-wavebox{transform:scale(.86)!important;transform-origin:left top!important;}
+#battleScreen .lc61-hud-chip{width:136px!important;}
+#battleScreen .lc61-hud-chip b{right:14px!important;min-width:48px!important;font-size:15px!important;}
+#battleScreen .lc61-turn-chip{margin-top:-10px!important;}
+#battleScreen .lc4-arena{left:18px!important;right:18px!important;top:66px!important;bottom:168px!important;grid-template-columns:27% 73%!important;}
+#battleScreen .lc4-don-plate{left:0!important;bottom:2px!important;transform:scale(.84)!important;transform-origin:left bottom!important;}
+#battleScreen .lc4-enemy-hud{left:12%!important;right:12%!important;bottom:2px!important;transform:scale(.92)!important;transform-origin:center bottom!important;}
+#battleScreen .lc4-planning{left:10px!important;right:10px!important;bottom:5px!important;height:154px!important;grid-template-columns:126px minmax(0,1fr) 118px!important;column-gap:10px!important;}
+#battleScreen .lc61-manager{width:122px!important;height:116px!important;grid-template-columns:62px 1fr!important;grid-template-rows:70px 38px!important;gap:2px 6px!important;}
+#battleScreen .lc61-ego-button{width:62px!important;height:70px!important;}
+#battleScreen .lc61-ego-frame{width:60px!important;height:60px!important;left:0!important;}
+#battleScreen .lc61-ego-frame img{width:37px!important;height:37px!important;}
+#battleScreen .lc61-ego-label{bottom:7px!important;font-size:7px!important;}
+#battleScreen .lc61-ego-state{bottom:-2px!important;font-size:5.4px!important;}
+#battleScreen .lc61-don-gauges{width:122px!important;gap:3px!important;}
+#battleScreen .lc61-gauge-row{height:15px!important;grid-template-columns:18px 1fr 34px!important;font-size:5.6px!important;}
+#battleScreen .lc61-gauge-row>b{font-size:5.4px!important;}
+#battleScreen .lc4-command{width:118px!important;height:116px!important;align-self:end!important;}
+#battleScreen .lc4-start{width:72px!important;height:72px!important;bottom:38px!important;left:4px!important;}
+#battleScreen .lc4-auto button{width:72px!important;padding:4px 6px!important;font-size:5.3px!important;}
+#battleScreen .lc4-action-rail{padding:0 2px 2px!important;gap:0!important;}
+#battleScreen .lc4-action{flex:0 0 92px!important;width:92px!important;height:162px!important;margin-left:-8px!important;}
+#battleScreen .lc4-action:first-child{margin-left:0!important;}
+#battleScreen .lc4-skill-front{left:17px!important;width:72px!important;height:96px!important;}
+#battleScreen .lc4-skill-back{width:66px!important;height:88px!important;transform:translate(2px,11px) rotate(4deg)!important;}
+#battleScreen .lc4-skill-front>strong,#battleScreen .lc4-skill-back>strong{max-width:68px!important;font-size:6.8px!important;}
+#battleScreen .lc4-skill-power b{font-size:15px!important;}
+#battleScreen .lc4-forecast{left:6px!important;right:6px!important;top:-2px!important;font-size:5px!important;padding:2px 4px!important;}
+#battleScreen .lc62-slot-core{left:24px!important;bottom:6px!important;width:40px!important;height:40px!important;border:0!important;background:url('../assets/images/battle/ui/v60/action-slot-frame.png') center/contain no-repeat!important;box-shadow:none!important;display:grid!important;place-items:center!important;}
+#battleScreen .lc62-slot-core::before{content:"";position:absolute;inset:0;background:rgba(0,0,0,.001);}
+#battleScreen .lc62-slot-dash{display:block!important;transform:translateY(-1px)!important;color:#d2b17c!important;font:900 14px/1 Georgia,serif!important;text-shadow:0 1px 2px #000,0 0 8px rgba(255,191,96,.18)!important;}
+#battleScreen .lc4-slot-core .lc4-speed-die,
+#battleScreen .lc4-slot-core .lc4-mini-portrait,
+#battleScreen .lc4-slot-core small{display:none!important;}
+#battleScreen .lc4-defense-toggle{display:none!important;}
+#battleScreen .lc4-intent-player{display:none!important;}
+
+/* Wolf motion pass: more life, less static PNG feel. */
+#battleScreen .lc4-bandit.sprite-wolf{transform-origin:center bottom!important;animation:lc62WolfIdle 2.4s ease-in-out infinite!important;will-change:transform,filter;}
+#battleScreen .lc4-bandit.sprite-wolf .lc4-bandit-sprite{animation:lc62WolfBreath 2.4s ease-in-out infinite!important;transform-origin:center bottom!important;will-change:transform,filter;}
+#battleScreen .lc4-bandit.sprite-wolf.pose-mirageSlash,
+#battleScreen .lc4-bandit.sprite-wolf.pose-shimmeringCleave,
+#battleScreen .lc4-bandit.sprite-wolf.pose-azureRend,
+#battleScreen .lc4-bandit.sprite-wolf.pose-indigoBlade,
+#battleScreen .lc4-bandit.sprite-wolf.pose-sever,
+#battleScreen .lc4-bandit.sprite-wolf.pose-exhaust{animation:lc62WolfAttack 0.65s cubic-bezier(.16,.84,.26,1) 1!important;}
+#battleScreen .lc4-bandit.sprite-wolf.pose-hurt{animation:lc62WolfHurt .34s ease-out 1!important;}
+@keyframes lc62WolfIdle{0%,100%{transform:translate3d(0,0,0) scale(1)}25%{transform:translate3d(0,-3px,0) scale(1.006)}50%{transform:translate3d(0,-6px,0) scale(1.012)}75%{transform:translate3d(0,-2px,0) scale(1.005)}}
+@keyframes lc62WolfBreath{0%,100%{transform:translate3d(0,0,0) scale(1)}50%{transform:translate3d(0,-2px,0) scale(1.018)}}
+@keyframes lc62WolfAttack{0%{transform:translate3d(0,0,0) scale(1)}40%{transform:translate3d(-18px,-6px,0) scale(1.06) rotate(-1.3deg);filter:brightness(1.12) drop-shadow(0 0 16px rgba(121,148,255,.20))}100%{transform:translate3d(0,0,0) scale(1)}}
+@keyframes lc62WolfHurt{0%{transform:translate3d(0,0,0)}30%{transform:translate3d(8px,-2px,0) rotate(1.2deg);filter:brightness(1.24)}100%{transform:translate3d(0,0,0)}}
+
+@media(max-width:900px){
+  #battleScreen .lc4-wavebox.lc61-wavebox{transform:scale(.8)!important;}
+  #battleScreen .lc4-arena{left:8px!important;right:8px!important;top:56px!important;bottom:160px!important;grid-template-columns:29% 71%!important;}
+  #battleScreen .lc4-planning{left:6px!important;right:6px!important;height:146px!important;grid-template-columns:104px minmax(0,1fr) 96px!important;column-gap:6px!important;}
+  #battleScreen .lc61-manager{transform:scale(.86)!important;transform-origin:left bottom!important;}
+  #battleScreen .lc4-action{flex-basis:84px!important;width:84px!important;height:154px!important;}
+  #battleScreen .lc4-skill-front{left:16px!important;width:64px!important;height:88px!important;}
+  #battleScreen .lc4-skill-back{width:59px!important;height:81px!important;}
+  #battleScreen .lc62-slot-core{left:22px!important;width:36px!important;height:36px!important;}
+  #battleScreen .lc4-command{width:96px!important;}
+  #battleScreen .lc4-start{width:64px!important;height:64px!important;bottom:40px!important;}
+  #battleScreen .lc4-auto button{width:60px!important;}
+}
+
+/* ============================================================
+   V63 — fix wave/turn, player anchor, hostile arrows, ego click
+   ============================================================ */
+#battleScreen .lc4-topbar{
+  top:16px!important;
+  left:16px!important;
+  right:16px!important;
+  height:56px!important;
+  overflow:visible!important;
+}
+#battleScreen .lc4-wavebox.lc61-wavebox{
+  transform:scale(.78)!important;
+  transform-origin:left top!important;
+  gap:4px!important;
+}
+#battleScreen .lc61-hud-chip{
+  width:124px!important;
+}
+#battleScreen .lc61-wave-chip,
+#battleScreen .lc61-turn-chip{margin-top:0!important;}
+#battleScreen .lc61-hud-chip b{
+  right:12px!important;
+  top:50%!important;
+  transform:translateY(-50%)!important;
+  min-width:42px!important;
+  text-align:center!important;
+}
+
+/* remove the roman numeral rail completely */
+#battleScreen .lc4-left-rail{display:none!important;}
+
+/* Don UI centered on Don, not stuck to the far-left edge */
+#battleScreen .lc4-arena{
+  top:82px!important;
+  bottom:172px!important;
+  left:18px!important;
+  right:18px!important;
+  grid-template-columns:30% 70%!important;
+}
+#battleScreen .lc4-don-unit{justify-content:center!important;}
+#battleScreen .lc4-don-stage{width:100%!important;height:82%!important;}
+#battleScreen .lc4-don-plate{
+  left:50%!important;
+  bottom:16px!important;
+  width:188px!important;
+  transform:translateX(-50%) scale(.9)!important;
+  transform-origin:center bottom!important;
+  background:linear-gradient(90deg,rgba(8,7,7,.95),rgba(8,7,7,.83) 78%,rgba(8,7,7,.15))!important;
+}
+
+/* show Don's target anchor again and keep it clickable-free */
+#battleScreen .lc4-intent-player{
+  display:block!important;
+  z-index:25!important;
+  pointer-events:none!important;
+  width:76px!important;
+  height:72px!important;
+}
+#battleScreen .lc4-intent-player .lc4-intent-speed{top:-8px!important;right:-2px!important;left:auto!important;}
+
+/* keep combat arrows contained and lighter */
+#battleScreen .lc4-target-lines{z-index:19!important;overflow:hidden!important;}
+#battleScreen .lc4-link-shadow{display:none!important;}
+#battleScreen .lc4-link-origin{display:none!important;}
+#battleScreen .lc4-link{
+  stroke-width:2.25px!important;
+  opacity:.88!important;
+  filter:none!important;
+}
+#battleScreen .lc4-link.is-secondary{stroke-width:1.7px!important;opacity:.62!important;}
+#battleScreen .lc4-link.is-focus{stroke-width:2.6px!important;opacity:.98!important;}
+#battleScreen .lc4-link.hostile{stroke:#c47b6b!important;color:#c47b6b!important;opacity:.72!important;}
+
+/* make sure the EGO button is actually clickable and obvious */
+#battleScreen .lc61-manager{position:relative!important;z-index:30!important;overflow:visible!important;}
+#battleScreen .lc61-ego-button{
+  pointer-events:auto!important;
+  z-index:3!important;
+  width:70px!important;
+  height:78px!important;
+}
+#battleScreen .lc61-ego-button[disabled]{pointer-events:none!important;}
+#battleScreen .lc61-ego-button.is-ready{
+  opacity:1!important;
+  filter:none!important;
+  animation:lc63EgoPulse 1s ease-in-out infinite!important;
+}
+#battleScreen .lc61-ego-button.is-ready .lc61-ego-frame{
+  transform:scale(1.04)!important;
+  filter:brightness(1.38) saturate(1.22) drop-shadow(0 0 14px rgba(255,128,64,.92))!important;
+}
+#battleScreen .lc61-ego-state{color:#ccb188!important;}
+@keyframes lc63EgoPulse{0%,100%{transform:translateY(0)}50%{transform:translateY(-2px) scale(1.02)}}
+
+@media(max-width:900px){
+  #battleScreen .lc4-topbar{top:12px!important;left:10px!important;right:10px!important;height:52px!important;}
+  #battleScreen .lc4-wavebox.lc61-wavebox{transform:scale(.72)!important;}
+  #battleScreen .lc4-arena{top:76px!important;bottom:166px!important;left:8px!important;right:8px!important;grid-template-columns:32% 68%!important;}
+  #battleScreen .lc4-don-plate{width:172px!important;transform:translateX(-50%) scale(.82)!important;bottom:10px!important;}
+  #battleScreen .lc4-intent-player{width:64px!important;height:60px!important;}
+}
+
+
+/* ============================================================
+   V64 — final cleanup from 2026-09-23 feedback
+   ============================================================ */
+/* Exact supplied WAVE/TURN frames, no transforms that clip the art. */
+#battleScreen .lc4-topbar{
+  top:12px!important;
+  left:14px!important;
+  right:14px!important;
+  height:96px!important;
+  overflow:visible!important;
+  align-items:flex-start!important;
+}
+#battleScreen .lc4-wavebox.lc61-wavebox{
+  position:relative!important;
+  top:0!important;
+  left:0!important;
+  transform:none!important;
+  width:132px!important;
+  gap:3px!important;
+  overflow:visible!important;
+}
+#battleScreen .lc61-hud-chip,
+#battleScreen .lc61-wave-chip,
+#battleScreen .lc61-turn-chip{
+  width:132px!important;
+  margin:0!important;
+  transform:none!important;
+  overflow:visible!important;
+}
+#battleScreen .lc61-hud-chip img{
+  width:132px!important;
+  height:auto!important;
+  display:block!important;
+}
+#battleScreen .lc61-hud-chip b{
+  right:11px!important;
+  top:50%!important;
+  transform:translateY(-50%)!important;
+  min-width:42px!important;
+  font-size:14px!important;
+  line-height:1!important;
+}
+
+/* Roman-number rail is gone entirely. */
+#battleScreen .lc4-left-rail{display:none!important;}
+
+/* Don status panel sits under Don, centered with the unit. */
+#battleScreen .lc4-don-unit{position:relative!important;justify-content:center!important;}
+#battleScreen .lc4-don-plate{
+  left:50%!important;
+  right:auto!important;
+  bottom:12px!important;
+  width:176px!important;
+  transform:translateX(-50%)!important;
+  transform-origin:center bottom!important;
+  padding:5px 7px 6px!important;
+  border-left:2px solid #8b6b42!important;
+  background:linear-gradient(90deg,rgba(8,7,7,.95),rgba(8,7,7,.87) 84%,rgba(8,7,7,.25))!important;
+}
+#battleScreen .lc4-don-title b{font-size:11px!important;}
+#battleScreen .lc4-don-title small{font-size:5px!important;}
+#battleScreen .lc4-mini-meter{grid-template-columns:16px 1fr 38px!important;gap:4px!important;margin-top:3px!important;font-size:6px!important;}
+#battleScreen .lc4-mini-meter>b{font-size:6px!important;}
+#battleScreen .lc4-unit-sub{display:none!important;}
+
+/* Never fill the bezier targeting paths. This was creating the giant red band. */
+#battleScreen .lc4-target-lines{overflow:hidden!important;}
+#battleScreen .lc4-link,
+#battleScreen .lc4-link.hostile,
+#battleScreen .lc4-link.dragging,
+#battleScreen .lc4-link.dominating,
+#battleScreen .lc4-link.favored,
+#battleScreen .lc4-link.neutral,
+#battleScreen .lc4-link.struggling,
+#battleScreen .lc4-link.hopeless,
+#battleScreen .lc4-link.unopposed{
+  fill:none!important;
+}
+#battleScreen .lc4-link.hostile{
+  stroke:#c87868!important;
+  color:#c87868!important;
+  stroke-width:2.2px!important;
+  opacity:.82!important;
+  filter:drop-shadow(0 0 1px rgba(0,0,0,.55))!important;
+}
+#battleScreen .lc4-link.is-focus{stroke-width:2.7px!important;}
+#battleScreen .lc4-link.is-secondary{stroke-width:1.6px!important;opacity:.56!important;}
+#battleScreen .lc4-link-shadow,#battleScreen .lc4-link-origin{display:none!important;}
+
+/* Don's target anchor stays near the character instead of screen edges. */
+#battleScreen .lc4-intent-player{
+  display:block!important;
+  width:66px!important;
+  height:62px!important;
+  z-index:24!important;
+  pointer-events:none!important;
+  opacity:.96!important;
+}
+#battleScreen .lc4-intent-player>b{font-size:4.8px!important;}
+
+/* EGO: visible through the fight, unlocks at TURN 4, obvious and clickable. */
+#battleScreen .lc61-manager{position:relative!important;z-index:40!important;overflow:visible!important;}
+#battleScreen .lc61-ego-button{
+  display:block!important;
+  visibility:visible!important;
+  pointer-events:auto!important;
+  position:relative!important;
+  z-index:41!important;
+  width:70px!important;
+  height:78px!important;
+}
+#battleScreen .lc61-ego-button.is-locked{pointer-events:none!important;opacity:.46!important;}
+#battleScreen .lc61-ego-button.is-ready{pointer-events:auto!important;opacity:1!important;cursor:pointer!important;}
+#battleScreen .lc61-ego-button.is-ready .lc61-ego-frame{
+  animation:lc64EgoGlow .9s ease-in-out infinite!important;
+  filter:brightness(1.45) saturate(1.3) drop-shadow(0 0 15px rgba(255,118,48,.95))!important;
+}
+#battleScreen .lc61-ego-button.is-ready .lc61-ego-state{color:#ffd188!important;font-weight:900!important;}
+@keyframes lc64EgoGlow{0%,100%{transform:scale(1)}50%{transform:scale(1.07)}}
+
+@media(max-width:900px){
+  #battleScreen .lc4-topbar{top:8px!important;left:8px!important;right:8px!important;}
+  #battleScreen .lc4-wavebox.lc61-wavebox,
+  #battleScreen .lc61-hud-chip,
+  #battleScreen .lc61-wave-chip,
+  #battleScreen .lc61-turn-chip,
+  #battleScreen .lc61-hud-chip img{width:116px!important;}
+  #battleScreen .lc61-hud-chip b{right:10px!important;font-size:12px!important;min-width:36px!important;}
+  #battleScreen .lc4-don-plate{width:158px!important;bottom:8px!important;}
+}
+#battleScreen .lc61-ego-button[hidden]{display:none!important;}
