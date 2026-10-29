@@ -1,17 +1,55 @@
+/**
+ * Pure clash-state reducer. UI/animations stay outside this module.
+ * A clash round compares two already-rolled powers, applies opponent clash
+ * modifiers, then removes the loser's right-most active Coin.
+ */
 export class ClashSystem {
-  static offenseLevel(unit, skill = {}) {
-    return (skill.offenseLevel ?? unit?.offenseLevel ?? 35) - (unit?.offenseLevelDown || 0);
+  static isUnbreakableCoin(skill, coinNumber) {
+    const coinEffect = (skill?.coinEffects || []).find((entry) => entry.coin === coinNumber);
+    return !!(skill?.unbreakable || coinEffect?.unbreakable);
   }
-  static bonus(unit, opponent, skill, opponentSkill) {
-    const advantage = this.offenseLevel(unit, skill) - this.offenseLevel(opponent, opponentSkill);
-    return Math.max(0, Math.floor(advantage / 3)) + (unit?.clashPowerUp || 0);
+
+  static applyOpponentModifiers(playerRoll, enemyRoll, playerSkill, enemySkill) {
+    const player = { ...playerRoll };
+    const enemy = { ...enemyRoll };
+    player.power += Number(enemySkill?.opponentClashPowerModifier || 0);
+    enemy.power += Number(playerSkill?.opponentClashPowerModifier || 0);
+    return { player, enemy };
   }
-  static resolveRound({ playerSkill, enemySkill, playerCoins, enemyCoins, playerRoll, enemyRoll, playerUnit, enemyUnit }) {
-    const dr = { ...playerRoll, power: playerRoll.power + this.bonus(playerUnit, enemyUnit, playerSkill, enemySkill) + (enemySkill.opponentClashPowerModifier || 0) };
-    const er = { ...enemyRoll, power: enemyRoll.power + this.bonus(enemyUnit, playerUnit, enemySkill, playerSkill) + (playerSkill.opponentClashPowerModifier || 0) };
-    const verdict = dr.power > er.power ? 'player' : dr.power < er.power ? 'enemy' : 'tie';
-    return { playerRoll: dr, enemyRoll: er, verdict,
-      playerCoins: Math.max(0, playerCoins - (verdict === 'enemy' ? 1 : 0)),
-      enemyCoins: Math.max(0, enemyCoins - (verdict === 'player' ? 1 : 0)) };
+
+  static resolveRound({ playerSkill, enemySkill, playerCoins, enemyCoins, playerRoll, enemyRoll }) {
+    const adjusted = this.applyOpponentModifiers(playerRoll, enemyRoll, playerSkill, enemySkill);
+    const result = {
+      playerRoll: adjusted.player,
+      enemyRoll: adjusted.enemy,
+      verdict: 'tie',
+      playerCoins,
+      enemyCoins,
+      crackedPlayerCoins: 0,
+      crackedEnemyCoins: 0,
+      lostCoinNumber: null,
+    };
+
+    if (adjusted.player.power > adjusted.enemy.power) {
+      result.verdict = 'player';
+      result.lostCoinNumber = enemyCoins;
+      if (this.isUnbreakableCoin(enemySkill, enemyCoins)) {
+        result.crackedEnemyCoins = 1;
+        result.enemyCoins = 0;
+      } else {
+        result.enemyCoins = Math.max(0, enemyCoins - 1);
+      }
+    } else if (adjusted.player.power < adjusted.enemy.power) {
+      result.verdict = 'enemy';
+      result.lostCoinNumber = playerCoins;
+      if (this.isUnbreakableCoin(playerSkill, playerCoins)) {
+        result.crackedPlayerCoins = 1;
+        result.playerCoins = 0;
+      } else {
+        result.playerCoins = Math.max(0, playerCoins - 1);
+      }
+    }
+
+    return result;
   }
 }

@@ -24,6 +24,7 @@ export const assets = {
     sad: 'assets/images/characters/sad.png?v=vnclassic31',
     sup: 'assets/images/characters/sup.png?v=vnclassic31',
     superMad: 'assets/images/characters/super-mad.png?v=vnclassic31',
+    heathcliff: 'assets/images/characters/heathcliff.png',
   },
 };
 
@@ -39,9 +40,35 @@ export const battleDonSprites = {
 };
 
 export const battleDonAnimations = {
-  joust: { frames: ['assets/images/battle/don/base/skill1_1.png','assets/images/battle/don/base/skill1_2.png','assets/images/battle/don/base/skill1_3.png'], duration: 1500, hitTimes: [0.66], css: 'skill1' },
-  gallop: { frames: ['assets/images/battle/don/base/skill2_1.png','assets/images/battle/don/base/skill2_2.png','assets/images/battle/don/base/skill2_3.png'], duration: 1500, hitTimes: [0.68], css: 'skill2' },
-  justice: { frames: Array.from({ length: 12 }, (_, i) => `assets/images/battle/don/base/skill3_${i + 1}.png`), duration: 2600, hitTimes: [0.34, 0.62, 0.86], css: 'skill3' },
+  joust: {
+    frames: ['assets/images/battle/don/base/skill1_1.png','assets/images/battle/don/base/skill1_2.png','assets/images/battle/don/base/skill1_3.png'],
+    duration: 1500, hitTimes: [0.66], css: 'skill1',
+  },
+  gallop: {
+    frames: ['assets/images/battle/don/base/skill2_1.png','assets/images/battle/don/base/skill2_2.png','assets/images/battle/don/base/skill2_3.png'],
+    duration: 1500, hitTimes: [0.40, 0.70], css: 'skill2',
+  },
+  justice: {
+    // Frames 3 and 6 are slash-trail-only sprites (no Don body). Keep them as impact FX,
+    // not as character poses; replacing the body with these images caused the apparent pop.
+    frames: [
+      'assets/images/battle/don/base/skill3_1.png',
+      'assets/images/battle/don/base/skill3_2.png',
+      'assets/images/battle/don/base/skill3_4.png',
+      'assets/images/battle/don/base/skill3_5.png',
+      'assets/images/battle/don/base/skill3_7.png',
+      'assets/images/battle/don/base/skill3_8.png',
+      'assets/images/battle/don/base/skill3_9.png',
+      'assets/images/battle/don/base/skill3_10.png',
+      'assets/images/battle/don/base/skill3_11.png',
+      'assets/images/battle/don/base/skill3_12.png',
+    ],
+    effectFrames: [
+      { src: 'assets/images/battle/don/base/skill3_3.png', activeOffset: 1 },
+      { src: 'assets/images/battle/don/base/skill3_6.png', activeOffset: 5 },
+    ],
+    duration: 2600, hitTimes: [0.34, 0.62, 0.86], css: 'skill3',
+  },
 };
 
 export const battleUiIcons = {

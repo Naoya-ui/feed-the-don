@@ -1,12 +1,6 @@
 import { Helpers } from '../utils/Helpers.js';
 
 export class BattleSystem {
-  static resistanceMultiplier(target, skill) {
-    const physical = target?.resistances?.physical?.[skill.type] ?? 1;
-    const sin = target?.resistances?.sin?.[skill.affinity] ?? 1;
-    return physical * sin * (1 + Math.max(0, target?.fragile || 0) * 0.1);
-  }
-
   static addStatus(target, type, potency = 0, count = 0) {
     if (!target.statuses) target.statuses = {};
     if (!target.statuses[type]) target.statuses[type] = { potency: 0, count: 0 };

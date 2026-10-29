@@ -40,59 +40,173 @@ export const enemyBattleSkills = {
 };
 
 
-// Custom encounter rules. Numeric data is consumed by WolfBossSystem/EnemyAI.
+// Wolf's boss kit, transcribed from the user's reference screenshots.
+// It is data-only for now: Wolf is NOT spawned by buildWaveEnemies yet.
+// Fields such as Track are preserved as future hooks instead of inventing mechanics.
 export const wolfBoss = {
-  key: 'wolf', name: 'The Wandering Wolf',
+  key: 'wolf',
+  name: 'Wolf',
   portrait: 'assets/images/characters/wolf.png',
-  level: 35, offenseLevel: 38, defenseLevel: 35,
-  maxHp: 1200, staggerThresholds: [840, 480, 180], speed: [4, 7],
-  resistances: {
-    physical: { Slash: 0.5, Pierce: 1, Blunt: 2 },
-    sin: { Wrath: 1, Lust: 1, Sloth: 0.5, Gluttony: 1, Gloom: 0.5, Pride: 2, Envy: 2 },
-  },
-  exhaust: { cap: 5, trigger: 3, offenseDown: 3, decay: 1 },
-  staggerTurns: 2,
-  panic: { threshold: -45, basePenalty: 2 },
+  offenseLevel: 56,
+  maxHp: 780,
+  staggerThresholds: [585, 390, 195],
   battleEnabled: true,
 };
 
 export const wolfBattleSkills = {
   sever: {
-    key: 'sever', name: 'Sever', affinity: 'Wrath', type: 'Slash',
-    base: 4, coinPower: 5, coins: 1, attackWeight: 1,
+    key: 'sever',
+    name: 'Sever',
+    base: 4,
+    coinPower: 6,
+    coins: 1,
+    offenseLevel: 50,
+    attackWeight: 1,
+    type: 'Slash',
     art: 'assets/images/battle/wolf-skills/sever.png',
+    effects: [
+      { trigger: 'onHit', effect: 'hasteNextTurn', amount: 1 },
+      { trigger: 'onHit', effect: 'poise', potency: 2, count: 4 },
+    ],
   },
+
   indigoBlade: {
-    key: 'indigoBlade', name: 'Indigo Blade', affinity: 'Gloom', type: 'Slash',
-    base: 4, coinPower: 4, coins: 2, attackWeight: 1, onHitExhaust: 1,
+    key: 'indigoBlade',
+    name: 'Indigo Blade',
+    base: 4,
+    coinPower: 5,
+    coins: 2,
+    offenseLevel: 56,
+    attackWeight: 1,
+    type: 'Slash',
     art: 'assets/images/battle/wolf-skills/indigo-blade.png',
+    applyOnHit: [{ type: 'bleed', potency: 7, count: 2 }],
+    onUse: {
+      criticalDamagePerPoisePotencyPercent: 2,
+      criticalDamagePerPoisePotencyMaxPercent: 50,
+      criticalDamageBonusPercent: 100,
+    },
+    coinEffects: [
+      {
+        coin: 1,
+        unbreakable: true,
+        effects: [
+          { trigger: 'onHit', effect: 'healSp', amount: 10 },
+          { trigger: 'onHit', effect: 'bleedNextTurn', potency: 7 },
+        ],
+      },
+      {
+        coin: 2,
+        coinPowerModifier: -2,
+        effects: [
+          { trigger: 'onHit', effect: 'bleedNextTurn', potency: 7 },
+        ],
+      },
+    ],
   },
+
   azureRend: {
-    key: 'azureRend', name: 'Azure Rend', affinity: 'Pride', type: 'Slash',
-    base: 5, coinPower: 3, coins: 3, attackWeight: 1, onClashWinSp: 10,
-    targetRule: 'slowest',
+    key: 'azureRend',
+    name: 'Azure Rend',
+    base: 12,
+    coinPower: 2,
+    coins: 2,
+    offenseLevel: 50,
+    attackWeight: 1,
+    type: 'Slash',
     art: 'assets/images/battle/wolf-skills/azure-rend.png',
+    coinEffects: [
+      {
+        coin: 1,
+        damageTarget: 'sp',
+        note: 'Deals SP damage instead of HP damage.',
+      },
+      {
+        coin: 2,
+        coinPowerModifier: 1,
+      },
+    ],
   },
+
   shimmeringCleave: {
-    key: 'shimmeringCleave', name: 'Shimmering Cleave', affinity: 'Envy', type: 'Slash',
-    base: 4, coinPower: 6, coins: 1, attackWeight: 1, counter: true,
-    missingHpCoinPowerScale: 5,
+    key: 'shimmeringCleave',
+    name: 'Shimmering Cleave',
+    base: 7,
+    coinPower: 5,
+    coins: 2,
+    offenseLevel: 50,
+    attackWeight: 1,
+    type: 'Slash',
     art: 'assets/images/battle/wolf-skills/shimmering-cleave.png',
+    coinEffects: [
+      {
+        coin: 1,
+        unbreakable: true,
+        effects: [
+          { trigger: 'onHit', effect: 'healSp', amount: 6 },
+          { trigger: 'onHit', effect: 'damageUp', amount: 2 },
+        ],
+      },
+      {
+        coin: 2,
+        coinPowerModifier: -3,
+        effects: [
+          { trigger: 'onHit', effect: 'poise', potency: 4 },
+          { trigger: 'headsHit', effect: 'poiseCount', amount: 4 },
+        ],
+      },
+    ],
   },
+
   mirageSlash: {
-    key: 'mirageSlash', name: 'Mirage Slash', affinity: 'Gloom', type: 'Pierce',
-    base: 5, coinPower: 2, coins: 2, attackWeight: 3, onHitExhaust: 2,
-    onClashLoseFragile: 1,
+    key: 'mirageSlash',
+    name: 'Mirage Slash',
+    base: 14,
+    coinPower: 3,
+    coins: 1,
+    offenseLevel: 50,
+    attackWeight: 8,
+    type: 'Slash',
     art: 'assets/images/battle/wolf-skills/mirage-slash.png',
+    cannotBeStaggeredUntilSkillUsed: true,
+    opponentClashPowerModifier: -4,
+    onClashLose: { effect: 'selfStagger' },
+    coinEffects: [
+      {
+        coin: 1,
+        criticalDamageBonusPercent: 200,
+      },
+    ],
+  },
+
+  exhaust: {
+    key: 'exhaust',
+    name: 'Exhaust',
+    base: 10,
+    coinPower: 2,
+    coins: 1,
+    offenseLevel: 50,
+    attackWeight: 1,
+    type: 'Defense',
+    art: 'assets/images/battle/wolf-skills/exhaust.png',
+    defense: true,
+    evade: true,
+    unbreakable: true,
+    onEvade: [
+      { effect: 'healSp', amount: 3 },
+      { effect: 'targetLoseSp', amount: 3 },
+      { effect: 'useFollowUp', skill: 'Track' },
+    ],
   },
 };
 
-// Turns 1–2 spread Exhaust; turn 3 pressures the slowest slot and arms a Counter.
-export const wolfSkillRotation = ['sever', 'indigoBlade', 'azureRend', 'shimmeringCleave'];
-export const wolfTurnPattern = [
-  ['sever', 'sever', 'indigoBlade'],
-  ['sever', 'sever', 'indigoBlade'],
-  ['azureRend', 'azureRend', 'shimmeringCleave'],
+export const wolfSkillRotation = [
+  'sever',
+  'indigoBlade',
+  'azureRend',
+  'shimmeringCleave',
+  'mirageSlash',
+  'exhaust',
 ];
 
 export const enemySkillText = {
@@ -102,12 +216,12 @@ export const enemySkillText = {
   hit:'A 3-coin combo from the elite bandit. It can apply Bleed on hit.',
   heavyStrike:'A single crushing blow with high coin power.',
   block:'A guarded stance used by the elite bandit.',
-  sever: 'A single-coin Wrath/Slash attack.',
-  indigoBlade: 'A two-coin Gloom/Slash attack. Each hit inflicts 1 Exhaust.',
-  azureRend: 'A three-coin Pride/Slash attack targeting the slowest action slot. Clash Win restores 10 SP.',
-  shimmeringCleave: 'An Envy/Slash Counter. Retaliates once after Wolf takes a direct attack, if still able to act.',
-  mirageSlash: 'Below 40% HP: selects up to 3 random action slots. Each unit is hit once per Coin. Unavailable during Panic.',
-
+  sever:'Wolf\'s single-coin slash. On hit, the source reference grants Haste next turn and builds Poise.',
+  indigoBlade:'A two-coin slash. The source reference improves Critical damage with Poise and inflicts heavy Bleed on hit.',
+  azureRend:'A two-coin technique whose first coin damages SP instead of HP.',
+  shimmeringCleave:'A two-coin slash that restores SP and builds Damage Up / Poise in the source reference.',
+  mirageSlash:'A dangerous single-coin slash. The opponent clashes at reduced power; Wolf becomes Staggered if this skill loses the Clash.',
+  exhaust:'An unbreakable Evade skill. The source reference restores SP, drains target SP, then uses Track after a successful evade.',
 };
 
 export const enemySkillEffects = {
@@ -117,10 +231,10 @@ export const enemySkillEffects = {
   hit:[{ tag:'[On Hit]', text:'Multi-coin combo. Inflict Bleed 2/2.' }],
   heavyStrike:[{ tag:'[On Hit]', text:'A heavy Blunt strike with strong clash payoff.' }],
   block:[{ tag:'[Defense]', text:'Reduce incoming pressure if not redirected.' }],
-  sever: [{ tag: '[Passive]', text: 'Lone Predator: +1 Clash Power while alone.' }],
-  indigoBlade: [{ tag: '[On Hit]', text: 'Inflict 1 Exhaust per Coin. Each stack lowers Max Speed by 1 next turn.' }],
-  azureRend: [{ tag: '[Target]', text: 'Slowest action slot.' }, { tag: '[Clash Win]', text: 'Recover 10 SP.' }],
-  shimmeringCleave: [{ tag: '[Counter]', text: 'Retaliate once after a direct attack; disabled by Stagger.' }, { tag: '[Coin Power]', text: '+floor((1 - HP / Max HP) × 5).' }],
-  mirageSlash: [{ tag: '[On Hit]', text: 'Inflict 2 Exhaust per Coin. Attack Weight 3; duplicate units are hit only once per Coin.' }, { tag: '[Clash Lose]', text: 'Gain 1 Fragile next turn.' }],
-
+  sever:[{ tag:'[On Hit]', text:'Gain 1 Haste next turn; gain 2 Poise and +4 Poise Count.' }],
+  indigoBlade:[{ tag:'[On Hit]', text:'Coin I heals 10 SP and inflicts 7 Bleed next turn; Coin II also inflicts 7 Bleed next turn.' }],
+  azureRend:[{ tag:'[Coin I]', text:'Deals SP damage instead of HP damage.' }, { tag:'[Coin II]', text:'Coin Power +1.' }],
+  shimmeringCleave:[{ tag:'[Coin I]', text:'Unbreakable. Heal 6 SP and gain 2 Damage Up.' }, { tag:'[Coin II]', text:'Coin Power -3. Gain 4 Poise; Heads Hit adds 4 Poise Count.' }],
+  mirageSlash:[{ tag:'[Clash]', text:'Opponent has -4 Clash Power. On Clash Lose, Wolf becomes Staggered.' }, { tag:'[Coin I]', text:'+200% Critical Hit damage.' }],
+  exhaust:[{ tag:'[On Evade]', text:'Heal 3 SP, target loses 3 SP, then use Track. Track remains a future hook.' }],
 };

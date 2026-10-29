@@ -1,37 +1,63 @@
-# Combat architecture — Wandering Wolf web update
+# Combat Architecture — v68
 
-This is an HTML/CSS/JavaScript project. Run it through an HTTP server; no Unity or C# is involved.
+## Responsibility map
 
-## Responsibilities
+- `core/CoinSystem.js`
+  - Converts SP into Heads chance.
+  - Flips one or many Coins.
+  - Supports injected RNG for tests/replays.
 
-| File | Responsibility |
-|---|---|
-| `js/data/enemies.js` | Wolf definition, resistances, skill parameters, three-turn pattern, inspector text |
-| `js/core/Player.js` | Don's HP/SP, current statuses, Exhaust and Offense Level Down fields |
-| `js/core/CoinSystem.js` | SP-dependent Heads probability; injectable RNG |
-| `js/core/SkillSystem.js` | Base/Coin Power, missing-HP bonus, Panic penalty, rolls |
-| `js/core/ClashSystem.js` | One comparison, level bonus, Lone Predator, losing Coin removal |
-| `js/core/WolfBossSystem.js` | Exhaust timing, SP/Panic, Stagger thresholds, phase gating, passives |
-| `js/core/EnemyAI.js` | Wolf rotation, enemy action slots, target selection, AoE unit deduplication |
-| `js/core/BattleSystem.js` | Shared statuses, Poise and resistance/Fragile multipliers |
-| `js/main.js` | Existing story, targeting UI, turn orchestration, combat effects and animations |
+- `core/SkillSystem.js`
+  - Interprets skill data.
+  - Base Power, Coin Power, per-Coin modifiers, max power, expected power and live roll power.
 
-Core modules do not access the DOM. This is a scoped Wolf update, not a full rewrite of the app.
-The previous document referred to missing TurnSystem/EgoSystem modules. Those do not exist in this version; turn sequencing and E.G.O remain in main.js.
+- `core/ClashSystem.js`
+  - Resolves one Clash round as a pure state change.
+  - Applies `opponentClashPowerModifier`.
+  - Removes the right-most active Coin from the loser.
+  - Handles Unbreakable Coin cracking.
 
-## Resolution
+- `core/TurnSystem.js`
+  - Combat finite-state machine: `planning -> combat -> cleanup -> planning`.
+  - Builds the Speed-ordered action queue.
 
-1. Turn Start consumes any queued Exhaust proc, applies next-turn buffs, begins Panic and refreshes Lone Predator.
-2. AI builds three Wolf slots. Don's speed uses the remaining Exhaust stacks and Haste.
-3. The player assigns targets. Speed orders actions; the existing single-Don redirection behavior is retained.
-4. Attack-vs-attack invokes the pure Clash resolver. It adds +1 Clash Power per full 3 points of positive Offense Level advantage, plus Lone Predator if applicable.
-5. Wolf gains/loses 10 SP once per completed Clash. Azure Rend grants an additional 10 SP on a win. Wolf's current SP affects Heads chance.
-6. Wolf attacks once per surviving Coin with accumulating positive Coin Power. Resistance and Stagger multipliers affect direct damage. Don retains the prototype's existing damage/crit formula with Wolf's resistances applied.
-7. An armed Counter is excluded from the normal speed queue. After a direct Don attack finishes, it retaliates once only if Wolf and Don are alive and Wolf is not Staggered.
-8. Turn End decays Exhaust and Stagger duration, clears temporary Fragile, and ends active Panic. E.G.O still unlocks on Turn 4 and retains its existing 20 SP cost.
+- `core/EgoSystem.js`
+  - Unlock rule and resource validation.
+  - Pays SP/Sin cost only when the E.G.O attack actually begins.
+  - Centralizes solo-prototype tutorial grants.
 
-## Test scope
+- `core/EnemyAI.js`
+  - Decides action count, skill rotation and Speed range.
+  - Produces enemy intent slots without touching DOM/UI code.
 
-`npm test` runs numeric/spec tests and real main.js combat flows against DOM/animation doubles.
-Integration scenarios include two-Coin Exhaust, HP damage from Azure Rend, same-unit AoE deduplication, one-shot Counter, Stagger preventing Counter, Panic damage, HUD text and complete Wolf/bandit action queues.
-These tests do not verify browser rendering, audio timing, or encounter balance. Browser visual QA still needs a local playthrough.
+- `core/BattleSystem.js`
+  - Shared status helpers such as Bleed, Rupture, Poise, Critical and Stagger multipliers.
+
+## Runtime flow
+
+1. `applyTurnStartBuffs()` applies next-turn buffs and creates action slots.
+2. `renderPlanning()` enters `planning` and renders targeting/UI.
+3. Player assigns Skill -> enemy intent targets.
+4. `executePlannedTurn()` enters `combat`.
+5. `TurnSystem.buildActionQueue()` sorts all actions by Speed.
+6. A contested action calls `resolveClash()`:
+   - `SkillSystem` rolls Skill Power.
+   - `ClashSystem` compares rolls and updates remaining Coins.
+   - UI only animates the result.
+7. Clash winner performs remaining Coin attacks; unopposed actions attack directly.
+8. E.G.O calls `EgoSystem.payCost()` immediately before its attack begins.
+9. End of resolution enters `cleanup`.
+10. `finishTurn()` decays turn-based states and advances the turn counter.
+11. Next command phase returns to `planning`.
+
+## Extension rules
+
+- New Skill numeric rules belong in `SkillSystem` or skill data, not in UI functions.
+- New Clash-only rules belong in `ClashSystem`.
+- New boss decision logic belongs in `EnemyAI`.
+- New turn phases/status timing should be added to `TurnSystem`/`BattleSystem`.
+- Do not make DOM functions authoritative for combat state.
+
+## Next recommended refactor
+
+The remaining major hard-coded section is Skill effect execution in `donAttack()` / `enemyAttack()` (Bleed application, Haste, Poise, passives). The next clean step is a trigger-based Effect Engine with events such as `onUse`, `clashWin`, `onHit`, `headsHit`, `turnStart`, and `turnEnd`.

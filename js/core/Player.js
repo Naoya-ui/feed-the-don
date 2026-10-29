@@ -9,12 +9,6 @@ export class Player {
     this.sp = Helpers.clamp(data.sp ?? 0, -45, 45);
     this.minSp = -45;
     this.maxSp = 45;
-    this.level = data.level ?? 35;
-    this.offenseLevel = data.offenseLevel ?? 35;
-    this.defenseLevel = data.defenseLevel ?? 35;
-    this.exhaust = 0;
-    this.exhaustPending = false;
-    this.offenseLevelDown = 0;
     this.haste = 0;
     this.nextHaste = 0;
     this.attackUp = 0;

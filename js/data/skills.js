@@ -24,8 +24,8 @@ export const donBattleSkills = {
     key:'laSangre', name:'La Sangre de Sancho', affinity:'Lust', css:'ego', type:'Pierce',
     art:'assets/images/battle/ego/cutin-portrait.png', badge:'assets/images/battle/ego/skill-info.png',
     base:12, coinPower:11, coins:1,
-    effect:'E.G.O Skill. 1 Coin. On use, lose 20 SP. [Heads Hit] Inflict 4 Bleed.',
-    keywords:['Bleed','E.G.O','Heads Hit'], expression:'superMad', animation:'lc-anim-ego', ego:true,
+    effect:'ZAYIN E.G.O. 1 Coin. Cost: 10 SP, 2 Lust, 2 Pride. [Heads Hit] Inflict 4 Bleed. Passive: On Hit, if target has Bleed, heal 3 HP.',
+    spCost:10, resourceCost:{ Lust:2, Pride:2 }, passive:'Immoderate Passion', keywords:['Bleed','E.G.O','Heads Hit'], expression:'superMad', animation:'lc-anim-ego', ego:true,
   },
   evade: {
     key:'evade', name:'Evade', affinity:'Lust', css:'defense', type:'Defense',
@@ -43,7 +43,7 @@ export const keywordDescriptions = {
   'Multi-Coin':'This skill attacks with multiple Coins. Winning a Clash preserves more Coins for the follow-up attack.',
   'Clash Win':'Activates after Don wins the Clash.',
   'Heads Hit':'Activates only on a Heads result for that Coin.',
-  'E.G.O':'A manifested E.G.O attack. It unlocks from Turn 4 in the Wolf fight and costs SP when used.',
+  'E.G.O':'A manifested E.G.O attack. It unlocks from Turn 4 in the Wolf fight and consumes SP plus E.G.O resources when used.',
   Defense:'A defensive action that competes against the incoming enemy action instead of dealing normal damage.',
   Evade:'If the defensive roll wins, Don avoids the incoming hit and takes no damage from that action.',
 };

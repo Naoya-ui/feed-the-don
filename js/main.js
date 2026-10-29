@@ -2,9 +2,17 @@ import { DOM as els } from "./ui/DOMManager.js";
 import { Helpers } from "./utils/Helpers.js";
 import { Player } from "./core/Player.js";
 import { BattleSystem } from "./core/BattleSystem.js";
-import { WolfBossSystem } from "./core/WolfBossSystem.js";
+import { CoinSystem } from "./core/CoinSystem.js";
 import { SkillSystem } from "./core/SkillSystem.js";
 import { ClashSystem } from "./core/ClashSystem.js";
+import { TurnSystem } from "./core/TurnSystem.js";
+import { RealtimeBattleMode } from "./fighting/RealtimeBattleMode.js";
+import { VERSUS_ROSTER, getVersusCharacter, getVersusEgo } from "./data/versusRoster.js";
+import { normalizeKey, displayKey } from "./fighting/InputHandler.js";
+import { VoiceLineManager } from "./utils/VoiceLineManager.js";
+import { VOICE_LINE_CATALOG } from "./data/voiceLines.js";
+import { LimbusContentLibrary } from "./data/LimbusContentLibrary.js";
+import { EgoSystem } from "./core/EgoSystem.js";
 import { EnemyAI } from "./core/EnemyAI.js";
 import { assets, battleDonSprites, battleDonAnimations, battleUiIcons, itemDB, characters } from "./data/characters.js";
 import { enemySprites, enemyBattleSkills, enemySkillText, enemySkillEffects, wolfBoss, wolfBattleSkills, wolfSkillRotation } from "./data/enemies.js";
@@ -12,7 +20,7 @@ import { donBattleSkills, keywordDescriptions } from "./data/skills.js";
 import { travelTime, wolfIntroDialogue } from "./data/story.js";
 
   const SAVE_KEY = "raise-don-quixote-html-save-v1";
-  const BUILD_TAG = "v69-wandering-wolf-web";
+  const BUILD_TAG = "v74-local-versus-loadouts-global-settings";
 
   const battleImagePreload = [
     ...Object.values(battleDonSprites),
@@ -137,9 +145,55 @@ import { travelTime, wolfIntroDialogue } from "./data/story.js";
   let dialogueFullText = "";
   let interactionLocked = false;
   let battle = null;
+  let realtimeMode = null;
+  let realtimeBattleActive = false;
   let battleInputResolver = null;
   let enemyInspectorHoverTimer = null;
   let battleResultResolver = null;
+  let standaloneStarting = false;
+  const HITBOX_SETTING_KEY = "raise-don-quixote-show-hitboxes-v1";
+  const KEY_BINDINGS_STORAGE_KEY = "raise-don-quixote-key-bindings-v1";
+  const CONTROLLER_STORAGE_KEY = "raise-don-quixote-controller-settings-v1";
+  const DEFAULT_KEY_BINDINGS = Object.freeze({
+    p1: Object.freeze({ left: "a", right: "d", jump: "w", guard: "s", light: "j", heavy: "k", special: "u", dash: "l" }),
+    p2: Object.freeze({ left: "arrowleft", right: "arrowright", jump: "arrowup", guard: "arrowdown", light: "numpad1", heavy: "numpad2", special: "numpad3", dash: "numpad4" }),
+  });
+  const CONTROL_ACTIONS = [
+    { key: "left", label: "Move left" }, { key: "right", label: "Move right" },
+    { key: "jump", label: "Jump" }, { key: "guard", label: "Guard" },
+    { key: "light", label: "Skill 1 / Light" }, { key: "heavy", label: "Skill 2 / Heavy" },
+    { key: "special", label: "Skill 3 / E.G.O" }, { key: "dash", label: "Dash / Evade" },
+  ];
+  const DEFAULT_CONTROLLER_SETTINGS = {
+    player: "p1", index: -1, deadzone: 0.35,
+    buttons: { jump: 0, dash: 1, light: 2, heavy: 3, special: 4, guard: 5 },
+  };
+  function readJsonSetting(key, fallback) {
+    try {
+      const parsed = JSON.parse(localStorage.getItem(key) || "null");
+      return parsed && typeof parsed === "object" ? parsed : fallback;
+    } catch { return fallback; }
+  }
+  function loadKeyBindings() {
+    const saved = readJsonSetting(KEY_BINDINGS_STORAGE_KEY, {});
+    return {
+      p1: { ...DEFAULT_KEY_BINDINGS.p1, ...(saved.p1 || {}) },
+      p2: { ...DEFAULT_KEY_BINDINGS.p2, ...(saved.p2 || {}) },
+    };
+  }
+  function loadControllerSettings() {
+    const saved = readJsonSetting(CONTROLLER_STORAGE_KEY, {});
+    return {
+      ...DEFAULT_CONTROLLER_SETTINGS, ...saved,
+      buttons: { ...DEFAULT_CONTROLLER_SETTINGS.buttons, ...(saved.buttons || {}) },
+    };
+  }
+  let keyBindings = loadKeyBindings();
+  let controllerSettings = loadControllerSettings();
+  let showHitboxesSetting = (() => {
+    try { return localStorage.getItem(HITBOX_SETTING_KEY) === "true"; }
+    catch { return false; }
+  })();
   let sfxContext = null;
   let targetLineRaf = 0;
   let targetLinePointer = null;
@@ -198,6 +252,84 @@ import { travelTime, wolfIntroDialogue } from "./data/story.js";
 
   function masterVolume() {
     return Math.max(0, Math.min(1, Number(state?.volume ?? 20) / 100));
+  }
+
+  // Voice lines play when a move begins, so they remain audible on a whiff or a blocked hit.
+  // Populate event buckets in js/data/voiceLines.js when additional local clips are imported.
+  const voiceLineManager = new VoiceLineManager({
+    catalog: VOICE_LINE_CATALOG,
+    volumeProvider: () => masterVolume() * 0.94,
+    enabledProvider: () => true,
+  });
+
+  // An optional, editable local database for Limbus-related records. Failure to load this
+  // extra catalogue never blocks the main game. Add permanent records to the JSON file;
+  // DevTools can use window.DonLimbusLibrary for search/upsert while developing.
+  const limbusContentLibrary = new LimbusContentLibrary({ url: "assets/data/limbus-library/catalog.json" });
+  if (typeof window !== "undefined") window.DonLimbusLibrary = limbusContentLibrary;
+  const limbusContentLibraryReady = limbusContentLibrary.load().catch((error) => {
+    console.warn("[Limbus content library] Optional catalogue was not loaded:", error.message);
+    return null;
+  });
+  if (typeof window !== "undefined") window.DonLimbusLibraryReady = limbusContentLibraryReady;
+
+  function voiceCharacterId(fighter) {
+    if (!fighter) return "don";
+    if (fighter.drawKey === "don") return "don";
+    if (fighter.drawKey === "wolf") return "wolf";
+    if (fighter.drawKey === "heathcliff") return "heathcliff";
+    return "club";
+  }
+
+  function playRealtimeMoveVoice({ attacker, move }) {
+    if (!attacker || !move) return;
+    const characterId = voiceCharacterId(attacker);
+    // Animation keys are stable catalogue keys for both player and AI moves.
+    const attackKey = move.animationKey || move.id || "joust";
+    voiceLineManager.playAttack(characterId, attackKey);
+  }
+
+  function playRealtimeReactionVoice(event) {
+    const target = event?.target;
+    if (!target) return;
+
+    // Use the supplied LCB "kill" line only when Don defeats a target but the
+    // encounter still has another living opponent. The final KO is followed by
+    // the dedicated victory line, avoiding two long voice clips overlapping.
+    if (!target.alive) {
+      const anotherOpponentAlive = !!realtimeMode?.enemies?.some((fighter) => fighter.alive);
+      if (event.attacker?.team === "player" && anotherOpponentAlive) {
+        voiceLineManager.playEvent("don", "kill", { cooldownMs: 800 });
+      }
+      return;
+    }
+
+    const characterId = voiceCharacterId(target);
+    const eventKey = event.evaded ? "evade" : event.blocked ? "block" : "hurt";
+    voiceLineManager.playEvent(characterId, eventKey, { cooldownMs: 450 });
+  }
+
+  // Lobby/idle voices are only started following a click, respecting browser
+  // autoplay rules. The greeting is picked by the player's local time.
+  function playDonLobbyVoice() {
+    const hour = new Date().getHours();
+    const ambientKey = hour < 11 ? "lobbyMorning" : hour < 18 ? "lobbyNoon" : "lobbyNight";
+    return voiceLineManager.playAmbient("don", ambientKey, { cooldownMs: 30000 });
+  }
+
+  function playDonSmalltalk() {
+    return voiceLineManager.playAmbient("don", "smalltalk", { cooldownMs: 12000 });
+  }
+
+  // Small development hook to preview a registered line without coupling future
+  // character-data tools to the battle controller.
+  if (typeof window !== "undefined") {
+    window.DonVoiceLines = Object.freeze({
+      playAttack: (...args) => voiceLineManager.playAttack(...args),
+      playEvent: (...args) => voiceLineManager.playEvent(...args),
+      playAmbient: (...args) => voiceLineManager.playAmbient(...args),
+      stopAll: () => voiceLineManager.stopAll(),
+    });
   }
 
   function fadeAudio(audio, targetVolume, duration = 600, pauseWhenSilent = false) {
@@ -296,6 +428,9 @@ import { travelTime, wolfIntroDialogue } from "./data/story.js";
       wolfIntroSeen: false,
       wolfBattleSeen: false,
       wolfBattleWon: false,
+      heathcliffIntroSeen: false,
+      heathcliffBattleSeen: false,
+      heathcliffBattleWon: false,
       battleIntroSeen: false,
       backpackOpened: false,
       tutorialActive: true,
@@ -310,7 +445,7 @@ import { travelTime, wolfIntroDialogue } from "./data/story.js";
   }
 
   function setCharacter(name, visible = true) {
-    els.character.classList.remove("wolf-portrait");
+    els.character.classList.remove("wolf-portrait", "heathcliff-portrait");
     const src = assets.characters[name];
     if (!visible || !src) {
       els.character.hidden = true;
@@ -326,14 +461,30 @@ import { travelTime, wolfIntroDialogue } from "./data/story.js";
       els.character.hidden = true;
       return;
     }
+    els.character.classList.remove("heathcliff-portrait");
     els.character.src = "assets/images/characters/wolf.png";
     els.character.classList.add("wolf-portrait");
+    els.character.hidden = false;
+  }
+
+  function setHeathcliffCharacter(visible = true) {
+    if (!visible) {
+      els.character.classList.remove("heathcliff-portrait");
+      els.character.hidden = true;
+      return;
+    }
+    els.character.classList.remove("wolf-portrait");
+    els.character.src = assets.characters.heathcliff || "assets/images/characters/heathcliff.png";
+    els.character.classList.add("heathcliff-portrait");
     els.character.hidden = false;
   }
 
   function addItem(name, amount = 1) {
     state.inventory[name] = (state.inventory[name] || 0) + amount;
     updateBackpackCount();
+  renderKeyboardBindings();
+  renderControllerSettings();
+  syncGlobalSettingsButton();
   }
 
   function updateBackpackCount() {
@@ -588,7 +739,7 @@ import { travelTime, wolfIntroDialogue } from "./data/story.js";
 
   const clamp = Helpers.clamp.bind(Helpers);
   const randomInt = Helpers.randomInt.bind(Helpers);
-  const headsChance = Helpers.headsChancePercent.bind(Helpers);
+  const headsChance = CoinSystem.headsChancePercent.bind(CoinSystem);
 
   function mkBattleEnemy(id, name, hp, role, spriteKey) {
     return {
@@ -640,7 +791,7 @@ import { travelTime, wolfIntroDialogue } from "./data/story.js";
       enemies: buildWaveEnemies(1),
       donSlots: [],
       enemySlots: [],
-      sins: { Lust: 0, Envy: 0, Gluttony: 0 },
+      sins: { Lust: 0, Envy: 0, Gluttony: 0, Pride: 0 },
       egoUnlocked: false,
       egoActivated: false,
       egoTutorialShown: false,
@@ -652,7 +803,13 @@ import { travelTime, wolfIntroDialogue } from "./data/story.js";
   function makeWolfBattleState() {
     const wolf = mkBattleEnemy(0, wolfBoss.name, wolfBoss.maxHp || 360, "WOLF", "wolf");
     wolf.thresholds = [...(wolfBoss.staggerThresholds || [230, 115])];
-    WolfBossSystem.initialize(wolf);
+    wolf.sp = 10;
+    wolf.nextHaste = 0;
+    wolf.haste = 0;
+    wolf.damageUp = 1;
+    wolf.poisePotency = 2;
+    wolf.poiseCount = 3;
+    wolf.mirageUsed = false;
     return {
       active: true,
       encounter: "wolf",
@@ -675,13 +832,55 @@ import { travelTime, wolfIntroDialogue } from "./data/story.js";
       enemies: [wolf],
       donSlots: [],
       enemySlots: [],
-      sins: { Lust: 0, Envy: 0, Gluttony: 0 },
+      sins: { Lust: 0, Envy: 0, Gluttony: 0, Pride: 0 },
       egoUnlocked: false,
       egoActivated: false,
       egoTutorialShown: false,
       egoUsed: false,
       egoSkillReady: false,
     };
+  }
+
+  function makeHeathcliffBattleState() {
+    const next = makeBattleState();
+    const heathcliff = mkBattleEnemy(0, "Heathcliff", 560, "HEATHCLIFF", "heathcliff");
+    heathcliff.egoMeter = 0;
+    heathcliff.egoMeterMax = 100;
+    next.encounter = "heathcliff";
+    next.phase = "realtime";
+    next.wave = 1;
+    next.totalWaves = 1;
+    next.turn = 1;
+    next.enemies = [heathcliff];
+    next.selectedEnemyId = 0;
+    next.guideMessage = "HEATHCLIFF — He builds E.G.O. from combat contact. Guard, evade, and punish his E.G.O recovery.";
+    next.egoUnlocked = true;
+    return next;
+  }
+
+  function makeVersusBattleState(versusConfig = {}) {
+    const base = makeBattleState();
+    const p1 = getVersusCharacter(versusConfig.player1?.characterId || "don");
+    const p2 = getVersusCharacter(versusConfig.player2?.characterId || "heathcliff");
+    const p1Ego = getVersusEgo(p1.id, versusConfig.player1?.egoId || "none");
+    const p2Ego = getVersusEgo(p2.id, versusConfig.player2?.egoId || "none");
+    base.don = Object.assign(new Player({ id: p1.id, name: p1.name, maxHp: p1.maxHp }), {
+      staggered: false, drawKey: p1.drawKey, identityId: p1.identity.id,
+      egoId: p1Ego.id, egoEquipped: p1Ego.id !== "none",
+    });
+    const p2Combatant = mkBattleEnemy(902, p2.name, p2.maxHp, "PLAYER2", p2.drawKey);
+    p2Combatant.identityId = p2.identity.id;
+    p2Combatant.egoId = p2Ego.id;
+    p2Combatant.egoEquipped = p2Ego.id !== "none";
+    base.active = true;
+    base.phase = "realtime";
+    base.encounter = "versus";
+    base.wave = 1;
+    base.totalWaves = 1;
+    base.enemies = [p2Combatant];
+    base.selectedEnemyId = p2Combatant.id;
+    base.guideMessage = "LOCAL VERSUS — P1: WASD + J/K/U/L · P2: ARROWS + NUMPAD 1–4.";
+    return base;
   }
 
   const skillDeck = ["joust", "joust", "gallop", "joust", "justice", "gallop", "joust", "justice"];
@@ -774,13 +973,12 @@ import { travelTime, wolfIntroDialogue } from "./data/story.js";
     const living = aliveEnemies();
     const actionCount = Math.min(2 + battle.turn, 6);
     battle.donSlots = [];
-    const [minDonSpeed, maxDonSpeed] = WolfBossSystem.playerSpeedRange(battle.don);
     for (let i = 0; i < actionCount; i += 1) {
       const a = skillDeck[(battle.deckCursor + i * 2) % skillDeck.length];
       const b = skillDeck[(battle.deckCursor + i * 2 + 1) % skillDeck.length];
       battle.donSlots.push({
-        index: i, unitId: battle.don.id,
-        speed: randomInt(minDonSpeed, maxDonSpeed) + battle.don.haste,
+        index: i,
+        speed: randomInt(3, 6) + battle.don.haste,
         options: [a, b],
         selected: 0,
         defense: false,
@@ -789,9 +987,13 @@ import { travelTime, wolfIntroDialogue } from "./data/story.js";
     }
     battle.deckCursor = (battle.deckCursor + actionCount * 2) % skillDeck.length;
 
+    // Enemy intent planning is isolated from UI so bosses can later use
+    // conditional/weighted behavior without rewriting the command phase.
     battle.enemySlots = EnemyAI.buildIntents({
-      enemies: living, turn: battle.turn, getSkillPool: getEnemySkillPool,
-      randomInt, donSlots: battle.donSlots,
+      enemies: living,
+      turn: battle.turn,
+      getSkillPool: getEnemySkillPool,
+      randomInt,
     });
 
     // No automatic targeting at turn start. Drag manually or use WIN RATE / DAMAGE.
@@ -822,21 +1024,21 @@ import { travelTime, wolfIntroDialogue } from "./data/story.js";
     return false;
   }
 
-  function getSkillCoinPower(skill, unitSpeed, unit = battle?.don) {
-    return SkillSystem.getCoinPower(skill, 1, { speed: unitSpeed, unit });
+  function getSkillCoinPower(skill, unitSpeed, coinNumber = 1) {
+    return SkillSystem.getCoinPower(skill, coinNumber, { speed: unitSpeed });
   }
 
   function maxSkillPower(skill, slotSpeed = 0, attackUp = 0) {
-    return SkillSystem.maxPower(skill, skill.coins, { speed: slotSpeed, attackUp, unit: battle?.don });
+    return SkillSystem.maxPower(skill, skill.coins, { speed: slotSpeed, attackBonus: attackUp });
   }
 
   function expectedSkillPower(skill, slotSpeed = 0, sp = 0, attackUp = 0) {
-    return SkillSystem.basePower(skill, { attackUp, unit: battle?.don }) + skill.coins * getSkillCoinPower(skill, slotSpeed) * headsChance(sp) / 100;
+    return SkillSystem.expectedPower(skill, skill.coins, { speed: slotSpeed, sp, attackBonus: attackUp });
   }
 
   function enemyMaxPower(enemySlot) {
     if (!enemySlot) return 0;
-    return SkillSystem.maxPower(enemySlot.skill, enemySlot.skill.coins, { speed: enemySlot.speed, unit: enemyById(enemySlot.enemyId) });
+    return enemySlot.skill.base + enemySlot.skill.coinPower * enemySlot.skill.coins;
   }
 
   function clashForecast(slot) {
@@ -846,11 +1048,8 @@ import { travelTime, wolfIntroDialogue } from "./data/story.js";
     const enemy = enemyById(enemySlot.enemyId);
     if (!enemy || enemy.hp <= 0 || enemy.staggered || enemySlot.consumed)
       return { label: "UNOPPOSED", cls: "unopposed", delta: 99 };
-    if (enemySlot.skill.counter) return { label: 'COUNTER', cls: 'neutral', delta: 0 };
-    if (WolfBossSystem.isWolf(enemy)) WolfBossSystem.updatePassive(enemy, aliveEnemies());
-    const bonuses = skill.defense ? 0 : ClashSystem.bonus(battle.don, enemy, skill, enemySlot.skill) - ClashSystem.bonus(enemy, battle.don, enemySlot.skill, skill);
     const clashPenalty = enemySlot.skill.opponentClashPowerModifier || 0;
-    const delta = maxSkillPower(skill, slot.speed, battle.don.attackUp) + clashPenalty + bonuses - enemyMaxPower(enemySlot);
+    const delta = maxSkillPower(skill, slot.speed, battle.don.attackUp) + clashPenalty - enemyMaxPower(enemySlot);
     if (skill.defense) {
       if (delta >= 4) return { label: "SAFE EVADE", cls: "favored", delta };
       if (delta >= 0) return { label: "EVEN EVADE", cls: "neutral", delta };
@@ -893,9 +1092,6 @@ import { travelTime, wolfIntroDialogue } from "./data/story.js";
 
   function donStatusBadgesHTML() {
     const badges = [];
-    if (battle.don.exhaust) badges.push(statusBadgeHTML('exhaust', `EXHAUST ${battle.don.exhaust}`, '', 'Each stack lowers Max Speed by 1. Reaching 3 queues Offense Level -3 next turn. Cap 5; Turn End decay 1.'));
-    if (battle.don.exhaustPending) badges.push(statusBadgeHTML('exhaust', 'EXHAUST NEXT TURN'));
-    if (battle.don.offenseLevelDown) badges.push(statusBadgeHTML('offenseDown', `OFFENSE -${battle.don.offenseLevelDown}`));
     if (battle.don.haste) badges.push(statusBadgeHTML('haste', `HASTE ${battle.don.haste}`));
     if (battle.don.attackUp) badges.push(statusBadgeHTML('attackUp', `ATK+ ${battle.don.attackUp}`));
     if (battle.don.statuses?.bleed?.count > 0) badges.push(statusBadgeHTML('bleed', `BLEED ${battle.don.statuses.bleed.potency}/${battle.don.statuses.bleed.count}`));
@@ -907,13 +1103,6 @@ import { travelTime, wolfIntroDialogue } from "./data/story.js";
 
   function enemyStatusBadgesHTML(enemy) {
     const badges = [];
-    if (WolfBossSystem.isWolf(enemy)) {
-      badges.push(statusBadgeHTML('sanity', `SP ${enemy.sp >= 0 ? '+' : ''}${enemy.sp}`));
-      if (enemy.panicActive) badges.push(statusBadgeHTML('panic', 'PANIC · BASE -2'));
-      else if (enemy.panicPending) badges.push(statusBadgeHTML('panic', 'PANIC NEXT TURN'));
-      if (enemy.clashPowerUp) badges.push(statusBadgeHTML('predator', 'CLASH +1', '', 'Lone Predator: active while Wolf has no living allies.'));
-      if (enemy.fragile) badges.push(statusBadgeHTML('fragile', `FRAGILE ${enemy.fragile}`));
-    }
     if (enemy.staggered) badges.push(statusBadgeHTML('stagger', 'STAGGER'));
     if (enemy.bleedCount > 0) badges.push(statusBadgeHTML('bleed', `BLEED ${enemy.bleedPotency}/${enemy.bleedCount}`));
     if (enemy.ruptureCount > 0) badges.push(statusBadgeHTML('rupture', `RUPTURE ${enemy.rupturePotency}/${enemy.ruptureCount}`));
@@ -1036,10 +1225,13 @@ import { travelTime, wolfIntroDialogue } from "./data/story.js";
 
       const box = sprite.getBoundingClientRect();
       const x = box.left + box.width / 2 - layerRect.left + spread;
-      const y = box.top - layerRect.top + 6 - Math.abs(spread) * 0.04;
+      // Anchor intent cards above the enemy sprite instead of overlapping the body.
+      // This also gives targeting curves a clean endpoint that does not cross the character art.
+      const intentHeight = btn.getBoundingClientRect().height || 66;
+      const y = box.top - layerRect.top - intentHeight * 0.78 - 10 - Math.abs(spread) * 0.05;
 
       btn.style.left = `${x}px`;
-      btn.style.top = `${Math.max(16, y)}px`;
+      btn.style.top = `${Math.max(76, y)}px`;
     });
   }
 
@@ -1055,13 +1247,9 @@ import { travelTime, wolfIntroDialogue } from "./data/story.js";
       btn.dataset.intentId = slot.id;
       btn.dataset.enemyId = String(enemy.id);
 
-      const liveBase = SkillSystem.basePower(slot.skill, { unit: enemy });
-      const liveCoin = getSkillCoinPower(slot.skill, slot.speed, enemy);
-      const targetLabel = slot.skill.counter ? 'COUNTER' : (slot.targetSlotIndices || []).map(i => `#${i + 1}`).join(', ');
-      btn.title = `${slot.skill.affinity || slot.skill.type} · Target ${targetLabel}`;
       const intentGlyph = intentTypeGlyph(slot.skill.type, !!slot.skill.defense);
       const intentTypeImage = slot.skill.defense ? '' : damageTypeMarkup(slot.skill.type, 'lc60-intent-type-icon');
-      btn.innerHTML = `<span class="lc4-intent-speed">${slot.speed}</span><span class="lc4-intent-frame"></span><span class="lc34-intent-sigil">${intentTypeImage}<span class="lc34-intent-glyph">${intentGlyph}</span></span>${slot.skill.art ? `<img class="lc4-intent-art" src="${escapeHTML(slot.skill.art)}" alt="" />` : ""}<span class="lc32-intent-type">${escapeHTML((slot.skill.type || "ATK").toUpperCase())}</span><span class="lc32-intent-coin">${slot.skill.coins || 1} COIN</span><b title="${escapeHTML(slot.skill.name)}">${escapeHTML(slot.skill.name)}</b><small>${liveBase} + ${liveCoin} · ${escapeHTML(targetLabel)}</small>`;
+      btn.innerHTML = `<span class="lc4-intent-speed">${slot.speed}</span><span class="lc4-intent-frame"></span><span class="lc34-intent-sigil">${intentTypeImage}<span class="lc34-intent-glyph">${intentGlyph}</span></span>${slot.skill.art ? `<img class="lc4-intent-art" src="${escapeHTML(slot.skill.art)}" alt="" />` : ""}<span class="lc32-intent-type">${escapeHTML((slot.skill.type || "ATK").toUpperCase())}</span><span class="lc32-intent-coin">${slot.skill.coins || 1} COIN</span><b title="${escapeHTML(slot.skill.name)}">${escapeHTML(slot.skill.name)}</b><small>${slot.skill.base} + ${slot.skill.coinPower}</small>`;
 
       if (battle.selectedEnemyId === enemy.id) btn.classList.add("is-selected");
 
@@ -1127,9 +1315,7 @@ import { travelTime, wolfIntroDialogue } from "./data/story.js";
     const skill = enemySlot.skill;
     const enemy = enemyById(enemySlot.enemyId);
     battle.selectedEnemyId = enemy?.id ?? battle.selectedEnemyId;
-    const liveBase = SkillSystem.basePower(skill, { unit: enemy });
-    const liveCoin = getSkillCoinPower(skill, enemySlot.speed, enemy);
-    const typeLabel = `${skill.affinity ? skill.affinity + ' / ' : ''}${skill.counter ? 'COUNTER / ' : ''}${skill.type || 'Attack'}`.toUpperCase();
+    const typeLabel = (skill.type || "Attack").toUpperCase();
     const desc = enemySkillText[skill.key] || `A ${skill.type} attack. Clash it, redirect it, or leave it unopposed at your own risk.`;
     const effects = enemySkillEffects[skill.key] || [];
     const effectMarkup = effects.length
@@ -1154,18 +1340,17 @@ import { travelTime, wolfIntroDialogue } from "./data/story.js";
       els.enemyInspectorType.className = `lc10-chip lc60-type-chip ${intentTypeClass(skill.type)}`;
     }
     if (els.enemyInspectorCoins) els.enemyInspectorCoins.textContent = `${skill.coins} COIN${skill.coins > 1 ? "S" : ""}`;
-    els.enemyInspectorPower.textContent = `${liveBase} + ${liveCoin} · ${skill.coins} Coin${skill.coins > 1 ? "s" : ""}`;
+    els.enemyInspectorPower.textContent = `${skill.base} + ${skill.coinPower} · ${skill.coins} Coin${skill.coins > 1 ? "s" : ""}`;
     els.enemyInspectorText.innerHTML = `
       <div class="lc21-inspector-body">
         <div class="lc21-inspector-formula">
-          <span class="lc21-power-num">${liveBase}</span>
+          <span class="lc21-power-num">${skill.base}</span>
           <span class="lc21-op">+</span>
-          <span class="lc21-power-num is-coin">${liveCoin}</span>
+          <span class="lc21-power-num is-coin">${skill.coinPower}</span>
           <span class="lc21-op">·</span>
           <span class="lc21-coin-count">${skill.coins} Coin${skill.coins > 1 ? "s" : ""}</span>
         </div>
         <div class="lc21-inspector-desc">${escapeHTML(desc)}</div>
-        ${WolfBossSystem.isWolf(enemy) ? `<div class="wolf-spec-summary">HP ${enemy.hp}/${enemy.maxHp} · SP ${enemy.sp} · Speed 4–7<br>Offense ${enemy.offenseLevel} · Defense ${enemy.defenseLevel}<br>Slash ×0.5 · Pierce ×1 · Blunt ×2<br>${Object.entries(enemy.resistances.sin).map(([sin, value]) => `${sin} ×${value}`).join(' · ')}<br>Targets: ${(enemySlot.targetSlotIndices || []).map(i => `#${i + 1}`).join(', ') || 'Counter'}</div>` : ''}
         ${skill.keywords?.includes("Bleed") ? `<div class="lc21-bleed-row">${bleedMarkup("status on hit")}</div>` : ""}
         <div class="lc21-section">
           <div class="lc21-section-title">SKILL EFFECTS</div>
@@ -1400,20 +1585,20 @@ import { travelTime, wolfIntroDialogue } from "./data/story.js";
       els.actionRail.appendChild(wrap);
     });
 
-    // V39: keep WIN RATE + DAMAGE + START together directly after the final skill card.
+    // V65: keep the command cluster in its dedicated footer column.
+    // Moving it into the scrollable action rail caused large dead zones and inconsistent spacing.
     if (els.commandCluster) {
       if (els.autoCluster && els.autoWinBtn && els.autoWinBtn.parentElement !== els.autoCluster) {
         els.autoCluster.prepend(els.autoWinBtn);
       }
       els.autoWinBtn?.classList.remove("lc38-winrate-inline");
-      els.commandCluster.classList.add("lc39-inline-command");
-      els.actionRail.appendChild(els.commandCluster);
+      els.commandCluster.classList.remove("lc39-inline-command");
     }
   }
 
 
   function egoCanAppear() {
-    return !!battle && battle.encounter === 'wolf' && battle.turn >= 4;
+    return EgoSystem.isUnlocked(battle);
   }
 
   function egoNeedsPrompt() {
@@ -1426,16 +1611,16 @@ import { travelTime, wolfIntroDialogue } from "./data/story.js";
     els.egoActivateBtn.hidden = !show;
     if (!show) return;
     const unlocked = egoCanAppear();
-    if (unlocked && battle.don.sp < 45 && !battle.egoActivated) battle.don.sp = 45;
-    els.egoActivateBtn.disabled = !!battle.egoActivated ? true : !unlocked;
+    const affordability = unlocked ? EgoSystem.affordability(battle, donBattleSkills.laSangre) : { ok: false };
+    els.egoActivateBtn.disabled = !!battle.egoActivated || !unlocked || !affordability.ok;
     els.egoActivateBtn.setAttribute('aria-disabled', els.egoActivateBtn.disabled ? 'true' : 'false');
-    els.egoActivateBtn.classList.toggle('is-locked', !unlocked);
-    els.egoActivateBtn.classList.toggle('is-ready', unlocked && !battle.egoActivated);
+    els.egoActivateBtn.classList.toggle('is-locked', !unlocked || (unlocked && !affordability.ok));
+    els.egoActivateBtn.classList.toggle('is-ready', unlocked && affordability.ok && !battle.egoActivated);
     els.egoActivateBtn.classList.toggle('is-active', !!battle.egoActivated);
     const label = els.egoActivateBtn.querySelector('.lc61-ego-label');
     const state = els.egoActivateBtn.querySelector('.lc61-ego-state');
     if (label) label.textContent = battle.egoActivated ? 'E.G.O READY' : 'E.G.O';
-    if (state) state.textContent = battle.egoActivated ? (battle.egoUsed ? 'SPENT' : 'MANIFESTED') : (unlocked ? 'CLICK' : 'TURN 4');
+    if (state) state.textContent = battle.egoActivated ? (battle.egoUsed ? 'SPENT' : 'MANIFESTED') : (unlocked ? (affordability.ok ? 'CLICK' : 'NEED COST') : 'TURN 4');
   }
 
   function positionPlayerIntentAnchor() {
@@ -1450,9 +1635,11 @@ import { travelTime, wolfIntroDialogue } from "./data/story.js";
       return;
     }
     const x = donRect.left + donRect.width * 0.5 - rect.left;
-    const y = donRect.top + donRect.height * 0.42 - rect.top;
+    // The intent anchor belongs above Don's head. Keeping it here makes hostile targeting readable
+    // and prevents long horizontal lines from cutting through the full battlefield.
+    const y = donRect.top - rect.top - 36;
     els.playerIntentAnchor.style.left = `${Math.max(72, Math.min(rect.width - 72, x))}px`;
-    els.playerIntentAnchor.style.top = `${Math.max(78, Math.min(rect.height - 120, y))}px`;
+    els.playerIntentAnchor.style.top = `${Math.max(92, Math.min(rect.height - 170, y))}px`;
   }
 
   function renderPlayerIntentAnchor() {
@@ -1474,6 +1661,15 @@ import { travelTime, wolfIntroDialogue } from "./data/story.js";
     if (els.egoPreviewCard) els.egoPreviewCard.src = EGO_ASSETS.card;
     if (els.egoPreviewInfo) els.egoPreviewInfo.src = EGO_ASSETS.info;
     if (els.egoPreviewIcon) els.egoPreviewIcon.src = EGO_ASSETS.portrait;
+    const spChip = els.egoManifestModal.querySelector('[data-ego-sp]');
+    const resChip = els.egoManifestModal.querySelector('[data-ego-resources]');
+    if (spChip) spChip.textContent = `SP ${battle.don.sp} / COST 10`;
+    if (resChip) resChip.textContent = `LUST ${battle.sins.Lust || 0}/2 · PRIDE ${battle.sins.Pride || 0}/2`;
+    const affordability = EgoSystem.affordability(battle, donBattleSkills.laSangre);
+    if (els.egoManifestConfirm) {
+      els.egoManifestConfirm.disabled = !affordability.ok;
+      els.egoManifestConfirm.textContent = affordability.ok ? 'MANIFEST E.G.O' : 'INSUFFICIENT RESOURCES';
+    }
     els.egoManifestModal.hidden = false;
   }
 
@@ -1492,15 +1688,21 @@ import { travelTime, wolfIntroDialogue } from "./data/story.js";
   }
 
   function activateEgo() {
-    if (!battle || !egoCanAppear() || battle.egoActivated) return;
+    if (!battle || battle.egoActivated) return;
+    const manifestCheck = EgoSystem.canManifest(battle, donBattleSkills.laSangre);
+    if (!manifestCheck.ok) {
+      showNotice(manifestCheck.reason === 'LOCKED' ? 'E.G.O LOCKED' : 'NOT ENOUGH SP / SIN RESOURCES', 2200);
+      updateEgoButton();
+      return;
+    }
     closeEgoManifest();
     battle.egoActivated = true;
     battle.egoSkillReady = true;
     battle.egoTutorialShown = true;
     injectEgoSkillIntoTurn();
     battle.focusSlot = 0;
-    battle.guideMessage = 'E.G.O manifested. Slot 1 is now La Sangre de Sancho. It costs 20 SP when used. Drag it to an enemy intent, then press START.';
-    showNotice('E.G.O MANIFESTED — LA SANGRE DE SANCHO READY · SP COST 20', 3200);
+    battle.guideMessage = 'E.G.O manifested. Slot 1 is now La Sangre de Sancho. Use cost: 10 SP + 2 Lust + 2 Pride. Drag it to an enemy intent, then press START.';
+    showNotice('E.G.O MANIFESTED — COST 10 SP · 2 LUST · 2 PRIDE', 3200);
     renderPlanning();
   }
 
@@ -1597,10 +1799,13 @@ import { travelTime, wolfIntroDialogue } from "./data/story.js";
     [...svg.querySelectorAll('path.lc4-link, path.lc4-link-shadow, circle.lc4-link-origin')].forEach((node) => node.remove());
 
     const getCardStart = (slotIndex) => {
-      const card = els.actionRail?.querySelector(`.lc4-action[data-action-slot="${slotIndex}"] .lc4-skill-front`);
-      if (card) {
-        const c = card.getBoundingClientRect();
-        return { x: c.left + c.width * 0.5 - rect.left, y: c.top + 8 - rect.top };
+      const action = els.actionRail?.querySelector(`.lc4-action[data-action-slot="${slotIndex}"]`);
+      const core = action?.querySelector('.lc4-slot-core');
+      const card = action?.querySelector('.lc4-skill-front');
+      const source = core || card;
+      if (source) {
+        const c = source.getBoundingClientRect();
+        return { x: c.left + c.width * 0.5 - rect.left, y: c.top + c.height * 0.35 - rect.top };
       }
       return { x: rect.width * 0.5, y: rect.height - 130 };
     };
@@ -1610,36 +1815,36 @@ import { travelTime, wolfIntroDialogue } from "./data/story.js";
       return { x: b.left + b.width / 2 - rect.left, y: b.top + b.height * biasY - rect.top };
     };
 
-    const buildCurve = (x1, y1, x2, y2, hostile = false) => {
+    const buildCurve = (x1, y1, x2, y2, hostile = false, laneOffset = 0) => {
       const dx = x2 - x1;
       const dy = y2 - y1;
-      const sweep = Math.max(34, Math.min(138, Math.abs(dx) * 0.12 + Math.abs(dy) * 0.06 + 28));
-      const liftA = hostile ? Math.max(10, sweep * 0.15) : sweep;
-      const liftB = hostile ? Math.max(10, sweep * 0.06) : Math.min(34, sweep * 0.28);
-      const c1x = x1 + dx * 0.28;
-      const c2x = x1 + dx * 0.78;
-      const c1y = y1 - liftA;
-      const c2y = y2 + (hostile ? -liftB : liftB);
+      const distance = Math.max(1, Math.hypot(dx, dy));
+      const nx = -dy / distance;
+      const ny = dx / distance;
+
+      // A small normal offset gives each connection its own lane. This prevents the
+      // "all arrows are one straight line" problem when several slots target nearby intents.
+      const lane = Math.max(-54, Math.min(54, laneOffset));
+      const baseLift = hostile
+        ? Math.max(20, Math.min(78, distance * 0.10))
+        : Math.max(42, Math.min(126, distance * 0.17));
+
+      const c1x = x1 + dx * (hostile ? 0.26 : 0.24) + nx * lane;
+      const c1y = y1 + dy * (hostile ? 0.26 : 0.18) - baseLift + ny * lane;
+      const c2x = x1 + dx * (hostile ? 0.73 : 0.76) + nx * lane * 0.56;
+      const c2y = y1 + dy * (hostile ? 0.73 : 0.82) + (hostile ? -baseLift * 0.34 : baseLift * 0.12) + ny * lane * 0.56;
       return `M ${x1} ${y1} C ${c1x} ${c1y}, ${c2x} ${c2y}, ${x2} ${y2}`;
     };
 
-    const appendArrow = (cls, markerId, start, end, focus = false) => {
-      const d = buildCurve(start.x, start.y, end.x, end.y, cls.includes('hostile'));
-      const shadow = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-      shadow.classList.add('lc4-link-shadow', ...cls.split(' '), focus ? 'is-focus' : 'is-secondary');
-      shadow.setAttribute('d', d);
-      svg.appendChild(shadow);
-
-      const origin = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
-      origin.classList.add('lc4-link-origin', ...cls.split(' '), focus ? 'is-focus' : 'is-secondary');
-      origin.setAttribute('cx', String(start.x));
-      origin.setAttribute('cy', String(start.y));
-      origin.setAttribute('r', focus ? '3.6' : '2.8');
-      svg.appendChild(origin);
+    const appendArrow = (cls, markerId, start, end, focus = false, laneOffset = 0) => {
+      const hostile = cls.includes('hostile');
+      const d = buildCurve(start.x, start.y, end.x, end.y, hostile, laneOffset);
 
       const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
       path.classList.add('lc4-link', ...cls.split(' '), focus ? 'is-focus' : 'is-secondary');
       path.setAttribute('d', d);
+      path.setAttribute('fill', 'none');
+      path.setAttribute('vector-effect', 'non-scaling-stroke');
       path.setAttribute('marker-end', `url(#${markerId})`);
       svg.appendChild(path);
     };
@@ -1652,13 +1857,14 @@ import { travelTime, wolfIntroDialogue } from "./data/story.js";
       const toPoint = getIntentPoint(to, 0.76);
       const forecast = clashForecast(slot);
       const marker = forecast.cls === 'dominating' || forecast.cls === 'favored' ? 'arrowGreen' : forecast.cls === 'neutral' ? 'arrowGold' : forecast.cls === 'unopposed' ? 'arrowBlue' : 'arrowRed';
-      appendArrow(forecast.cls, marker, from, toPoint, slot.index === battle.focusSlot);
+      const lane = (slot.index - (battle.donSlots.length - 1) / 2) * 16;
+      appendArrow(forecast.cls, marker, from, toPoint, slot.index === battle.focusSlot, lane);
     });
 
     if (battle.dragSlot !== null && dragHoverIntentId) {
       const hovered = els.enemyIntentSlots.querySelector(`[data-intent-id="${dragHoverIntentId}"]`);
       if (hovered) {
-        appendArrow('dragging', 'arrowGold', getCardStart(battle.dragSlot), getIntentPoint(hovered, 0.76), true);
+        appendArrow('dragging', 'arrowGold', getCardStart(battle.dragSlot), getIntentPoint(hovered, 0.76), true, 0);
       }
     }
 
@@ -1673,8 +1879,10 @@ import { travelTime, wolfIntroDialogue } from "./data/story.js";
         const fromBtn = els.enemyIntentSlots.querySelector(`[data-intent-id="${slot.id}"]`);
         if (!fromBtn) return;
         const from = getIntentPoint(fromBtn, 0.82);
-        const end = { x: anchorPoint.x - 6 + (index * 7), y: anchorPoint.y + 3 + (index % 2) * 5 };
-        appendArrow('hostile struggling', 'arrowHostile', from, end, battle.selectedEnemyId === slot.enemyId);
+        const centerIndex = (liveEnemySlots.length - 1) / 2;
+        const lane = (index - centerIndex) * 14;
+        const end = { x: anchorPoint.x + (index - centerIndex) * 5, y: anchorPoint.y + Math.abs(index - centerIndex) * 3 };
+        appendArrow('hostile struggling', 'arrowHostile', from, end, battle.selectedEnemyId === slot.enemyId, lane);
       });
     }
   }
@@ -1685,11 +1893,11 @@ import { travelTime, wolfIntroDialogue } from "./data/story.js";
     if (battle.encounter === 'wolf' && battle.turn >= 4 && !battle.egoUnlocked) {
       battle.egoUnlocked = true;
       battle.egoPromptAutoOpen = true;
-      battle.don.sp = 45;
-      battle.guideMessage = 'E.G.O READY: Don restored to +45 SP. Click the glowing E.G.O icon, manifest La Sangre de Sancho, then assign it before pressing START.';
+      EgoSystem.grantTutorialResources(battle, donBattleSkills.laSangre, { sp: 45 });
+      battle.guideMessage = 'E.G.O READY: Don restored to +45 SP and tutorial resources are ready. Click the glowing E.G.O icon, manifest La Sangre de Sancho, then assign it before pressing START.';
     }
     ensureBattleTurnSlots();
-    battle.phase = "planning";
+    TurnSystem.transition(battle, TurnSystem.PHASE.PLANNING);
     els.battleScreen.classList.remove("is-resolving", "hit-shake");
     els.planningPanel.hidden = false;
     els.targetLines.hidden = false;
@@ -1791,9 +1999,16 @@ import { travelTime, wolfIntroDialogue } from "./data/story.js";
     resolve();
   }
 
-  function rollCoins(skill, activeCoins, slotSpeed, isEnemy = false, unit = null) {
-    unit = unit || (isEnemy ? null : battle.don);
-    return SkillSystem.roll(skill, activeCoins, { unit, speed: slotSpeed, attackUp: isEnemy ? 0 : battle.don.attackUp });
+  function rollCoins(skill, activeCoins, slotSpeed, isEnemy = false) {
+    const enemy = isEnemy ? enemyById?.(battle?.activeRollEnemyId) : null;
+    const sp = isEnemy ? (enemy?.sp ?? 0) : battle.don.sp;
+    const attackBonus = isEnemy || skill.defense ? 0 : battle.don.attackUp;
+    const result = SkillSystem.rollPower(skill, activeCoins, {
+      sp,
+      speed: slotSpeed,
+      attackBonus,
+    });
+    return { ...result, chance: Math.round(result.chance * 100) };
   }
 
   function renderClashCoins(container, flips, activeCoins) {
@@ -1807,7 +2022,13 @@ import { travelTime, wolfIntroDialogue } from "./data/story.js";
 
       const img = document.createElement("img");
       img.className = "lc4-coin-img";
-      img.src = isHeads ? "assets/images/ui/coin-head.png" : "assets/images/ui/coin-tail.png";
+      const side = container === els.clashCoinsDon ? "don" : "enemy";
+      const activeSkill = side === "don" ? getSelectedSkill(battle.donSlots?.[battle.focusSlot] || battle.donSlots?.[0]) : null;
+      const affinity = String(activeSkill?.affinity || "neutral").toLowerCase();
+      const map = { lust:"coin-lust", gluttony:"coin-gluttony", envy:"coin-envy" };
+      const frame = side === "enemy" ? "coin-neutral-dark" : (map[affinity] || "coin-neutral");
+      img.src = `assets/images/ui/v67/${frame}${isHeads && side === "don" ? "-bright" : ""}.png`;
+      if (isHeads && side === "don" && !["lust","gluttony","envy"].includes(affinity)) img.src = "assets/images/ui/v67/coin-neutral.png";
       img.alt = isHeads ? "Heads coin" : "Tails coin";
 
       coin.appendChild(img);
@@ -1845,9 +2066,9 @@ import { travelTime, wolfIntroDialogue } from "./data/story.js";
     const donPower = donRoll?.power ?? maxSkillPower(skill, slot.speed, battle.don.attackUp);
     const enemyPower = enemyRoll?.power ?? enemyMaxPower(enemySlot);
     const verdict = donPower > enemyPower ? "don" : donPower < enemyPower ? "enemy" : "tie";
-    els.clashDonSkill.textContent = skill.name;
+    els.clashDonSkill.textContent = `${skill.name} · HEADS ${Math.round((donRoll?.chance ?? Helpers.calculateCoinChance(battle.don.sp)*100))}%`;
     if (els.clashDonArt && skill.art) els.clashDonArt.src = skill.art;
-    els.clashEnemySkill.textContent = enemySlot.skill.name;
+    els.clashEnemySkill.textContent = `${enemySlot.skill.name} · HEADS ${Math.round((enemyRoll?.chance ?? 50))}%`;
     if (els.clashEnemyArt) {
       els.clashEnemyArt.src = enemySlot.skill.art || "assets/images/battle/enemy-skills/clumsy-chop.png";
       els.clashEnemyArt.hidden = false;
@@ -1938,13 +2159,12 @@ import { travelTime, wolfIntroDialogue } from "./data/story.js";
     }
     if (enemy.bleedCount <= 0) enemy.bleedPotency = 0;
     enemy.hp = Math.max(0, enemy.hp - total);
-    checkStagger(enemy);
     return total;
   }
 
   function checkStagger(enemy) {
     if (!enemy || enemy.hp <= 0) return false;
-    if (WolfBossSystem.isWolf(enemy)) return WolfBossSystem.checkStagger(enemy);
+    if (enemy.spriteKey === "wolf" && !enemy.mirageUsed && wolfBattleSkills.mirageSlash.cannotBeStaggeredUntilSkillUsed) return false;
     const next = enemy.thresholds[enemy.staggerLevel];
     if (next !== undefined && enemy.hp <= next) {
       enemy.staggerLevel += 1;
@@ -1955,29 +2175,25 @@ import { travelTime, wolfIntroDialogue } from "./data/story.js";
     return false;
   }
 
-  function clearClashPresentation() {
-    els.clashOverlay.hidden = true;
-    if (els.battleMatchup) els.battleMatchup.hidden = true;
-    els.battleScreen.classList.remove("lc35-clash-cinematic", "lc40-clash-hud", "lc40-clash-rush", "lc42-clash-rush");
-    els.clashOverlay.classList.remove("is-active", "is-don-win", "is-enemy-win", "is-tie", "lc39-impact-beat");
-    els.battleScreen.classList.remove("lc35-clash-cinematic", "lc40-clash-hud", "lc40-clash-rush", "lc42-clash-rush");
-    setBattleDonState("idle");
+  function getCoinEffect(skill, coinNumber) {
+    return (skill?.coinEffects || []).find((effect) => effect.coin === coinNumber) || null;
+  }
+
+  function isUnbreakableCoin(skill, coinNumber) {
+    return ClashSystem.isUnbreakableCoin(skill, coinNumber);
   }
 
   async function resolveClash(slot, enemySlot) {
-    try {
     const skill = getSelectedSkill(slot);
     const enemy = enemyById(enemySlot.enemyId);
     if (!enemy) return { winner: "don", remainingDon: skill.coins, remainingEnemy: 0 };
     setBattleDonState("guard");
     let donCoins = skill.coins;
     let enemyCoins = enemySlot.skill.coins;
-    if (WolfBossSystem.isWolf(enemy)) {
-      WolfBossSystem.markSkillUsed(enemy, enemySlot.skill);
-      WolfBossSystem.updatePassive(enemy, aliveEnemies());
-    }
+    let crackedEnemyCoins = 0;
+    if (enemySlot.skill.key === "mirageSlash") enemy.mirageUsed = true;
     let rounds = 0;
-    while (donCoins > 0 && enemyCoins > 0 && rounds < 99) {
+    while (donCoins > 0 && enemyCoins > 0 && rounds < 9) {
       rounds += 1;
       const donBleedDamage = BattleSystem.consumeBleed(battle.don, donCoins);
       if (donBleedDamage) {
@@ -1998,19 +2214,37 @@ import { travelTime, wolfIntroDialogue } from "./data/story.js";
           return { winner: "don", remainingDon: donCoins, remainingEnemy: 0 };
         }
       }
-      if (enemy.staggered) return { winner: 'don', remainingDon: donCoins, remainingEnemy: 0 };
+      let dr = rollCoins(skill, donCoins, slot.speed, false);
+      battle.activeRollEnemyId = enemySlot.enemyId;
+      let er = rollCoins(enemySlot.skill, enemyCoins, enemySlot.speed, true);
+      battle.activeRollEnemyId = null;
+
       const round = ClashSystem.resolveRound({
-        playerSkill: skill, enemySkill: enemySlot.skill, playerCoins: donCoins, enemyCoins,
-        playerRoll: rollCoins(skill, donCoins, slot.speed),
-        enemyRoll: rollCoins(enemySlot.skill, enemyCoins, enemySlot.speed, true, enemy),
-        playerUnit: battle.don, enemyUnit: enemy,
+        playerSkill: skill,
+        enemySkill: enemySlot.skill,
+        playerCoins: donCoins,
+        enemyCoins,
+        playerRoll: dr,
+        enemyRoll: er,
       });
-      const dr = round.playerRoll;
-      const er = round.enemyRoll;
+      dr = round.playerRoll;
+      er = round.enemyRoll;
+
       await showClash(slot, enemySlot, donCoins, enemyCoins, dr, er, rounds === 1 ? "CLASH" : `CLASH ${rounds}`);
-      if (dr.power > er.power) {
-        enemyCoins -= 1;
-        spawnCoinBurst(enemyCoins + 1);
+      if (round.verdict === "player") {
+        if (enemySlot.skill.key === "mirageSlash" && enemySlot.skill.onClashLose?.effect === "selfStagger") {
+          enemy.staggered = true;
+          enemy.staggerTurns = 1;
+          enemy.mirageUsed = true;
+          combatLog("WOLF STAGGER — MIRAGE SLASH LOST", "stagger");
+        }
+        const losingCoinNumber = round.lostCoinNumber;
+        crackedEnemyCoins += round.crackedEnemyCoins;
+        enemyCoins = round.enemyCoins;
+        if (round.crackedEnemyCoins > 0) {
+          combatLog("UNBREAKABLE COIN CRACKED — WILL COUNTER AFTER HIT", "neutral");
+        }
+        spawnCoinBurst(losingCoinNumber);
         spawnClashImpact("don");
         playClashSfx("win");
         battle.don.changeSp(2);
@@ -2021,9 +2255,9 @@ import { travelTime, wolfIntroDialogue } from "./data/story.js";
         pulseClashNode(els.clashResult);
         pulseClashNode(els.clashDonPower);
         combatLog("CLASH WIN", "win");
-      } else if (dr.power < er.power) {
-        donCoins -= 1;
-        spawnCoinBurst(donCoins + 1);
+      } else if (round.verdict === "enemy") {
+        donCoins = round.playerCoins;
+        spawnCoinBurst(round.lostCoinNumber);
         spawnClashImpact("enemy");
         playClashSfx("lose");
         battle.don.changeSp(-2);
@@ -2046,10 +2280,13 @@ import { travelTime, wolfIntroDialogue } from "./data/story.js";
       }
       await delay(390);
     }
-    return { winner: donCoins > 0 && enemyCoins > 0 ? "tie" : donCoins > 0 ? "don" : "enemy", remainingDon: Math.max(0, donCoins), remainingEnemy: Math.max(0, enemyCoins) };
-    } finally {
-      clearClashPresentation();
-    }
+    els.clashOverlay.hidden = true;
+    if (els.battleMatchup) els.battleMatchup.hidden = true;
+    els.battleScreen.classList.remove("lc35-clash-cinematic", "lc40-clash-hud", "lc40-clash-rush", "lc42-clash-rush");
+    els.clashOverlay.classList.remove("is-active", "is-don-win", "is-enemy-win", "is-tie", "lc39-impact-beat");
+    els.battleScreen.classList.remove("lc35-clash-cinematic", "lc40-clash-hud", "lc40-clash-rush", "lc42-clash-rush");
+    setBattleDonState("idle");
+    return { winner: donCoins > 0 ? "don" : "enemy", remainingDon: Math.max(0, donCoins), remainingEnemy: Math.max(0, enemyCoins), crackedEnemy: crackedEnemyCoins };
   }
 
   function enemyElement(enemyId) {
@@ -2325,7 +2562,20 @@ import { travelTime, wolfIntroDialogue } from "./data/story.js";
 
   async function donAttack(slot, skill, enemy, coinCount, clashWon = false) {
     if (!enemy || enemy.hp <= 0 || coinCount <= 0) return;
-    addSin(skill);
+
+    // E.G.O consumes its cost when the attack actually begins. Normal skills
+    // generate their Sin resource instead.
+    if (skill.ego) {
+      const payment = EgoSystem.payCost(battle, skill);
+      if (!payment.ok) {
+        combatLog('E.G.O FAILED — INSUFFICIENT RESOURCES', 'lose');
+        battle.egoActivated = false;
+        battle.egoSkillReady = false;
+        return 0;
+      }
+    } else {
+      addSin(skill);
+    }
     await playSkillCutin(skill);
     let total = 0;
 
@@ -2336,7 +2586,7 @@ import { travelTime, wolfIntroDialogue } from "./data/story.js";
       const variance = skill.key === 'laSangre' ? 0 : randomInt(1, 4);
       const raw = skill.base + roll.heads * getSkillCoinPower(skill, slot.speed) + battle.don.attackUp + variance;
       let damage = Math.max(1, Math.round(raw * (crit ? 1.35 : 1)));
-      damage = Math.max(0, Math.round(damage * BattleSystem.resistanceMultiplier(enemy, skill) * BattleSystem.staggerMultiplier(enemy)));
+      if (enemy.staggered) damage = Math.round(damage * 2);
       enemy.hp = Math.max(0, enemy.hp - damage);
       total += damage;
       battle.totalDamage += damage;
@@ -2363,6 +2613,11 @@ import { travelTime, wolfIntroDialogue } from "./data/story.js";
         enemy.bleedPotency += 4;
         enemy.bleedCount += 1;
       }
+      if (battle.egoPassiveActive && (enemy.bleedPotency || 0) > 0) {
+        const beforeHp = battle.don.hp;
+        battle.don.hp = Math.min(battle.don.maxHp || beforeHp, beforeHp + 3);
+        if (battle.don.hp > beforeHp) combatLog(`IMMODERATE PASSION · HEAL ${battle.don.hp - beforeHp}`, 'win');
+      }
       if (checkStagger(enemy)) combatLog("STAGGER", "stagger");
       renderEnemies();
       renderBattleHUD();
@@ -2377,21 +2632,23 @@ import { travelTime, wolfIntroDialogue } from "./data/story.js";
     if (skill.key === 'laSangre') {
       battle.egoUsed = true;
       battle.egoSkillReady = false;
-      battle.don.changeSp?.(-20);
-      combatLog('La Sangre de Sancho · SP -20', 'critical');
+      // Cost was committed before the attack started by EgoSystem.payCost().
+      // Immoderate Passion: after E.G.O is used, On Hit against a Bleeding target heals 3 HP.
+      battle.egoPassiveActive = true;
+      combatLog('La Sangre de Sancho · -10 SP · -2 Lust · -2 Pride', 'critical');
       renderBattleHUD();
     }
     if (skill.key === "joust" && clashWon) battle.don.nextHaste += 2;
     if (skill.key === "gallop" && clashWon) battle.don.nextAttackUp += 2;
-    const counter = battle.enemySlots.find(intent => intent.enemyId === enemy.id && intent.skill.counter && !intent.consumed);
-    if (counter) {
-      counter.consumed = true;
-      if (enemy.hp > 0 && !enemy.staggered && battle.don.hp > 0) await enemyAttack(counter, counter.skill.coins);
-    }
     return total;
   }
 
   function getWolfCriticalBonusPercent(enemy, skill, poisePotencyAtUse = 0) {
+    if (!enemy || enemy.spriteKey !== "wolf") return 20;
+    if (skill?.key === "mirageSlash") return 200;
+    if (skill?.key === "indigoBlade") {
+      return 100 + Math.min(50, Math.max(0, poisePotencyAtUse) * 2);
+    }
     return 20;
   }
 
@@ -2404,52 +2661,16 @@ import { travelTime, wolfIntroDialogue } from "./data/story.js";
     return results;
   }
 
-  async function wolfAttack(enemySlot, remainingCoins = null) {
-    const enemy = enemyById(enemySlot.enemyId);
-    const skill = enemySlot.skill;
-    const coins = Math.max(0, remainingCoins ?? skill.coins);
-    enemySlot.consumed = true;
-    if (!enemy || enemy.hp <= 0 || enemy.staggered || battle.don.hp <= 0 || !coins) return;
-    if (skill.key === 'mirageSlash' && !WolfBossSystem.canUseMirage(enemy)) return;
-    WolfBossSystem.markSkillUsed(enemy, skill);
-    const targets = EnemyAI.uniqueTargetUnits(enemySlot.targetSlotIndices || [], battle.donSlots, [battle.don]);
-    if (!targets.length) return;
-    setEnemyPose(enemy.id, skill.key, 920);
-    await delay(400);
-    let power = SkillSystem.basePower(skill, { unit: enemy });
-    for (let coin = 0; coin < coins; coin += 1) {
-      const bleedDamage = applyBleedTick(enemy, 1);
-      if (bleedDamage) await floatDamage(enemy.id, bleedDamage, 'bleed');
-      if (enemy.hp <= 0 || enemy.staggered || battle.don.hp <= 0) break;
-      const roll = SkillSystem.roll(skill, 1, { unit: enemy, speed: enemySlot.speed });
-      if (roll.heads) power += getSkillCoinPower(skill, enemySlot.speed, enemy);
-      for (const target of targets) {
-        if (target.hp <= 0) continue;
-        const damage = Math.max(1, Math.round(power * BattleSystem.resistanceMultiplier(target, skill) * BattleSystem.staggerMultiplier(target)));
-        const result = target.takeDamage(damage);
-        target.staggered = target.isStaggered;
-        if (skill.onHitExhaust) WolfBossSystem.addExhaust(target, skill.onHitExhaust);
-        combatLog(`${skill.name} · COIN ${coin + 1} · ${result.damage}${skill.onHitExhaust ? ` · EXHAUST ${target.exhaust}` : ''}`, 'lose');
-        setBattleDonState(target.hp <= 0 ? 'dead' : 'hurt');
-        await floatDamage('don', result.damage, 'lose');
-      }
-      renderBattleHUD();
-      renderEnemies();
-    }
-    if (battle.don.hp > 0) setBattleDonState('idle');
-  }
-
-  async function enemyAttack(enemySlot, remainingCoins = null) {
+  async function enemyAttack(enemySlot, remainingCoins = null, options = {}) {
     const enemy = enemyById(enemySlot.enemyId);
     if (!enemy || enemy.hp <= 0 || enemy.staggered || battle.don.hp <= 0) {
       enemySlot.consumed = true;
       return;
     }
-    if (WolfBossSystem.isWolf(enemy)) {
-      await wolfAttack(enemySlot, remainingCoins);
-      return;
-    }
     const coins = Math.max(1, remainingCoins ?? enemySlot.skill.coins);
+    const attackSkill = options.cracked
+      ? { ...enemySlot.skill, coinPower: enemySlot.skill.coinPower >= 0 ? 1 : -1, coins }
+      : enemySlot.skill;
     const bleedDamage = applyBleedTick(enemy, coins);
     if (bleedDamage) {
       combatLog(`BLEED ${bleedDamage}`, "bleed");
@@ -2462,28 +2683,61 @@ import { travelTime, wolfIntroDialogue } from "./data/story.js";
       : "attack";
     setEnemyPose(enemy.id, attackPose, 920);
     const enemyEl = enemyElement(enemy.id)?.querySelector(".lc4-bandit");
-    enemyEl?.animate([
-      { transform: "translate(0,0)" },
-      { transform: "translate(-26vw,-2vh) scale(1.08)", offset: .62 },
-      { transform: "translate(-24vw,0) scale(1.08)", offset: .76 },
-      { transform: "translate(0,0)" },
-    ], { duration: 820, easing: "cubic-bezier(.2,.8,.2,1)" });
+    if (enemyEl) {
+      const er = enemyEl.getBoundingClientRect();
+      const dr = els.battleDon.getBoundingClientRect();
+      const dx = Math.min(-54, dr.right - er.left + 46);
+      const dy = (dr.top + dr.height * .52) - (er.top + er.height * .52);
+      enemyEl.animate([
+        { transform: "translate3d(0,0,0) scale(1)" },
+        { transform: `translate3d(${dx * .72}px,${dy * .72}px,0) scale(1.04)`, offset: .48 },
+        { transform: `translate3d(${dx}px,${dy}px,0) scale(1.08)`, offset: .67 },
+        { transform: `translate3d(${dx * .9}px,${dy * .9}px,0) scale(1.06)`, offset: .78 },
+        { transform: "translate3d(0,0,0) scale(1)" },
+      ], { duration: enemy.spriteKey === "wolf" ? 760 : 820, easing: "cubic-bezier(.16,.84,.24,1)" });
+    }
     await delay(400);
-    const roll = rollCoins(enemySlot.skill, coins, enemySlot.speed, true, enemy);
-    const damageScale = enemySlot.skill.defense ? 0.38 : 0.72;
+    battle.activeRollEnemyId = enemySlot.enemyId;
+    const roll = rollCoins(attackSkill, coins, enemySlot.speed, true);
+    battle.activeRollEnemyId = null;
+    const damageScale = attackSkill.defense ? 0.38 : 0.72;
     const poisePotencyAtUse = enemy.poisePotency || 0;
     const poiseChanceAtUse = BattleSystem.poiseCritChance(enemy);
-    const poiseRolls = enemySlot.skill.defense ? [] : rollEnemyPoiseCriticals(enemy, coins);
+    const poiseRolls = attackSkill.defense ? [] : rollEnemyPoiseCriticals(enemy, coins);
     const criticalCount = poiseRolls.filter((result) => result.critical).length;
     const critBonusPercent = getWolfCriticalBonusPercent(enemy, enemySlot.skill, poisePotencyAtUse);
     const critShare = criticalCount / Math.max(1, coins);
     const critMultiplier = 1 + (critBonusPercent / 100) * critShare;
     let damage = Math.max(1, Math.round((roll.power + (enemy.damageUp || 0) + randomInt(1, 4)) * damageScale * critMultiplier));
     let damageResult = { staggerTriggered: false };
-    damageResult = battle.don.takeDamage(damage);
-    battle.don.staggered = battle.don.isStaggered;
+    const isWolf = enemy.spriteKey === "wolf";
+    if (isWolf && enemySlot.skill.key === "azureRend") {
+      const spDamage = Math.max(3, Math.round(damage * 0.8));
+      battle.don.changeSp(-spDamage);
+      damage = 0;
+      combatLog(`AZURE REND  -${spDamage} SP`, "lose");
+    } else {
+      damageResult = battle.don.takeDamage(damage);
+      battle.don.staggered = battle.don.isStaggered;
+    }
     for (const effect of enemySlot.skill.applyOnHit || []) {
       BattleSystem.addStatus(battle.don, effect.type, effect.potency, effect.count);
+    }
+    if (isWolf) {
+      if (enemySlot.skill.key === "sever") {
+        enemy.nextHaste = (enemy.nextHaste || 0) + 1;
+        BattleSystem.gainPoise(enemy, 2, 4);
+        combatLog(`WOLF GAINS POISE ${enemy.poisePotency}/${enemy.poiseCount}`, "neutral");
+      }
+      if (enemySlot.skill.key === "indigoBlade") enemy.sp = clamp((enemy.sp || 0) + 10, -45, 45);
+      if (enemySlot.skill.key === "shimmeringCleave") {
+        enemy.sp = clamp((enemy.sp || 0) + 6, -45, 45);
+        enemy.damageUp = Math.min(6, (enemy.damageUp || 0) + 2);
+        // Coin II grants Poise Potency on hit; its Heads Hit grants +4 Count.
+        const coinTwoHead = !!roll.flips?.[Math.max(0, roll.flips.length - 1)];
+        BattleSystem.gainPoise(enemy, 4, coinTwoHead ? 4 : 0);
+        combatLog(`WOLF GAINS POISE ${enemy.poisePotency}/${enemy.poiseCount}${coinTwoHead ? " (HEADS +4 COUNT)" : ""}`, "neutral");
+      }
     }
     if (damageResult.staggerTriggered) combatLog("DON STAGGER", "stagger");
     if (criticalCount > 0) {
@@ -2495,8 +2749,12 @@ import { travelTime, wolfIntroDialogue } from "./data/story.js";
     els.battleScreen.classList.remove("hit-shake");
     void els.battleScreen.offsetWidth;
     els.battleScreen.classList.add("hit-shake");
-    combatLog(`${enemySlot.skill.name}  ${damage}`, "lose");
-    await floatDamage("don", damage, criticalCount > 0 ? "critical" : "lose");
+    if (!(enemy.spriteKey === "wolf" && enemySlot.skill.key === "azureRend")) {
+      combatLog(`${enemySlot.skill.name}${options.cracked ? " [CRACKED]" : ""}  ${damage}`, "lose");
+      await floatDamage("don", damage, criticalCount > 0 ? "critical" : "lose");
+    } else {
+      await floatDamage("don", "SP", "lose");
+    }
     renderBattleHUD();
     await delay(260);
     if (battle.don.hp > 0) setBattleDonState("idle");
@@ -2505,11 +2763,12 @@ import { travelTime, wolfIntroDialogue } from "./data/story.js";
   async function resolveEvade(slot, enemySlot) {
     const enemy = enemyById(enemySlot.enemyId);
     if (!enemy || enemy.hp <= 0) { enemySlot.consumed = true; return; }
-    if (WolfBossSystem.isWolf(enemy)) WolfBossSystem.markSkillUsed(enemy, enemySlot.skill);
     const skill = donBattleSkills.evade;
     await playSkillCutin(skill);
     const dr = rollCoins(skill, 1, slot.speed, false);
-    const er = rollCoins(enemySlot.skill, enemySlot.skill.coins, enemySlot.speed, true, enemy);
+    battle.activeRollEnemyId = enemySlot.enemyId;
+    const er = rollCoins(enemySlot.skill, enemySlot.skill.coins, enemySlot.speed, true);
+    battle.activeRollEnemyId = null;
     await showClash(slot, enemySlot, 1, enemySlot.skill.coins, dr, er, "EVADE");
     if (dr.power >= er.power) {
       enemySlot.consumed = true;
@@ -2548,7 +2807,6 @@ import { travelTime, wolfIntroDialogue } from "./data/story.js";
     const skill = getSelectedSkill(slot);
 
     if (battle.don.staggered || battle.don.isStaggered) {
-      if (enemySlot.skill.counter) return;
       combatLog("DON STAGGERED — UNOPPOSED", "stagger");
       await enemyAttack(enemySlot, enemySlot.skill.coins);
       battle.don.staggered = false;
@@ -2563,11 +2821,6 @@ import { travelTime, wolfIntroDialogue } from "./data/story.js";
       return;
     }
 
-    if (enemySlot.skill.counter) {
-      if (!skill.defense) await donAttack(slot, skill, enemy, skill.coins, false);
-      return;
-    }
-
     if (skill.defense) {
       await resolveEvade(slot, enemySlot);
       return;
@@ -2575,11 +2828,13 @@ import { travelTime, wolfIntroDialogue } from "./data/story.js";
 
     const result = await resolveClash(slot, enemySlot);
     enemySlot.consumed = true;
-    if (result.winner === 'tie') { combatLog('CLASH DRAW — BOTH ACTIONS END', 'neutral'); return; }
-    if (WolfBossSystem.isWolf(enemy)) WolfBossSystem.onClashEnd(enemy, enemySlot.skill, result.winner === 'enemy');
     if (result.winner === "don") {
       battle.don.changeSp(10);
       await donAttack(slot, skill, enemy, Math.max(1, result.remainingDon), true);
+      if ((result.crackedEnemy || 0) > 0 && enemy.hp > 0 && !enemy.staggered && battle.don.hp > 0) {
+        combatLog("CRACKED UNBREAKABLE COIN — COUNTER", "neutral");
+        await enemyAttack(enemySlot, result.crackedEnemy, { cracked: true });
+      }
     } else if (enemy.hp > 0) {
       battle.don.changeSp(-10);
       await enemyAttack(enemySlot, Math.max(1, result.remainingEnemy));
@@ -2587,7 +2842,7 @@ import { travelTime, wolfIntroDialogue } from "./data/story.js";
   }
 
   async function executePlannedTurn() {
-    battle.phase = "combat";
+    TurnSystem.transition(battle, TurnSystem.PHASE.COMBAT);
     battle.totalDamage = 0;
     renderBattleHUD();
     els.battleScreen.classList.add("is-resolving");
@@ -2605,10 +2860,7 @@ import { travelTime, wolfIntroDialogue } from "./data/story.js";
     await delay(380);
 
     const processed = new Set();
-    const queue = [
-      ...battle.donSlots.map((slot) => ({ type: "don", speed: slot.speed, slot })),
-      ...battle.enemySlots.filter(slot => !slot.skill.counter).map((slot) => ({ type: "enemy", speed: slot.speed, slot })),
-    ].sort((a, b) => b.speed - a.speed || (a.type === "don" ? -1 : 1));
+    const queue = TurnSystem.buildActionQueue(battle.donSlots, battle.enemySlots);
 
     for (const action of queue) {
       if (battle.don.hp <= 0 || battleWon()) break;
@@ -2638,10 +2890,10 @@ import { travelTime, wolfIntroDialogue } from "./data/story.js";
     setBattleDonExpression("idle");
     await delay(360);
     els.battleScreen.classList.remove("is-resolving");
+    TurnSystem.transition(battle, TurnSystem.PHASE.CLEANUP);
   }
 
   function applyTurnStartBuffs() {
-    WolfBossSystem.applyExhaustTurnStart(battle.don);
     battle.don.haste = battle.don.nextHaste;
     battle.don.nextHaste = 0;
     battle.don.attackUp = battle.don.nextAttackUp;
@@ -2649,7 +2901,6 @@ import { travelTime, wolfIntroDialogue } from "./data/story.js";
     battle.enemies.forEach((enemy) => {
       if (enemy.staggerTurns <= 0) enemy.staggered = false;
       if (enemy.spriteKey === "wolf") {
-        WolfBossSystem.beginTurn(enemy, aliveEnemies());
         enemy.haste = enemy.nextHaste || 0;
         enemy.nextHaste = 0;
       }
@@ -2659,9 +2910,7 @@ import { travelTime, wolfIntroDialogue } from "./data/story.js";
   }
 
   function finishTurn() {
-    WolfBossSystem.decayExhaustTurnEnd(battle.don);
     battle.enemies.forEach((enemy) => {
-      if (WolfBossSystem.isWolf(enemy)) WolfBossSystem.endTurn(enemy);
       if (enemy.staggerTurns > 0) enemy.staggerTurns -= 1;
       if ((enemy.poiseCount || 0) > 0) {
         const before = enemy.poiseCount;
@@ -2676,8 +2925,8 @@ import { travelTime, wolfIntroDialogue } from "./data/story.js";
     if (battle.encounter === 'wolf' && battle.turn >= 4 && !battle.egoUnlocked) {
       battle.egoUnlocked = true;
       battle.egoPromptAutoOpen = true;
-      if (battle.don?.sp < 45) battle.don.sp = 45;
-      battle.guideMessage = 'E.G.O READY: Don restored to +45 SP. Click the glowing E.G.O icon, manifest La Sangre de Sancho, then assign it before pressing START.';
+      EgoSystem.grantTutorialResources(battle, donBattleSkills.laSangre, { sp: 45 });
+      battle.guideMessage = 'E.G.O READY: Don restored to +45 SP and tutorial resources are ready. Click the glowing E.G.O icon, manifest La Sangre de Sancho, then assign it before pressing START.';
       showNotice('TURN 4 — DON RESTORED TO +45 SP · E.G.O READY', 2600);
     }
     battle.tutorialStep = Math.min(battle.tutorialStep + 1, battleTutorialSteps.length - 1);
@@ -2744,15 +2993,25 @@ import { travelTime, wolfIntroDialogue } from "./data/story.js";
   async function showBattleLoading(encounter = "bandit") {
     if (!els.battleLoading) return;
     const wolf = encounter === "wolf";
-    if (els.battleLoadingArea) els.battleLoadingArea.textContent = wolf ? "FOREST // DEEP SECTOR" : "FOREST // OUTSKIRTS";
-    if (els.battleLoadingTitle) els.battleLoadingTitle.textContent = wolf ? "WOLF // BOSS ENCOUNTER" : "BACKSTREET AMBUSH";
+    const heathcliff = encounter === "heathcliff";
+    const versus = encounter === "versus";
+    const training = encounter === "training";
+    if (els.battleLoadingArea) els.battleLoadingArea.textContent = wolf || heathcliff ? "FOREST // DEEP SECTOR" : training ? "TRAINING GROUNDS" : versus ? "VERSUS ARENA" : "FOREST // OUTSKIRTS";
+    if (els.battleLoadingTitle) els.battleLoadingTitle.textContent = wolf ? "WOLF // BOSS ENCOUNTER" : heathcliff ? "HEATHCLIFF // FRIENDLY SPAR" : training ? "TRAINING MODE" : versus ? "VERSUS MATCH" : "BACKSTREET AMBUSH";
     if (els.battleLoadingHint) els.battleLoadingHint.textContent = wolf
-      ? "Wolf: 1200 HP · Exhaust lowers Max Speed · E.G.O from Turn 4."
-      : "Reading enemy actions and synchronizing combat slots...";
+      ? "Boss threat detected. Manage spacing, guard the slash, and punish recovery."
+      : heathcliff
+        ? "A friendly spar with Don’s fellow Sinner. Heathcliff builds E.G.O gauge during combat; the spar ends with respect, not enmity."
+        : training
+        ? "Practice movement, defense, spacing and all three skills. Press Escape to leave."
+        : versus
+          ? "A real-time duel. Read startup, defend, and punish recovery."
+          : "Initializing real-time combat. Move, jump, guard, dash, and strike when in range...";
     if (els.battleLoadingBar) els.battleLoadingBar.style.width = "0%";
     if (els.battleLoadingPercent) els.battleLoadingPercent.textContent = "00%";
     els.battleLoading.classList.remove("is-leaving");
     els.battleLoading.hidden = false;
+    syncGlobalSettingsButton();
 
     const steps = [7, 16, 28, 43, 59, 74, 88, 100];
     for (const progress of steps) {
@@ -2764,13 +3023,16 @@ import { travelTime, wolfIntroDialogue } from "./data/story.js";
     await rawDelay(360);
     els.battleLoading.hidden = true;
     els.battleLoading.classList.remove("is-leaving");
+    syncGlobalSettingsButton();
   }
 
   async function startBattleTutorial(encounter = "bandit") {
     const isWolfEncounter = encounter === "wolf";
-    battle = isWolfEncounter ? makeWolfBattleState() : makeBattleState();
-    state.scene = isWolfEncounter ? "wolfBattle" : "forestBattle";
+    const isHeathcliffEncounter = encounter === "heathcliff";
+    battle = isWolfEncounter ? makeWolfBattleState() : isHeathcliffEncounter ? makeHeathcliffBattleState() : makeBattleState();
+    state.scene = isWolfEncounter ? "wolfBattle" : isHeathcliffEncounter ? "heathcliffBattle" : "forestBattle";
     if (isWolfEncounter) state.wolfBattleSeen = true;
+    else if (isHeathcliffEncounter) state.heathcliffBattleSeen = true;
     else state.forestBattleSeen = true;
     saveCheckpoint();
     els.dialogueBox.hidden = true;
@@ -2784,60 +3046,184 @@ import { travelTime, wolfIntroDialogue } from "./data/story.js";
     els.battleScreen.hidden = true;
     await showBattleLoading(encounter);
     els.battleScreen.hidden = false;
+    els.battleScreen.classList.add("rt-active");
+    const rtArena = document.getElementById("realtimeArena");
+    if (rtArena) rtArena.hidden = false;
     playBattleTheme();
     setBattleDonExpression("idle");
 
-    // Prepare and render the first command phase BEFORE the intro overlay.
-    // That way the tutorial can never reveal an empty battlefield after closing.
-    let firstTurnPrepared = false;
-    if (!state.battleIntroSeen) {
-      applyTurnStartBuffs();
-      renderPlanning();
-      firstTurnPrepared = true;
-      await showBattleIntro();
-    }
-
-    while (battle.active && battle.don.hp > 0) {
-      if (!firstTurnPrepared) applyTurnStartBuffs();
-      firstTurnPrepared = false;
-      renderPlanning();
-      await waitForBattleStart();
-      await executePlannedTurn();
-      if (battle.don.hp <= 0) break;
-      if (battleWon()) {
-        if (advanceToNextWave()) {
-          renderPlanning();
-          await showWaveTransition();
-          firstTurnPrepared = false;
-          await delay(320);
-          continue;
+    // This is the main game's battle entry point. Story/dialogue, encounter data,
+    // original character art and the existing result/retry flow stay in use; only
+    // the turn-planning combat resolver is replaced by the real-time engine.
+    realtimeBattleActive = true;
+    let victory = false;
+    try {
+      realtimeMode = new RealtimeBattleMode({
+        root: rtArena,
+        onFps: (fps) => {
+          const fpsNode = document.getElementById("rtFpsStatus");
+          if (fpsNode && fps > 0) fpsNode.textContent = `${Math.round(fps)} FPS · FIXED 60 Hz SIMULATION`;
+        },
+        onMoveStart: playRealtimeMoveVoice,
+        onRoundStart: ({ round = 1 } = {}) => voiceLineManager.playEvent(
+          "don",
+          round === 1 ? "encounterStart" : "roundStart",
+          { cooldownMs: 500 },
+        ),
+        onHit: playRealtimeReactionVoice,
+      });
+      realtimeMode.setDebugBoxes(showHitboxesSetting);
+      while (battle.active && battle.don.hp > 0) {
+        const roundResult = await realtimeMode.runRound(battle, encounter);
+        if (roundResult === "reset") continue;
+        if (roundResult === "defeat" || battle.don.hp <= 0) break;
+        if (battleWon()) {
+          if (advanceToNextWave()) {
+            realtimeMode.setMessage(`WAVE ${battle.wave}: reinforcements enter the forest. Keep fighting!`);
+            await delay(950);
+            continue;
+          }
+          victory = true;
+          break;
         }
-        break;
       }
-      finishTurn();
-      await delay(320);
-    }
 
-    const victory = battleWon() && battle.wave >= (battle.totalWaves || 1);
-    battle.active = false;
-    const result = await showBattleResult(victory);
-    els.battleResult.hidden = true;
-    if (result === "retry") {
+      battle.active = false;
+      voiceLineManager.playEvent("don", victory ? "victory" : "defeat");
+      const result = await realtimeMode.showResult(victory);
+      realtimeMode.dispose();
+      realtimeMode = null;
+      realtimeBattleActive = false;
+      els.battleScreen.classList.remove("rt-active");
       els.battleScreen.hidden = true;
-      const retryEncounter = battle?.encounter === "wolf" ? "wolf" : encounter;
+      if (result === "retry") {
+        const retryEncounter = isWolfEncounter ? "wolf" : encounter;
+        battle = null;
+        return startBattleTutorial(retryEncounter);
+      }
+
+      restoreStoryTheme();
       battle = null;
-      return startBattleTutorial(retryEncounter);
+      els.hud.hidden = false;
+      els.quickMenu.hidden = false;
+      setStoryChromeVisible(true);
+      els.backpackBtn.hidden = false;
+      return victory;
+    } catch (error) {
+      console.error("[REALTIME BATTLE] Encounter failed:", error);
+      realtimeMode?.dispose();
+      realtimeMode = null;
+      realtimeBattleActive = false;
+      els.battleScreen.classList.remove("rt-active");
+      els.battleScreen.hidden = true;
+      if (rtArena) rtArena.hidden = true;
+      restoreStoryTheme();
+      els.hud.hidden = false;
+      els.quickMenu.hidden = false;
+      setStoryChromeVisible(true);
+      els.backpackBtn.hidden = false;
+      showNotice("Real-time combat could not start. Open DevTools for the error details.", 5000);
+      battle = null;
+      return false;
     }
-    restoreStoryTheme();
-    els.battleScreen.hidden = true;
-    battle = null;
-    els.hud.hidden = false;
-    els.quickMenu.hidden = false;
-    setStoryChromeVisible(true);
-    els.backpackBtn.hidden = false;
-    return victory;
   }
 
+
+  /** Standalone Versus and Training use the same renderer/combat modules as story encounters. */
+  async function startStandaloneRealtime(mode = "versus", versusConfig = null) {
+    if (standaloneStarting || realtimeBattleActive) return;
+    standaloneStarting = true;
+    const training = mode === "training";
+    const localVersus = mode === "versus" && !!versusConfig?.localMultiplayer;
+    try {
+      resetUIForNewGame();
+      els.titleScreen.hidden = true;
+      els.hud.hidden = true;
+      els.quickMenu.hidden = true;
+      els.backpackBtn.hidden = true;
+      setStoryChromeVisible(false);
+      els.dialogueBox.hidden = true;
+      closeChoices();
+      els.battleResult.hidden = true;
+      await showBattleLoading(training ? "training" : "versus");
+
+      els.battleScreen.hidden = false;
+      els.battleScreen.classList.add("rt-active");
+      const rtArena = document.getElementById("realtimeArena");
+      if (rtArena) rtArena.hidden = false;
+      if (els.versusSelectScreen) els.versusSelectScreen.hidden = true;
+      playBattleTheme();
+      realtimeBattleActive = true;
+
+      realtimeMode = new RealtimeBattleMode({
+        root: rtArena,
+        standaloneMode: true,
+        trainingMode: training,
+        versusConfig: localVersus ? versusConfig : null,
+        controlsConfig: keyBindings,
+        controllerConfig: controllerSettings,
+        onFps: (fps) => {
+          const fpsNode = document.getElementById("rtFpsStatus");
+          if (fpsNode && fps > 0) fpsNode.textContent = `${Math.round(fps)} FPS · FIXED 60 Hz SIMULATION`;
+        },
+        onMoveStart: playRealtimeMoveVoice,
+        onRoundStart: ({ round = 1 } = {}) => voiceLineManager.playEvent(
+          "don",
+          round === 1 ? "encounterStart" : "roundStart",
+          { cooldownMs: 500 },
+        ),
+        onHit: playRealtimeReactionVoice,
+      });
+      realtimeMode.setDebugBoxes(showHitboxesSetting);
+
+      let nextAction = "retry";
+      while (nextAction !== "main-menu" && nextAction !== "exit") {
+        battle = localVersus ? makeVersusBattleState(versusConfig) : makeBattleState();
+        battle.active = true;
+        battle.wave = 1;
+        battle.totalWaves = 1;
+        battle.encounter = mode;
+        if (training) battle.enemies = [mkBattleEnemy(900, "Training Dummy", 999999, "CLUB", "club")];
+        else if (!localVersus) battle.enemies = [mkBattleEnemy(901, "Roadside Thug", 220, "CLUB", "club")];
+
+        const roundResult = await realtimeMode.runRound(battle, training ? "training" : "versus");
+        if (roundResult === "reset") continue;
+        if (roundResult === "exit") {
+          nextAction = "exit";
+          break;
+        }
+        voiceLineManager.playEvent("don", roundResult === "win" ? "victory" : "defeat");
+        nextAction = await realtimeMode.showResult(roundResult === "win", { standalone: true, training, versusConfig: localVersus ? versusConfig : null });
+      }
+    } catch (error) {
+      console.error(`[${mode.toUpperCase()}] startup failed:`, error);
+      showNotice(`${mode.toUpperCase()} mode could not start. Open DevTools for details.`, 5000);
+    } finally {
+      realtimeMode?.dispose();
+      realtimeMode = null;
+      realtimeBattleActive = false;
+      standaloneStarting = false;
+      battle = null;
+      els.systemModal.hidden = true;
+      els.systemModal.style.zIndex = "";
+      els.battleScreen.classList.remove("rt-active");
+      els.battleScreen.hidden = true;
+      const rtArena = document.getElementById("realtimeArena");
+      if (rtArena) rtArena.hidden = true;
+      els.battleLoading.hidden = true;
+      els.titleScreen.hidden = false;
+      if (els.versusSelectScreen) els.versusSelectScreen.hidden = true;
+      els.mainMenuView.hidden = false;
+      els.storyModeView.hidden = true;
+      els.hud.hidden = true;
+      els.quickMenu.hidden = true;
+      els.backpackBtn.hidden = true;
+      setStoryChromeVisible(false);
+      setBackground("don_room");
+      restoreStoryTheme();
+      updateContinueButton();
+    }
+  }
 
   async function startWolfBattleEncounter() {
     state.scene = "wolfBattlePrep";
@@ -2860,7 +3246,55 @@ import { travelTime, wolfIntroDialogue } from "./data/story.js";
     await say("Wolf", "But for today... I have seen enough.");
     setWolfCharacter(false);
     setCharacter("idle");
+
+    // Narrative hand-off: Heathcliff appears immediately after Don defeats Wolf.
+    // His encounter is saved independently so a failed attempt can be retried later.
+    if (!state.heathcliffBattleWon) await startHeathcliffEncounter();
     return true;
+  }
+
+  async function startHeathcliffEncounter() {
+    const returning = !!state.heathcliffIntroSeen;
+    state.scene = "heathcliffIntro";
+    state.heathcliffBattleSeen = true;
+    saveCheckpoint();
+    setBackground("forest");
+    setHeathcliffCharacter(true);
+    if (!returning) {
+      await say("Heathcliff", "Oi. You're the one who just beat Wolf?");
+      setHeathcliffCharacter(false);
+      setCharacter("happy");
+      await say("Don Quixote", "A fellow Sinner! Then let us test our skills in a friendly spar, comrade!");
+      setHeathcliffCharacter(true);
+      await say("Heathcliff", "Heathcliff. Fine. A spar, not a grudge. Try to keep up.");
+      state.heathcliffIntroSeen = true;
+      saveCheckpoint();
+    } else {
+      await say("Heathcliff", "Round two, Don. Just practice—I'm not trying to put you in the ground.");
+    }
+    setHeathcliffCharacter(false);
+    setCharacter("idle");
+
+    const victory = await startBattleTutorial("heathcliff");
+    state.heathcliffBattleSeen = true;
+    state.heathcliffBattleWon = !!victory;
+    saveCheckpoint();
+    setBackground("forest");
+    if (victory) {
+      setHeathcliffCharacter(true);
+      await say("Heathcliff", "Hah. You can actually keep up. Not bad for a partner.");
+      setHeathcliffCharacter(false);
+      setCharacter("happy");
+      await say("Don Quixote", "An excellent bout, comrade! We shall both grow stronger from this!");
+    } else {
+      setHeathcliffCharacter(true);
+      await say("Heathcliff", "That's enough for now. Catch your breath; we can spar again when you're ready.");
+      setHeathcliffCharacter(false);
+    }
+    setCharacter("idle");
+    state.scene = "heathcliffAfterBattle";
+    saveCheckpoint();
+    return !!victory;
   }
 
   async function playWolfIntroConversation() {
@@ -2888,9 +3322,11 @@ import { travelTime, wolfIntroDialogue } from "./data/story.js";
         await say("Wolf", "You came back. Good. We finish this now.");
         setWolfCharacter(false);
         await startWolfBattleEncounter();
+      } else if (!state.heathcliffBattleWon) {
+        await startHeathcliffEncounter();
       } else {
         setCharacter("happy");
-        await say("Don Quixote", "The forest road is peaceful for now... though I suspect Wolf and I shall cross blades again someday!");
+        await say("Don Quixote", "The forest road is peaceful for now... though I suspect Wolf and Heathcliff may cross my path again!");
       }
       await mapLoop();
       return;
@@ -3105,7 +3541,7 @@ import { travelTime, wolfIntroDialogue } from "./data/story.js";
     showNotice("Save loaded.");
 
     // Resume from stable checkpoints only; story text is intentionally replayed from the nearest section.
-    if (["forestBattle", "forestEncounter", "forestAfterBattle", "wolfIntro", "wolfBattlePrep", "wolfBattle", "wolfAfterBattle"].includes(state.scene)) {
+    if (["forestBattle", "forestEncounter", "forestAfterBattle", "wolfIntro", "wolfBattlePrep", "wolfBattle", "wolfAfterBattle", "heathcliffIntro", "heathcliffBattle", "heathcliffAfterBattle"].includes(state.scene)) {
       state.currentLocation = "Forest";
       setBackground("forest");
       setCharacter("idle");
@@ -3156,6 +3592,14 @@ import { travelTime, wolfIntroDialogue } from "./data/story.js";
 
   function resetUIForNewGame() {
     resetBattleAudio();
+    if (realtimeMode) {
+      realtimeMode.dispose();
+      realtimeMode = null;
+    }
+    realtimeBattleActive = false;
+    els.battleScreen?.classList.remove("rt-active");
+    const rtArena = document.getElementById("realtimeArena");
+    if (rtArena) rtArena.hidden = true;
     advanceHandler = null;
     clearTimeout(backpackReminderTimer);
     closeChoices();
@@ -3386,6 +3830,117 @@ import { travelTime, wolfIntroDialogue } from "./data/story.js";
 
   document.addEventListener("pointerdown", () => { ensureSfxContext(); }, { once: true });
 
+  const versusSelectionState = { player1: { characterId: "don", egoId: "none" }, player2: { characterId: "heathcliff", egoId: "heathcliff-burst" } };
+
+  function updateVersusCharacterPreview(playerKey) {
+    const charSelect = playerKey === "player1" ? els.versusP1Character : els.versusP2Character;
+    const preview = playerKey === "player1" ? els.versusP1Identity : els.versusP2Identity;
+    const roster = getVersusCharacter(charSelect?.value || "don");
+    versusSelectionState[playerKey].characterId = roster.id;
+    const matching = roster.egos.some((ego) => ego.id === versusSelectionState[playerKey].egoId);
+    if (!matching) versusSelectionState[playerKey].egoId = roster.egos[0].id;
+    if (preview) preview.textContent = `${roster.identity.name} · ${roster.maxHp} HP`;
+  }
+
+  function populateVersusEgoSelect(playerKey) {
+    const key = playerKey === "player1" ? "player1" : "player2";
+    const roster = getVersusCharacter(versusSelectionState[key].characterId);
+    const select = key === "player1" ? els.versusP1Ego : els.versusP2Ego;
+    const title = key === "player1" ? els.versusP1EgoTitle : els.versusP2EgoTitle;
+    const identity = key === "player1" ? els.versusP1EgoIdentity : els.versusP2EgoIdentity;
+    const desc = key === "player1" ? els.versusP1EgoDescription : els.versusP2EgoDescription;
+    if (!select) return;
+    select.replaceChildren();
+    for (const ego of roster.egos) {
+      const option = document.createElement("option");
+      option.value = ego.id;
+      option.textContent = ego.name;
+      select.append(option);
+    }
+    select.value = roster.egos.some((ego) => ego.id === versusSelectionState[key].egoId)
+      ? versusSelectionState[key].egoId : roster.egos[0].id;
+    versusSelectionState[key].egoId = select.value;
+    if (title) title.textContent = roster.name.toUpperCase();
+    if (identity) identity.textContent = roster.identity.name;
+    const selected = getVersusEgo(roster.id, select.value);
+    if (desc) desc.textContent = selected.description;
+  }
+
+  function updateVersusEgoDescription(playerKey) {
+    const key = playerKey === "player1" ? "player1" : "player2";
+    const select = key === "player1" ? els.versusP1Ego : els.versusP2Ego;
+    const desc = key === "player1" ? els.versusP1EgoDescription : els.versusP2EgoDescription;
+    const character = getVersusCharacter(versusSelectionState[key].characterId);
+    versusSelectionState[key].egoId = select?.value || character.egos[0].id;
+    const selected = getVersusEgo(character.id, versusSelectionState[key].egoId);
+    if (desc) desc.textContent = selected.description;
+  }
+
+  function populateVersusCharacterOptions(select, preferredId) {
+    if (!select) return;
+    const previous = preferredId || select.value || "don";
+    select.replaceChildren();
+    for (const roster of Object.values(VERSUS_ROSTER)) {
+      const option = document.createElement("option");
+      option.value = roster.id;
+      option.textContent = roster.name;
+      select.append(option);
+    }
+    select.value = Object.hasOwn(VERSUS_ROSTER, previous) ? previous : (Object.keys(VERSUS_ROSTER)[0] || "don");
+  }
+
+  function openVersusSelection() {
+    populateVersusCharacterOptions(els.versusP1Character, versusSelectionState.player1.characterId);
+    populateVersusCharacterOptions(els.versusP2Character, versusSelectionState.player2.characterId);
+    versusSelectionState.player1.characterId = els.versusP1Character?.value || "don";
+    versusSelectionState.player2.characterId = els.versusP2Character?.value || "heathcliff";
+    updateVersusCharacterPreview("player1");
+    updateVersusCharacterPreview("player2");
+    els.titleScreen.hidden = true;
+    els.versusSelectScreen.hidden = false;
+    els.versusCharacterStep.hidden = false;
+    els.versusEgoStep.hidden = true;
+    syncGlobalSettingsButton();
+    els.versusP1Character?.focus?.();
+  }
+
+  function startSelectedVersus() {
+    const loadout = (key) => {
+      const character = getVersusCharacter(versusSelectionState[key].characterId);
+      const ego = getVersusEgo(character.id, versusSelectionState[key].egoId);
+      return { characterId: character.id, identityId: character.identity.id, egoId: ego.id };
+    };
+    const config = { localMultiplayer: true, player1: loadout("player1"), player2: loadout("player2") };
+    els.versusSelectScreen.hidden = true;
+    startStandaloneRealtime("versus", config);
+  }
+
+  els.versusP1Character?.addEventListener("change", () => updateVersusCharacterPreview("player1"));
+  els.versusP2Character?.addEventListener("change", () => updateVersusCharacterPreview("player2"));
+  els.versusToEgoBtn?.addEventListener("click", () => {
+    updateVersusCharacterPreview("player1");
+    updateVersusCharacterPreview("player2");
+    populateVersusEgoSelect("player1");
+    populateVersusEgoSelect("player2");
+    els.versusCharacterStep.hidden = true;
+    els.versusEgoStep.hidden = false;
+    els.versusP1Ego?.focus?.();
+  });
+  els.versusBackToCharactersBtn?.addEventListener("click", () => {
+    els.versusEgoStep.hidden = true;
+    els.versusCharacterStep.hidden = false;
+  });
+  els.versusP1Ego?.addEventListener("change", () => updateVersusEgoDescription("player1"));
+  els.versusP2Ego?.addEventListener("change", () => updateVersusEgoDescription("player2"));
+  els.startVersusMatchBtn?.addEventListener("click", startSelectedVersus);
+  els.versusCancelBtn?.addEventListener("click", () => {
+    els.versusSelectScreen.hidden = true;
+    els.titleScreen.hidden = false;
+    els.mainMenuView.hidden = false;
+    els.storyModeView.hidden = true;
+    syncGlobalSettingsButton();
+  });
+
   let newGameStarting = false;
   async function startNewGameFlow() {
     if (newGameStarting) return;
@@ -3400,6 +3955,8 @@ import { travelTime, wolfIntroDialogue } from "./data/story.js";
       console.error('[NEW GAME] startup failed:', error);
       resetUIForNewGame();
       els.titleScreen.hidden = false;
+      els.mainMenuView.hidden = true;
+      els.storyModeView.hidden = false;
       els.hud.hidden = true;
       els.quickMenu.hidden = true;
       showNotice('NEW GAME startup error. Open DevTools for details.', 4000);
@@ -3407,6 +3964,20 @@ import { travelTime, wolfIntroDialogue } from "./data/story.js";
       newGameStarting = false;
     }
   }
+  els.storyModeBtn?.addEventListener("click", () => {
+    playDonLobbyVoice();
+    els.mainMenuView.hidden = true;
+    els.storyModeView.hidden = false;
+    updateContinueButton();
+    els.newGameBtn?.focus?.();
+  });
+  els.storyBackBtn?.addEventListener("click", () => {
+    els.storyModeView.hidden = true;
+    els.mainMenuView.hidden = false;
+    playDonSmalltalk();
+  });
+  els.versusModeBtn?.addEventListener("click", openVersusSelection);
+  els.trainingModeBtn?.addEventListener("click", () => startStandaloneRealtime("training"));
   els.newGameBtn?.addEventListener("click", startNewGameFlow);
   window.__RQ_NEW_GAME_SMOKE__ = startNewGameFlow;
   window.__RQ_BUILD__ = BUILD_TAG;
@@ -3422,6 +3993,7 @@ import { travelTime, wolfIntroDialogue } from "./data/story.js";
     if (advanceHandler) advanceHandler();
   });
   document.addEventListener("keydown", (event) => {
+    if (realtimeBattleActive) return;
     if (!els.battleScreen.hidden) {
       if (/^[1-6]$/.test(event.key) && battle?.phase === "planning") {
         const slot = battle.donSlots[Number(event.key) - 1];
@@ -3482,17 +4054,187 @@ import { travelTime, wolfIntroDialogue } from "./data/story.js";
   els.mapClose.addEventListener("click", () => {
     els.mapModal.hidden = true;
   });
-  function openSystemMenu() {
-    const saved = loadSave();
-    els.saveInfo.textContent = saved?.savedAt
-      ? `Last save: ${new Date(saved.savedAt).toLocaleString()}`
-      : "No save yet.";
-    els.systemModal.hidden = false;
+  const globalSettingsButton = document.getElementById("globalSettingsButton");
+  let pendingKeyBinding = null;
+  const gamepadActionOptions = [
+    { key: "jump", label: "Jump" }, { key: "guard", label: "Guard" },
+    { key: "light", label: "Skill 1" }, { key: "heavy", label: "Skill 2" },
+    { key: "special", label: "Skill 3 / E.G.O" }, { key: "dash", label: "Dash" },
+  ];
+  const gamepadButtonNames = ["South / A / Cross", "East / B / Circle", "West / X / Square", "North / Y / Triangle", "LB / L1", "RB / R1", "LT / L2", "RT / R2", "Select / Share", "Start / Options", "L3", "R3", "D-pad Up", "D-pad Down", "D-pad Left", "D-pad Right"];
+
+  function saveKeyBindings() {
+    try { localStorage.setItem(KEY_BINDINGS_STORAGE_KEY, JSON.stringify(keyBindings)); } catch { /* Private mode may block storage. */ }
+    realtimeMode?.setControlsConfig?.(keyBindings);
   }
-  els.systemBtn.addEventListener("click", openSystemMenu);
-  els.storyMenuHex?.addEventListener("click", openSystemMenu);
+  function saveControllerSettings() {
+    try { localStorage.setItem(CONTROLLER_STORAGE_KEY, JSON.stringify(controllerSettings)); } catch { /* Private mode may block storage. */ }
+    realtimeMode?.setControllerConfig?.(controllerSettings);
+    refreshControllerStatus();
+  }
+  function renderKeyboardBindings() {
+    if (!els.keyboardBindings) return;
+    els.keyboardBindings.replaceChildren();
+    for (const playerKey of ["p1", "p2"]) {
+      const group = document.createElement("section");
+      group.className = "keyboard-bindings-group";
+      const heading = document.createElement("h4");
+      heading.textContent = playerKey === "p1" ? "PLAYER 1 · KEYBOARD" : "PLAYER 2 · KEYBOARD";
+      group.append(heading);
+      for (const action of CONTROL_ACTIONS) {
+        const row = document.createElement("div");
+        row.className = "keybind-row";
+        const label = document.createElement("span");
+        label.textContent = action.label;
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = "keybind-button";
+        button.dataset.player = playerKey;
+        button.dataset.action = action.key;
+        button.textContent = displayKey(keyBindings[playerKey][action.key]);
+        button.addEventListener("click", () => beginKeyBindingCapture(playerKey, action.key, button));
+        row.append(label, button);
+        group.append(row);
+      }
+      els.keyboardBindings.append(group);
+    }
+  }
+  function beginKeyBindingCapture(playerKey, action, button) {
+    if (pendingKeyBinding) {
+      window.removeEventListener("keydown", pendingKeyBinding.handler, true);
+      pendingKeyBinding.button?.classList.remove("is-listening");
+    }
+    const handler = (event) => {
+      const key = normalizeKey(event);
+      if (key === "escape") {
+        event.preventDefault(); event.stopImmediatePropagation();
+        window.removeEventListener("keydown", handler, true);
+        button.classList.remove("is-listening");
+        pendingKeyBinding = null;
+        if (els.keyboardBindingStatus) els.keyboardBindingStatus.textContent = "Binding cancelled.";
+        return;
+      }
+      if (!key || ["control", "alt", "shift", "meta", "tab", "backspace", "delete", "enter"].includes(key)) return;
+      event.preventDefault(); event.stopImmediatePropagation();
+      const duplicate = ["p1", "p2"].some((p) => CONTROL_ACTIONS.some((candidate) => {
+        return !(p === playerKey && candidate.key === action) && keyBindings[p][candidate.key] === key;
+      }));
+      if (duplicate) {
+        if (els.keyboardBindingStatus) els.keyboardBindingStatus.textContent = `${displayKey(key)} is already assigned. Choose a different key.`;
+        return;
+      }
+      keyBindings[playerKey][action] = key;
+      saveKeyBindings();
+      window.removeEventListener("keydown", handler, true);
+      pendingKeyBinding = null;
+      renderKeyboardBindings();
+      if (els.keyboardBindingStatus) els.keyboardBindingStatus.textContent = `${playerKey.toUpperCase()} ${action}: ${displayKey(key)} saved.`;
+    };
+    pendingKeyBinding = { handler, button };
+    button.classList.add("is-listening");
+    button.textContent = "PRESS KEY…";
+    if (els.keyboardBindingStatus) els.keyboardBindingStatus.textContent = "Listening for one key. Press Escape to cancel.";
+    window.addEventListener("keydown", handler, true);
+  }
+  function getConnectedGamepads() {
+    try { return Array.from(navigator.getGamepads?.() || []).filter((pad) => pad && pad.connected); }
+    catch { return []; }
+  }
+  function renderControllerSettings() {
+    if (els.controllerPlayerSelect) els.controllerPlayerSelect.value = controllerSettings.player === "p2" ? "p2" : "p1";
+    if (els.controllerDeviceSelect) {
+      const current = String(controllerSettings.index ?? -1);
+      const pads = getConnectedGamepads();
+      els.controllerDeviceSelect.replaceChildren();
+      const any = document.createElement("option"); any.value = "-1"; any.textContent = "Any connected controller"; els.controllerDeviceSelect.append(any);
+      for (const pad of pads) {
+        const option = document.createElement("option"); option.value = String(pad.index); option.textContent = `Controller ${pad.index + 1} · ${pad.id || "Gamepad"}`; els.controllerDeviceSelect.append(option);
+      }
+      els.controllerDeviceSelect.value = [...els.controllerDeviceSelect.options].some((option) => option.value === current) ? current : "-1";
+    }
+    if (els.controllerButtonMappings) {
+      els.controllerButtonMappings.replaceChildren();
+      for (const action of gamepadActionOptions) {
+        const row = document.createElement("label"); row.className = "controller-map-row";
+        const caption = document.createElement("span"); caption.textContent = action.label;
+        const select = document.createElement("select"); select.dataset.controllerAction = action.key; select.setAttribute("aria-label", `Controller button for ${action.label}`);
+        gamepadButtonNames.forEach((name, index) => {
+          const option = document.createElement("option"); option.value = String(index); option.textContent = `B${index} · ${name}`; select.append(option);
+        });
+        select.value = String(controllerSettings.buttons[action.key] ?? DEFAULT_CONTROLLER_SETTINGS.buttons[action.key]);
+        select.addEventListener("change", () => {
+          controllerSettings.buttons[action.key] = Number(select.value);
+          saveControllerSettings();
+        });
+        row.append(caption, select); els.controllerButtonMappings.append(row);
+      }
+    }
+    refreshControllerStatus();
+  }
+  function refreshControllerStatus() {
+    if (!els.controllerStatus) return;
+    const pads = getConnectedGamepads();
+    if (!pads.length) {
+      els.controllerStatus.textContent = "No controller detected. Connect a standard Gamepad, then open Settings again; keyboard still works.";
+      return;
+    }
+    const selected = controllerSettings.index >= 0 ? pads.find((pad) => pad.index === controllerSettings.index) : pads[0];
+    els.controllerStatus.textContent = `${selected ? `Connected: ${selected.id || `Controller ${selected.index + 1}`}` : "Selected controller not connected"} · assigned to ${controllerSettings.player === "p2" ? "Player 2" : "Player 1"}. Left stick / D-pad moves; button assignments are configurable above.`;
+  }
+  function syncGlobalSettingsButton() {
+    if (!globalSettingsButton) return;
+    globalSettingsButton.hidden = !!(els.battleLoading && !els.battleLoading.hidden);
+  }
+  if (globalSettingsButton) globalSettingsButton.addEventListener("click", () => {
+    if (els.battleLoading && !els.battleLoading.hidden) return;
+    openSystemMenu({ settingsOnly: true });
+  });
+  if (typeof MutationObserver !== "undefined" && els.battleLoading) {
+    new MutationObserver(syncGlobalSettingsButton).observe(els.battleLoading, { attributes: true, attributeFilter: ["hidden"] });
+  }
+  if (typeof MutationObserver !== "undefined" && els.systemModal) {
+    new MutationObserver(syncGlobalSettingsButton).observe(els.systemModal, { attributes: true, attributeFilter: ["hidden"] });
+  }
+  els.controllerPlayerSelect?.addEventListener("change", () => { controllerSettings.player = els.controllerPlayerSelect.value; saveControllerSettings(); });
+  els.controllerDeviceSelect?.addEventListener("change", () => { controllerSettings.index = Number(els.controllerDeviceSelect.value); saveControllerSettings(); });
+  window.addEventListener("gamepadconnected", () => renderControllerSettings());
+  window.addEventListener("gamepaddisconnected", () => renderControllerSettings());
+
+  function openSystemMenu({ settingsOnly = false } = {}) {
+    const saved = loadSave();
+    const atTitleMenu = !els.titleScreen.hidden;
+    const atVersusSelection = !!els.versusSelectScreen && !els.versusSelectScreen.hidden;
+    const settingsView = settingsOnly || atTitleMenu || realtimeBattleActive || atVersusSelection;
+    if (els.systemTitle) els.systemTitle.textContent = settingsView ? "SETTINGS" : "GAME MENU";
+    if (els.systemActions) els.systemActions.hidden = settingsOnly || atTitleMenu || atVersusSelection || realtimeBattleActive;
+    if (els.showHitboxSettingRow) els.showHitboxSettingRow.hidden = !realtimeBattleActive;
+    if (els.showHitboxSetting) els.showHitboxSetting.checked = showHitboxesSetting;
+    if (els.saveInfo) {
+      els.saveInfo.hidden = settingsOnly || atTitleMenu || atVersusSelection || realtimeBattleActive;
+      els.saveInfo.textContent = saved?.savedAt
+        ? `Last save: ${new Date(saved.savedAt).toLocaleString()}`
+        : "No save yet.";
+    }
+    els.systemModal.style.zIndex = realtimeBattleActive ? "110" : "";
+    els.systemModal.hidden = false;
+    renderKeyboardBindings();
+    renderControllerSettings();
+    syncGlobalSettingsButton();
+    if (realtimeBattleActive) realtimeMode?.pause();
+  }
+  els.systemBtn.addEventListener("click", () => openSystemMenu());
+  els.storyMenuHex?.addEventListener("click", () => openSystemMenu());
+  els.settingsModeBtn?.addEventListener("click", () => openSystemMenu({ settingsOnly: true }));
+  els.rtSettingsButton?.addEventListener("click", () => openSystemMenu({ settingsOnly: true }));
   els.systemClose.addEventListener("click", () => {
     els.systemModal.hidden = true;
+    els.systemModal.style.zIndex = "";
+    if (realtimeBattleActive) realtimeMode?.resume();
+  });
+  els.showHitboxSetting?.addEventListener("change", () => {
+    showHitboxesSetting = !!els.showHitboxSetting.checked;
+    try { localStorage.setItem(HITBOX_SETTING_KEY, String(showHitboxesSetting)); } catch { /* Storage may be disabled. */ }
+    realtimeMode?.setDebugBoxes(showHitboxesSetting);
   });
   els.volumeSlider.addEventListener("input", () => {
     state.volume = Number(els.volumeSlider.value);
@@ -3506,6 +4248,7 @@ import { travelTime, wolfIntroDialogue } from "./data/story.js";
       return;
     }
     els.systemModal.hidden = true;
+    els.systemModal.style.zIndex = "";
     resetUIForNewGame();
     await resumeSavedGame(saved);
   });
@@ -3545,6 +4288,10 @@ import { travelTime, wolfIntroDialogue } from "./data/story.js";
 
   // Title presentation.
   setBackground("don_room");
+  els.volumeSlider.value = String(state.volume ?? 20);
+  els.mainMenuView.hidden = false;
+  els.storyModeView.hidden = true;
+  if (els.showHitboxSetting) els.showHitboxSetting.checked = showHitboxesSetting;
   updateContinueButton();
   updateHUD();
   updateBackpackCount();

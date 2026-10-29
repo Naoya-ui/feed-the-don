@@ -1,0 +1,197 @@
+{
+  "pack": "LCB Sinner",
+  "characterId": "don",
+  "sourceIdentityId": "10301",
+  "sourceArchive": "LCB Sinner-20261029T151211Z-1-001.zip",
+  "files": [
+    {
+      "filename": "battle_select_10301_1.wav",
+      "displayName": "Battle select",
+      "catalogKey": "events.battleSelect",
+      "usedAutomatically": false,
+      "path": "assets/audio/voice-lines/don-lcb/battle_select_10301_1.wav"
+    },
+    {
+      "filename": "formation_10301_1.wav",
+      "displayName": "Formation",
+      "catalogKey": "events.formation",
+      "usedAutomatically": false,
+      "path": "assets/audio/voice-lines/don-lcb/formation_10301_1.wav"
+    },
+    {
+      "filename": "battle_allydead_10301_1.wav",
+      "displayName": "Ally dead",
+      "catalogKey": "events.allyDead",
+      "usedAutomatically": false,
+      "path": "assets/audio/voice-lines/don-lcb/battle_allydead_10301_1.wav"
+    },
+    {
+      "filename": "battle_s2_10301_1.wav",
+      "displayName": "Skill 2 callout",
+      "catalogKey": "attacks.gallop",
+      "usedAutomatically": true,
+      "path": "assets/audio/voice-lines/don-lcb/battle_s2_10301_1.wav"
+    },
+    {
+      "filename": "lobby_noon_10301_1.wav",
+      "displayName": "Lobby noon",
+      "catalogKey": "ambient.lobbyNoon",
+      "usedAutomatically": false,
+      "path": "assets/audio/voice-lines/don-lcb/lobby_noon_10301_1.wav"
+    },
+    {
+      "filename": "lobby_night_10301_1.wav",
+      "displayName": "Lobby night",
+      "catalogKey": "ambient.lobbyNight",
+      "usedAutomatically": false,
+      "path": "assets/audio/voice-lines/don-lcb/lobby_night_10301_1.wav"
+    },
+    {
+      "filename": "battle_break_10301_1.wav",
+      "displayName": "Broken",
+      "catalogKey": "events.broken",
+      "usedAutomatically": false,
+      "path": "assets/audio/voice-lines/don-lcb/battle_break_10301_1.wav"
+    },
+    {
+      "filename": "get_10301_1.wav",
+      "displayName": "Obtained",
+      "catalogKey": "events.get",
+      "usedAutomatically": false,
+      "path": "assets/audio/voice-lines/don-lcb/get_10301_1.wav"
+    },
+    {
+      "filename": "battle_endcommand_10301_1.wav",
+      "displayName": "End command",
+      "catalogKey": "events.endCommand",
+      "usedAutomatically": false,
+      "path": "assets/audio/voice-lines/don-lcb/battle_endcommand_10301_1.wav"
+    },
+    {
+      "filename": "neglect_10301_1.wav",
+      "displayName": "Neglect",
+      "catalogKey": "ambient.neglect",
+      "usedAutomatically": false,
+      "path": "assets/audio/voice-lines/don-lcb/neglect_10301_1.wav"
+    },
+    {
+      "filename": "choice_success_p_10301_1.wav",
+      "displayName": "Choice success positive",
+      "catalogKey": "events.choiceSuccessPositive",
+      "usedAutomatically": false,
+      "path": "assets/audio/voice-lines/don-lcb/choice_success_p_10301_1.wav"
+    },
+    {
+      "filename": "smalltalk_10301_2.wav",
+      "displayName": "Small talk variant 2",
+      "catalogKey": "ambient.smalltalk",
+      "usedAutomatically": false,
+      "path": "assets/audio/voice-lines/don-lcb/smalltalk_10301_2.wav"
+    },
+    {
+      "filename": "choice_fail_n_10301_1.wav",
+      "displayName": "Choice fail neutral",
+      "catalogKey": "events.choiceFailNeutral",
+      "usedAutomatically": false,
+      "path": "assets/audio/voice-lines/don-lcb/choice_fail_n_10301_1.wav"
+    },
+    {
+      "filename": "choice_fail_p_10301_1.wav",
+      "displayName": "Choice fail positive",
+      "catalogKey": "events.choiceFailPositive",
+      "usedAutomatically": false,
+      "path": "assets/audio/voice-lines/don-lcb/choice_fail_p_10301_1.wav"
+    },
+    {
+      "filename": "battleentry_10301_1.wav",
+      "displayName": "Battle entry",
+      "catalogKey": "events.encounterStart",
+      "usedAutomatically": true,
+      "path": "assets/audio/voice-lines/don-lcb/battleentry_10301_1.wav"
+    },
+    {
+      "filename": "battle_kill_10301_1.wav",
+      "displayName": "Kill",
+      "catalogKey": "events.kill",
+      "usedAutomatically": true,
+      "path": "assets/audio/voice-lines/don-lcb/battle_kill_10301_1.wav"
+    },
+    {
+      "filename": "lobby_morning_10301_1.wav",
+      "displayName": "Lobby morning",
+      "catalogKey": "ambient.lobbyMorning",
+      "usedAutomatically": true,
+      "path": "assets/audio/voice-lines/don-lcb/lobby_morning_10301_1.wav"
+    },
+    {
+      "filename": "battle_clear_ex_10301_1.wav",
+      "displayName": "Extended battle clear",
+      "catalogKey": "events.victory",
+      "usedAutomatically": true,
+      "path": "assets/audio/voice-lines/don-lcb/battle_clear_ex_10301_1.wav"
+    },
+    {
+      "filename": "battle_clear_10301_1.wav",
+      "displayName": "Battle clear",
+      "catalogKey": "events.victory",
+      "usedAutomatically": true,
+      "path": "assets/audio/voice-lines/don-lcb/battle_clear_10301_1.wav"
+    },
+    {
+      "filename": "battle_defeat_10301_1.wav",
+      "displayName": "Battle defeat",
+      "catalogKey": "events.defeat",
+      "usedAutomatically": true,
+      "path": "assets/audio/voice-lines/don-lcb/battle_defeat_10301_1.wav"
+    },
+    {
+      "filename": "smalltalk_10301_1.wav",
+      "displayName": "Small talk variant 1",
+      "catalogKey": "ambient.smalltalk",
+      "usedAutomatically": true,
+      "path": "assets/audio/voice-lines/don-lcb/smalltalk_10301_1.wav"
+    },
+    {
+      "filename": "smalltalk_10301_3.wav",
+      "displayName": "Small talk variant 3",
+      "catalogKey": "ambient.smalltalk",
+      "usedAutomatically": true,
+      "path": "assets/audio/voice-lines/don-lcb/smalltalk_10301_3.wav"
+    },
+    {
+      "filename": "choice_success_n_10301_1.wav",
+      "displayName": "Choice success neutral",
+      "catalogKey": "events.choiceSuccessNeutral",
+      "usedAutomatically": false,
+      "path": "assets/audio/voice-lines/don-lcb/choice_success_n_10301_1.wav"
+    },
+    {
+      "filename": "battle_enemy_break_10301_1.wav",
+      "displayName": "Enemy break",
+      "catalogKey": "events.enemyBreak",
+      "usedAutomatically": false,
+      "path": "assets/audio/voice-lines/don-lcb/battle_enemy_break_10301_1.wav"
+    },
+    {
+      "filename": "battle_s3_10301_1_2.wav",
+      "displayName": "Skill 3 callout variant 2",
+      "catalogKey": "attacks.justice",
+      "usedAutomatically": true,
+      "path": "assets/audio/voice-lines/don-lcb/battle_s3_10301_1_2.wav"
+    },
+    {
+      "filename": "battle_s3_10301_1_1.wav",
+      "displayName": "Skill 3 callout variant 1",
+      "catalogKey": "attacks.justice",
+      "usedAutomatically": true,
+      "path": "assets/audio/voice-lines/don-lcb/battle_s3_10301_1_1.wav"
+    },
+    {
+      "filename": "battle_s3_10301_1_3.wav",
+      "displayName": "Skill 3 callout variant 3",
+      "catalogKey": "attacks.justice",
+      "usedAutomatically": true,
+      "path": "assets/audio/voice-lines/don-lcb/battle_s3_10301_1_3.wav"
+    }
+  ]
+}

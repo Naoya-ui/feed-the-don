@@ -1,0 +1,879 @@
+{
+  "schemaVersion": 1,
+  "catalogId": "raise-don-quixote-limbus-library",
+  "description": "Local, extensible Limbus content index. Don and Heathcliff assets supplied in this conversation have been imported with exact local paths; Drive folder contents remain pending until directly accessible.",
+  "records": [
+    {
+      "id": "identity.don-quixote.base",
+      "type": "identity",
+      "name": "Don Quixote — Base",
+      "characterId": "don",
+      "source": "existing-project",
+      "assetPaths": {
+        "idle": "assets/images/battle/don/base/idle.png",
+        "moving": "assets/images/battle/don/moving.png"
+      },
+      "skillIds": [
+        "skill.don.joust",
+        "skill.don.gallop",
+        "skill.don.justice"
+      ],
+      "tags": [
+        "don-quixote",
+        "base-identity"
+      ]
+    },
+    {
+      "id": "skill.don.joust",
+      "type": "skill",
+      "name": "Joust",
+      "characterId": "don",
+      "input": "J",
+      "moveId": "light",
+      "animationKey": "joust",
+      "voiceLineKey": "attacks.joust",
+      "source": "existing-project"
+    },
+    {
+      "id": "skill.don.gallop",
+      "type": "skill",
+      "name": "Gallop",
+      "characterId": "don",
+      "input": "K",
+      "moveId": "heavy",
+      "animationKey": "gallop",
+      "voiceLineKey": "attacks.gallop",
+      "source": "existing-project"
+    },
+    {
+      "id": "skill.don.justice",
+      "type": "skill",
+      "name": "Justice",
+      "characterId": "don",
+      "input": "U",
+      "moveId": "special",
+      "animationKey": "justice",
+      "voiceLineKey": "attacks.justice",
+      "source": "existing-project"
+    },
+    {
+      "id": "ego.don.la-sangre-de-sancho",
+      "type": "ego",
+      "name": "La Sangre de Sancho",
+      "characterId": "don",
+      "voiceLineKey": "attacks.laSangre",
+      "source": "existing-project"
+    },
+    {
+      "id": "voiceline.don.lcb.battle-select-10301-1-wav",
+      "type": "voiceLine",
+      "name": "Don Quixote — Battle Select",
+      "characterId": "don",
+      "voiceLineKey": "events.battleSelect",
+      "assetPaths": {
+        "audio": "assets/audio/voice-lines/don-lcb/battle_select_10301_1.wav"
+      },
+      "source": "user-provided-audio-archive",
+      "sourceArchive": "LCB Sinner",
+      "sourceFilename": "battle_select_10301_1.wav",
+      "tags": [
+        "don-quixote",
+        "lcb-sinner",
+        "voice-line"
+      ]
+    },
+    {
+      "id": "voiceline.don.lcb.formation-10301-1-wav",
+      "type": "voiceLine",
+      "name": "Don Quixote — Formation",
+      "characterId": "don",
+      "voiceLineKey": "events.formation",
+      "assetPaths": {
+        "audio": "assets/audio/voice-lines/don-lcb/formation_10301_1.wav"
+      },
+      "source": "user-provided-audio-archive",
+      "sourceArchive": "LCB Sinner",
+      "sourceFilename": "formation_10301_1.wav",
+      "tags": [
+        "don-quixote",
+        "lcb-sinner",
+        "voice-line"
+      ]
+    },
+    {
+      "id": "voiceline.don.lcb.battle-allydead-10301-1-wav",
+      "type": "voiceLine",
+      "name": "Don Quixote — Ally Dead",
+      "characterId": "don",
+      "voiceLineKey": "events.allyDead",
+      "assetPaths": {
+        "audio": "assets/audio/voice-lines/don-lcb/battle_allydead_10301_1.wav"
+      },
+      "source": "user-provided-audio-archive",
+      "sourceArchive": "LCB Sinner",
+      "sourceFilename": "battle_allydead_10301_1.wav",
+      "tags": [
+        "don-quixote",
+        "lcb-sinner",
+        "voice-line"
+      ]
+    },
+    {
+      "id": "voiceline.don.lcb.battle-s2-10301-1-wav",
+      "type": "voiceLine",
+      "name": "Don Quixote — Skill 2 Callout",
+      "characterId": "don",
+      "voiceLineKey": "attacks.gallop",
+      "assetPaths": {
+        "audio": "assets/audio/voice-lines/don-lcb/battle_s2_10301_1.wav"
+      },
+      "source": "user-provided-audio-archive",
+      "sourceArchive": "LCB Sinner",
+      "sourceFilename": "battle_s2_10301_1.wav",
+      "tags": [
+        "don-quixote",
+        "lcb-sinner",
+        "voice-line"
+      ]
+    },
+    {
+      "id": "voiceline.don.lcb.lobby-noon-10301-1-wav",
+      "type": "voiceLine",
+      "name": "Don Quixote — Lobby Noon",
+      "characterId": "don",
+      "voiceLineKey": "ambient.lobbyNoon",
+      "assetPaths": {
+        "audio": "assets/audio/voice-lines/don-lcb/lobby_noon_10301_1.wav"
+      },
+      "source": "user-provided-audio-archive",
+      "sourceArchive": "LCB Sinner",
+      "sourceFilename": "lobby_noon_10301_1.wav",
+      "tags": [
+        "don-quixote",
+        "lcb-sinner",
+        "voice-line"
+      ]
+    },
+    {
+      "id": "voiceline.don.lcb.lobby-night-10301-1-wav",
+      "type": "voiceLine",
+      "name": "Don Quixote — Lobby Night",
+      "characterId": "don",
+      "voiceLineKey": "ambient.lobbyNight",
+      "assetPaths": {
+        "audio": "assets/audio/voice-lines/don-lcb/lobby_night_10301_1.wav"
+      },
+      "source": "user-provided-audio-archive",
+      "sourceArchive": "LCB Sinner",
+      "sourceFilename": "lobby_night_10301_1.wav",
+      "tags": [
+        "don-quixote",
+        "lcb-sinner",
+        "voice-line"
+      ]
+    },
+    {
+      "id": "voiceline.don.lcb.battle-break-10301-1-wav",
+      "type": "voiceLine",
+      "name": "Don Quixote — Broken",
+      "characterId": "don",
+      "voiceLineKey": "events.broken",
+      "assetPaths": {
+        "audio": "assets/audio/voice-lines/don-lcb/battle_break_10301_1.wav"
+      },
+      "source": "user-provided-audio-archive",
+      "sourceArchive": "LCB Sinner",
+      "sourceFilename": "battle_break_10301_1.wav",
+      "tags": [
+        "don-quixote",
+        "lcb-sinner",
+        "voice-line"
+      ]
+    },
+    {
+      "id": "voiceline.don.lcb.get-10301-1-wav",
+      "type": "voiceLine",
+      "name": "Don Quixote — Obtained",
+      "characterId": "don",
+      "voiceLineKey": "events.get",
+      "assetPaths": {
+        "audio": "assets/audio/voice-lines/don-lcb/get_10301_1.wav"
+      },
+      "source": "user-provided-audio-archive",
+      "sourceArchive": "LCB Sinner",
+      "sourceFilename": "get_10301_1.wav",
+      "tags": [
+        "don-quixote",
+        "lcb-sinner",
+        "voice-line"
+      ]
+    },
+    {
+      "id": "voiceline.don.lcb.battle-endcommand-10301-1-wav",
+      "type": "voiceLine",
+      "name": "Don Quixote — End Command",
+      "characterId": "don",
+      "voiceLineKey": "events.endCommand",
+      "assetPaths": {
+        "audio": "assets/audio/voice-lines/don-lcb/battle_endcommand_10301_1.wav"
+      },
+      "source": "user-provided-audio-archive",
+      "sourceArchive": "LCB Sinner",
+      "sourceFilename": "battle_endcommand_10301_1.wav",
+      "tags": [
+        "don-quixote",
+        "lcb-sinner",
+        "voice-line"
+      ]
+    },
+    {
+      "id": "voiceline.don.lcb.neglect-10301-1-wav",
+      "type": "voiceLine",
+      "name": "Don Quixote — Neglect",
+      "characterId": "don",
+      "voiceLineKey": "ambient.neglect",
+      "assetPaths": {
+        "audio": "assets/audio/voice-lines/don-lcb/neglect_10301_1.wav"
+      },
+      "source": "user-provided-audio-archive",
+      "sourceArchive": "LCB Sinner",
+      "sourceFilename": "neglect_10301_1.wav",
+      "tags": [
+        "don-quixote",
+        "lcb-sinner",
+        "voice-line"
+      ]
+    },
+    {
+      "id": "voiceline.don.lcb.choice-success-p-10301-1-wav",
+      "type": "voiceLine",
+      "name": "Don Quixote — Choice Success Positive",
+      "characterId": "don",
+      "voiceLineKey": "events.choiceSuccessPositive",
+      "assetPaths": {
+        "audio": "assets/audio/voice-lines/don-lcb/choice_success_p_10301_1.wav"
+      },
+      "source": "user-provided-audio-archive",
+      "sourceArchive": "LCB Sinner",
+      "sourceFilename": "choice_success_p_10301_1.wav",
+      "tags": [
+        "don-quixote",
+        "lcb-sinner",
+        "voice-line"
+      ]
+    },
+    {
+      "id": "voiceline.don.lcb.smalltalk-10301-2-wav",
+      "type": "voiceLine",
+      "name": "Don Quixote — Small Talk 2",
+      "characterId": "don",
+      "voiceLineKey": "ambient.smalltalk",
+      "assetPaths": {
+        "audio": "assets/audio/voice-lines/don-lcb/smalltalk_10301_2.wav"
+      },
+      "source": "user-provided-audio-archive",
+      "sourceArchive": "LCB Sinner",
+      "sourceFilename": "smalltalk_10301_2.wav",
+      "tags": [
+        "don-quixote",
+        "lcb-sinner",
+        "voice-line"
+      ]
+    },
+    {
+      "id": "voiceline.don.lcb.choice-fail-n-10301-1-wav",
+      "type": "voiceLine",
+      "name": "Don Quixote — Choice Fail Neutral",
+      "characterId": "don",
+      "voiceLineKey": "events.choiceFailNeutral",
+      "assetPaths": {
+        "audio": "assets/audio/voice-lines/don-lcb/choice_fail_n_10301_1.wav"
+      },
+      "source": "user-provided-audio-archive",
+      "sourceArchive": "LCB Sinner",
+      "sourceFilename": "choice_fail_n_10301_1.wav",
+      "tags": [
+        "don-quixote",
+        "lcb-sinner",
+        "voice-line"
+      ]
+    },
+    {
+      "id": "voiceline.don.lcb.choice-fail-p-10301-1-wav",
+      "type": "voiceLine",
+      "name": "Don Quixote — Choice Fail Positive",
+      "characterId": "don",
+      "voiceLineKey": "events.choiceFailPositive",
+      "assetPaths": {
+        "audio": "assets/audio/voice-lines/don-lcb/choice_fail_p_10301_1.wav"
+      },
+      "source": "user-provided-audio-archive",
+      "sourceArchive": "LCB Sinner",
+      "sourceFilename": "choice_fail_p_10301_1.wav",
+      "tags": [
+        "don-quixote",
+        "lcb-sinner",
+        "voice-line"
+      ]
+    },
+    {
+      "id": "voiceline.don.lcb.battleentry-10301-1-wav",
+      "type": "voiceLine",
+      "name": "Don Quixote — Battle Entry",
+      "characterId": "don",
+      "voiceLineKey": "events.encounterStart",
+      "assetPaths": {
+        "audio": "assets/audio/voice-lines/don-lcb/battleentry_10301_1.wav"
+      },
+      "source": "user-provided-audio-archive",
+      "sourceArchive": "LCB Sinner",
+      "sourceFilename": "battleentry_10301_1.wav",
+      "tags": [
+        "don-quixote",
+        "lcb-sinner",
+        "voice-line"
+      ]
+    },
+    {
+      "id": "voiceline.don.lcb.battle-kill-10301-1-wav",
+      "type": "voiceLine",
+      "name": "Don Quixote — Battle Kill",
+      "characterId": "don",
+      "voiceLineKey": "events.kill",
+      "assetPaths": {
+        "audio": "assets/audio/voice-lines/don-lcb/battle_kill_10301_1.wav"
+      },
+      "source": "user-provided-audio-archive",
+      "sourceArchive": "LCB Sinner",
+      "sourceFilename": "battle_kill_10301_1.wav",
+      "tags": [
+        "don-quixote",
+        "lcb-sinner",
+        "voice-line"
+      ]
+    },
+    {
+      "id": "voiceline.don.lcb.lobby-morning-10301-1-wav",
+      "type": "voiceLine",
+      "name": "Don Quixote — Lobby Morning",
+      "characterId": "don",
+      "voiceLineKey": "ambient.lobbyMorning",
+      "assetPaths": {
+        "audio": "assets/audio/voice-lines/don-lcb/lobby_morning_10301_1.wav"
+      },
+      "source": "user-provided-audio-archive",
+      "sourceArchive": "LCB Sinner",
+      "sourceFilename": "lobby_morning_10301_1.wav",
+      "tags": [
+        "don-quixote",
+        "lcb-sinner",
+        "voice-line"
+      ]
+    },
+    {
+      "id": "voiceline.don.lcb.battle-clear-ex-10301-1-wav",
+      "type": "voiceLine",
+      "name": "Don Quixote — Battle Clear Extended",
+      "characterId": "don",
+      "voiceLineKey": "events.victory",
+      "assetPaths": {
+        "audio": "assets/audio/voice-lines/don-lcb/battle_clear_ex_10301_1.wav"
+      },
+      "source": "user-provided-audio-archive",
+      "sourceArchive": "LCB Sinner",
+      "sourceFilename": "battle_clear_ex_10301_1.wav",
+      "tags": [
+        "don-quixote",
+        "lcb-sinner",
+        "voice-line"
+      ]
+    },
+    {
+      "id": "voiceline.don.lcb.battle-clear-10301-1-wav",
+      "type": "voiceLine",
+      "name": "Don Quixote — Battle Clear",
+      "characterId": "don",
+      "voiceLineKey": "events.victory",
+      "assetPaths": {
+        "audio": "assets/audio/voice-lines/don-lcb/battle_clear_10301_1.wav"
+      },
+      "source": "user-provided-audio-archive",
+      "sourceArchive": "LCB Sinner",
+      "sourceFilename": "battle_clear_10301_1.wav",
+      "tags": [
+        "don-quixote",
+        "lcb-sinner",
+        "voice-line"
+      ]
+    },
+    {
+      "id": "voiceline.don.lcb.battle-defeat-10301-1-wav",
+      "type": "voiceLine",
+      "name": "Don Quixote — Battle Defeat",
+      "characterId": "don",
+      "voiceLineKey": "events.defeat",
+      "assetPaths": {
+        "audio": "assets/audio/voice-lines/don-lcb/battle_defeat_10301_1.wav"
+      },
+      "source": "user-provided-audio-archive",
+      "sourceArchive": "LCB Sinner",
+      "sourceFilename": "battle_defeat_10301_1.wav",
+      "tags": [
+        "don-quixote",
+        "lcb-sinner",
+        "voice-line"
+      ]
+    },
+    {
+      "id": "voiceline.don.lcb.smalltalk-10301-1-wav",
+      "type": "voiceLine",
+      "name": "Don Quixote — Small Talk 1",
+      "characterId": "don",
+      "voiceLineKey": "ambient.smalltalk",
+      "assetPaths": {
+        "audio": "assets/audio/voice-lines/don-lcb/smalltalk_10301_1.wav"
+      },
+      "source": "user-provided-audio-archive",
+      "sourceArchive": "LCB Sinner",
+      "sourceFilename": "smalltalk_10301_1.wav",
+      "tags": [
+        "don-quixote",
+        "lcb-sinner",
+        "voice-line"
+      ]
+    },
+    {
+      "id": "voiceline.don.lcb.smalltalk-10301-3-wav",
+      "type": "voiceLine",
+      "name": "Don Quixote — Small Talk 3",
+      "characterId": "don",
+      "voiceLineKey": "ambient.smalltalk",
+      "assetPaths": {
+        "audio": "assets/audio/voice-lines/don-lcb/smalltalk_10301_3.wav"
+      },
+      "source": "user-provided-audio-archive",
+      "sourceArchive": "LCB Sinner",
+      "sourceFilename": "smalltalk_10301_3.wav",
+      "tags": [
+        "don-quixote",
+        "lcb-sinner",
+        "voice-line"
+      ]
+    },
+    {
+      "id": "voiceline.don.lcb.choice-success-n-10301-1-wav",
+      "type": "voiceLine",
+      "name": "Don Quixote — Choice Success Neutral",
+      "characterId": "don",
+      "voiceLineKey": "events.choiceSuccessNeutral",
+      "assetPaths": {
+        "audio": "assets/audio/voice-lines/don-lcb/choice_success_n_10301_1.wav"
+      },
+      "source": "user-provided-audio-archive",
+      "sourceArchive": "LCB Sinner",
+      "sourceFilename": "choice_success_n_10301_1.wav",
+      "tags": [
+        "don-quixote",
+        "lcb-sinner",
+        "voice-line"
+      ]
+    },
+    {
+      "id": "voiceline.don.lcb.battle-enemy-break-10301-1-wav",
+      "type": "voiceLine",
+      "name": "Don Quixote — Enemy Break",
+      "characterId": "don",
+      "voiceLineKey": "events.enemyBreak",
+      "assetPaths": {
+        "audio": "assets/audio/voice-lines/don-lcb/battle_enemy_break_10301_1.wav"
+      },
+      "source": "user-provided-audio-archive",
+      "sourceArchive": "LCB Sinner",
+      "sourceFilename": "battle_enemy_break_10301_1.wav",
+      "tags": [
+        "don-quixote",
+        "lcb-sinner",
+        "voice-line"
+      ]
+    },
+    {
+      "id": "voiceline.don.lcb.battle-s3-10301-1-2-wav",
+      "type": "voiceLine",
+      "name": "Don Quixote — Skill 3 Callout — Variant 2",
+      "characterId": "don",
+      "voiceLineKey": "attacks.justice",
+      "assetPaths": {
+        "audio": "assets/audio/voice-lines/don-lcb/battle_s3_10301_1_2.wav"
+      },
+      "source": "user-provided-audio-archive",
+      "sourceArchive": "LCB Sinner",
+      "sourceFilename": "battle_s3_10301_1_2.wav",
+      "tags": [
+        "don-quixote",
+        "lcb-sinner",
+        "voice-line"
+      ]
+    },
+    {
+      "id": "voiceline.don.lcb.battle-s3-10301-1-1-wav",
+      "type": "voiceLine",
+      "name": "Don Quixote — Skill 3 Callout — Variant 1",
+      "characterId": "don",
+      "voiceLineKey": "attacks.justice",
+      "assetPaths": {
+        "audio": "assets/audio/voice-lines/don-lcb/battle_s3_10301_1_1.wav"
+      },
+      "source": "user-provided-audio-archive",
+      "sourceArchive": "LCB Sinner",
+      "sourceFilename": "battle_s3_10301_1_1.wav",
+      "tags": [
+        "don-quixote",
+        "lcb-sinner",
+        "voice-line"
+      ]
+    },
+    {
+      "id": "voiceline.don.lcb.battle-s3-10301-1-3-wav",
+      "type": "voiceLine",
+      "name": "Don Quixote — Skill 3 Callout — Variant 3",
+      "characterId": "don",
+      "voiceLineKey": "attacks.justice",
+      "assetPaths": {
+        "audio": "assets/audio/voice-lines/don-lcb/battle_s3_10301_1_3.wav"
+      },
+      "source": "user-provided-audio-archive",
+      "sourceArchive": "LCB Sinner",
+      "sourceFilename": "battle_s3_10301_1_3.wav",
+      "tags": [
+        "don-quixote",
+        "lcb-sinner",
+        "voice-line"
+      ]
+    },
+    {
+      "id": "identity.heathcliff.lcb-base",
+      "type": "identity",
+      "name": "Heathcliff — LCB Sinner Base",
+      "characterId": "heathcliff",
+      "source": "user-provided-archive",
+      "sourceArchive": "LCB Sinner-20261029T153416Z-1-001.zip",
+      "assetPaths": {
+        "portrait": "assets/images/characters/heathcliff.png",
+        "idle": "assets/images/battle/heathcliff/idle.png",
+        "moving": "assets/images/battle/heathcliff/moving.png",
+        "guard": "assets/images/battle/heathcliff/guard.png",
+        "hurt": "assets/images/battle/heathcliff/hurt.png",
+        "egoCutin": "assets/images/battle/heathcliff/ego-cutin.png"
+      },
+      "skillIds": [
+        "skill.heathcliff.bat-strike",
+        "skill.heathcliff.ruthless-swing",
+        "ego.heathcliff.ego-burst"
+      ],
+      "tags": [
+        "heathcliff",
+        "lcb-sinner",
+        "base-identity"
+      ]
+    },
+    {
+      "id": "skill.heathcliff.bat-strike",
+      "type": "skill",
+      "name": "Bat Strike",
+      "characterId": "heathcliff",
+      "moveId": "heathcliffSkill1",
+      "animationKey": "skill1",
+      "voiceLineKey": "attacks.skill1",
+      "source": "project-runtime-design",
+      "input": "AI"
+    },
+    {
+      "id": "skill.heathcliff.ruthless-swing",
+      "type": "skill",
+      "name": "Ruthless Swing",
+      "characterId": "heathcliff",
+      "moveId": "heathcliffSkill2",
+      "animationKey": "skill2",
+      "voiceLineKey": "attacks.skill2",
+      "source": "project-runtime-design",
+      "input": "AI"
+    },
+    {
+      "id": "ego.heathcliff.ego-burst",
+      "type": "ego",
+      "name": "Heathcliff E.G.O Burst",
+      "characterId": "heathcliff",
+      "moveId": "heathcliffEgo",
+      "animationKey": "ego",
+      "gauge": {
+        "max": 100,
+        "gainOnHit": 18,
+        "gainOnBlock": 11,
+        "gainWhenHit": 13,
+        "gainWhenBlocked": 8
+      },
+      "activation": "Automatically used by the Heathcliff AI when the gauge is full and Don is within activation range.",
+      "voiceLineKey": "attacks.ego",
+      "source": "project-runtime-design"
+    },
+    {
+      "id": "voiceline.heathcliff.lcb.040-heathclif-base-skill1-a-v1",
+      "type": "voiceLine",
+      "name": "Heathcliff — 040_heathclif_base_skill1_a_v1",
+      "characterId": "heathcliff",
+      "voiceLineKey": "attacks.skill1",
+      "assetPaths": {
+        "audio": "assets/audio/heathcliff/040_heathclif_base_skill1_a_v1.wav"
+      },
+      "source": "user-provided-audio-archive",
+      "sourceArchive": "LCB Sinner-20261029T154101Z-1-001.zip",
+      "sourceFilename": "040_heathclif_base_skill1_a_v1.wav",
+      "tags": [
+        "heathcliff",
+        "lcb-sinner",
+        "voice-line"
+      ]
+    },
+    {
+      "id": "voiceline.heathcliff.lcb.041-heathclif-base-skill2-a-v1",
+      "type": "voiceLine",
+      "name": "Heathcliff — 041_heathclif_base_skill2_a_v1",
+      "characterId": "heathcliff",
+      "voiceLineKey": "attacks.skill2",
+      "assetPaths": {
+        "audio": "assets/audio/heathcliff/041_heathclif_base_skill2_a_v1.wav"
+      },
+      "source": "user-provided-audio-archive",
+      "sourceArchive": "LCB Sinner-20261029T154101Z-1-001.zip",
+      "sourceFilename": "041_heathclif_base_skill2_a_v1.wav",
+      "tags": [
+        "heathcliff",
+        "lcb-sinner",
+        "voice-line"
+      ]
+    },
+    {
+      "id": "voiceline.heathcliff.lcb.042-heathclif-base-skill3-1-a-v1",
+      "type": "voiceLine",
+      "name": "Heathcliff — 042_heathclif_base_skill3-1_a_v1",
+      "characterId": "heathcliff",
+      "voiceLineKey": "attacks.ego",
+      "assetPaths": {
+        "audio": "assets/audio/heathcliff/042_heathclif_base_skill3-1_a_v1.wav"
+      },
+      "source": "user-provided-audio-archive",
+      "sourceArchive": "LCB Sinner-20261029T154101Z-1-001.zip",
+      "sourceFilename": "042_heathclif_base_skill3-1_a_v1.wav",
+      "tags": [
+        "heathcliff",
+        "lcb-sinner",
+        "voice-line"
+      ]
+    },
+    {
+      "id": "voiceline.heathcliff.lcb.042-heathclif-base-skill3-2-a-v1",
+      "type": "voiceLine",
+      "name": "Heathcliff — 042_heathclif_base_skill3-2_a_v1",
+      "characterId": "heathcliff",
+      "voiceLineKey": "attacks.ego",
+      "assetPaths": {
+        "audio": "assets/audio/heathcliff/042_heathclif_base_skill3-2_a_v1.wav"
+      },
+      "source": "user-provided-audio-archive",
+      "sourceArchive": "LCB Sinner-20261029T154101Z-1-001.zip",
+      "sourceFilename": "042_heathclif_base_skill3-2_a_v1.wav",
+      "tags": [
+        "heathcliff",
+        "lcb-sinner",
+        "voice-line"
+      ]
+    },
+    {
+      "id": "voiceline.heathcliff.lcb.042-heathclif-base-skill3-3-a-v1",
+      "type": "voiceLine",
+      "name": "Heathcliff — 042_heathclif_base_skill3-3_a_v1",
+      "characterId": "heathcliff",
+      "voiceLineKey": "attacks.ego",
+      "assetPaths": {
+        "audio": "assets/audio/heathcliff/042_heathclif_base_skill3-3_a_v1.wav"
+      },
+      "source": "user-provided-audio-archive",
+      "sourceArchive": "LCB Sinner-20261029T154101Z-1-001.zip",
+      "sourceFilename": "042_heathclif_base_skill3-3_a_v1.wav",
+      "tags": [
+        "heathcliff",
+        "lcb-sinner",
+        "voice-line"
+      ]
+    },
+    {
+      "id": "voiceline.heathcliff.lcb.042-heathclif-base-skill3-4-a-v1",
+      "type": "voiceLine",
+      "name": "Heathcliff — 042_heathclif_base_skill3-4_a_v1",
+      "characterId": "heathcliff",
+      "voiceLineKey": "attacks.ego",
+      "assetPaths": {
+        "audio": "assets/audio/heathcliff/042_heathclif_base_skill3-4_a_v1.wav"
+      },
+      "source": "user-provided-audio-archive",
+      "sourceArchive": "LCB Sinner-20261029T154101Z-1-001.zip",
+      "sourceFilename": "042_heathclif_base_skill3-4_a_v1.wav",
+      "tags": [
+        "heathcliff",
+        "lcb-sinner",
+        "voice-line"
+      ]
+    },
+    {
+      "id": "voiceline.heathcliff.lcb.042-heathclif-base-skill3-5-a-v1",
+      "type": "voiceLine",
+      "name": "Heathcliff — 042_heathclif_base_skill3-5_a_v1",
+      "characterId": "heathcliff",
+      "voiceLineKey": "attacks.ego",
+      "assetPaths": {
+        "audio": "assets/audio/heathcliff/042_heathclif_base_skill3-5_a_v1.wav"
+      },
+      "source": "user-provided-audio-archive",
+      "sourceArchive": "LCB Sinner-20261029T154101Z-1-001.zip",
+      "sourceFilename": "042_heathclif_base_skill3-5_a_v1.wav",
+      "tags": [
+        "heathcliff",
+        "lcb-sinner",
+        "voice-line"
+      ]
+    },
+    {
+      "id": "voiceline.heathcliff.lcb.042-heathclif-base-skill3-6-a-v1",
+      "type": "voiceLine",
+      "name": "Heathcliff — 042_heathclif_base_skill3-6_a_v1",
+      "characterId": "heathcliff",
+      "voiceLineKey": "attacks.ego",
+      "assetPaths": {
+        "audio": "assets/audio/heathcliff/042_heathclif_base_skill3-6_a_v1.wav"
+      },
+      "source": "user-provided-audio-archive",
+      "sourceArchive": "LCB Sinner-20261029T154101Z-1-001.zip",
+      "sourceFilename": "042_heathclif_base_skill3-6_a_v1.wav",
+      "tags": [
+        "heathcliff",
+        "lcb-sinner",
+        "voice-line"
+      ]
+    },
+    {
+      "id": "voiceline.heathcliff.lcb.heathcliff-1-1",
+      "type": "voiceLine",
+      "name": "Heathcliff — heathcliff_1_1",
+      "characterId": "heathcliff",
+      "voiceLineKey": "attacks.unassigned",
+      "assetPaths": {
+        "audio": "assets/audio/heathcliff/heathcliff_1_1.wav"
+      },
+      "source": "user-provided-audio-archive",
+      "sourceArchive": "LCB Sinner-20261029T154101Z-1-001.zip",
+      "sourceFilename": "heathcliff_1_1.wav",
+      "tags": [
+        "heathcliff",
+        "lcb-sinner",
+        "voice-line"
+      ]
+    },
+    {
+      "id": "voiceline.heathcliff.lcb.heathcliff-2-1-1",
+      "type": "voiceLine",
+      "name": "Heathcliff — heathcliff_2_1-1",
+      "characterId": "heathcliff",
+      "voiceLineKey": "attacks.unassigned",
+      "assetPaths": {
+        "audio": "assets/audio/heathcliff/heathcliff_2_1-1.wav"
+      },
+      "source": "user-provided-audio-archive",
+      "sourceArchive": "LCB Sinner-20261029T154101Z-1-001.zip",
+      "sourceFilename": "heathcliff_2_1-1.wav",
+      "tags": [
+        "heathcliff",
+        "lcb-sinner",
+        "voice-line"
+      ]
+    },
+    {
+      "id": "voiceline.heathcliff.lcb.heathcliff-2-2",
+      "type": "voiceLine",
+      "name": "Heathcliff — heathcliff_2_2",
+      "characterId": "heathcliff",
+      "voiceLineKey": "attacks.unassigned",
+      "assetPaths": {
+        "audio": "assets/audio/heathcliff/heathcliff_2_2.wav"
+      },
+      "source": "user-provided-audio-archive",
+      "sourceArchive": "LCB Sinner-20261029T154101Z-1-001.zip",
+      "sourceFilename": "heathcliff_2_2.wav",
+      "tags": [
+        "heathcliff",
+        "lcb-sinner",
+        "voice-line"
+      ]
+    },
+    {
+      "id": "voiceline.heathcliff.lcb.heathcliff-3-2",
+      "type": "voiceLine",
+      "name": "Heathcliff — heathcliff_3_2",
+      "characterId": "heathcliff",
+      "voiceLineKey": "attacks.ego",
+      "assetPaths": {
+        "audio": "assets/audio/heathcliff/heathcliff_3_2.wav"
+      },
+      "source": "user-provided-audio-archive",
+      "sourceArchive": "LCB Sinner-20261029T154101Z-1-001.zip",
+      "sourceFilename": "heathcliff_3_2.wav",
+      "tags": [
+        "heathcliff",
+        "lcb-sinner",
+        "voice-line"
+      ]
+    },
+    {
+      "id": "voiceline.heathcliff.lcb.heathcliff-3-3",
+      "type": "voiceLine",
+      "name": "Heathcliff — heathcliff_3_3",
+      "characterId": "heathcliff",
+      "voiceLineKey": "attacks.ego",
+      "assetPaths": {
+        "audio": "assets/audio/heathcliff/heathcliff_3_3.wav"
+      },
+      "source": "user-provided-audio-archive",
+      "sourceArchive": "LCB Sinner-20261029T154101Z-1-001.zip",
+      "sourceFilename": "heathcliff_3_3.wav",
+      "tags": [
+        "heathcliff",
+        "lcb-sinner",
+        "voice-line"
+      ]
+    },
+    {
+      "id": "voiceline.heathcliff.lcb.heathcliff-3-5",
+      "type": "voiceLine",
+      "name": "Heathcliff — heathcliff_3_5",
+      "characterId": "heathcliff",
+      "voiceLineKey": "attacks.ego",
+      "assetPaths": {
+        "audio": "assets/audio/heathcliff/heathcliff_3_5.wav"
+      },
+      "source": "user-provided-audio-archive",
+      "sourceArchive": "LCB Sinner-20261029T154101Z-1-001.zip",
+      "sourceFilename": "heathcliff_3_5.wav",
+      "tags": [
+        "heathcliff",
+        "lcb-sinner",
+        "voice-line"
+      ]
+    }
+  ],
+  "sourceStatus": {
+    "voiceLinesDriveFolder": "pending-local-import",
+    "organizedAssetsDriveFolder": "pending-local-import",
+    "note": "Drive folder contents remain pending until directly accessible; Heathcliff assets and voice lines attached in this conversation are registered using exact filenames.",
+    "heathcliffAssets": "imported-from-user-uploaded-archives",
+    "heathcliffVoiceLines": "imported-with-explicit-skill-mappings"
+  }
+}
