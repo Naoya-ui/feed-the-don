@@ -1,71 +1,75 @@
-# Raise Don Quixote — Web v60
+# NAoya-style Hub
 
-V60 keeps the stable modular/New Game fixes from v59 and adds the requested Wolf balance pass, battle loading scene, and the latest supplied Limbus-style UI assets.
+Clean-room UI recreation based on the layout and interaction pattern of the provided reference website.
 
-## V60 changes
+Open `index.html` in a browser or run:
+`python3 -m http.server 8000`
 
-- **Wolf boss buffed**
-  - HP: **780**
-  - Stagger thresholds: **585 / 390 / 195**
-  - Higher clash power across Wolf's six-skill rotation
-  - Starts with **2 Poise Potency / 3 Poise Count** and **Damage Up 1**
-  - Gains a second action from Turn 4 onward
-  - Wolf Speed range is now 4–7
-  - Goal: the duel lasts long enough for Don's E.G.O tutorial/unlock at Turn 4.
+Then visit `http://localhost:8000`.
 
-- **Rupture removed from Don**
-  - Joust no longer applies Rupture.
-  - Don's Player status container no longer includes Rupture.
-  - Don's status HUD no longer renders Rupture.
-  - Enemy attacks no longer consume Rupture from Don.
-
-- **Battle loading scene**
-  - Plays before both bandit and Wolf battles.
-  - Wolf loading copy warns that E.G.O synchronization becomes available at Turn 4.
-  - Uses supplied gear imagery plus Slash / Pierce / Blunt icons.
-
-- **New supplied UI assets integrated**
-  - Slash / Pierce / Blunt icons on skill cards, enemy intents and enemy inspector.
-  - Supplied action-slot frame on Don's command slots.
-  - Supplied unit-gauge ring around Don's manager portrait.
-  - Supplied START gear replaces the generic CSS-only start circle.
-  - Supplied E.G.O / targeting ring highlights selected enemy intents and the E.G.O button.
-  - Supplied golden Stagger effect appears over Staggered enemies.
-  - Supplied handwritten number sheet is cropped into 0–9 sprites and used for damage popups.
-  - Supplied Operation UI art is used as an intent-frame backing.
-
-## E.G.O
-
-- La Sangre de Sancho is still unlocked from **Turn 4** in the Wolf encounter.
-- 12 base power, +11 Coin Power, 1 Coin.
-- Costs 20 SP when used.
-- Heads Hit inflicts 4 Bleed.
-- Sprite sequence + sound cues + screen shake + blood slash remain from v59.
-
-## Validation before ZIP
-
-- Every JS file syntax-checked.
-- `main.js` syntax-checked as an ES module.
-- HTML IDs checked against `DOMManager.js`: no missing IDs.
-- Literal local asset references scanned: no missing files.
-- Mock-DOM **NEW GAME** smoke test passed.
-- Mock-DOM **Wolf battle loading scene** test reached 100%, used the Wolf title, and closed cleanly.
-- Static assertions verify Wolf HP / thresholds and confirm Don's skill/player files contain no Rupture.
-- ZIP integrity is tested after packaging.
+Customize the text in `index.html`, colors/layout in `style.css`, and behavior in `script.js`.
 
 
-## v61 UI pass
-- Replaced hand-drawn WAVE/TURN HUD with crops from the supplied BattleUI_UpperLeft_1 sheet.
-- WIN RATE is above DAMAGE.
-- Enemy intent uses the supplied horizontal-bar action slot art.
-- START glows only when the current chain is fully targeted.
-- Don E.G.O control moved to the bottom-left and unlocks on Turn 4 with tutorial guidance.
-- Added compact Don HP and -45..+45 Sanity gauges under the E.G.O control.
+Gallery v8: the Gallery tab uses a vanilla JavaScript 3D depth carousel with drag/swipe, keyboard arrows, navigation buttons, auto-advance, dots, and click-to-preview.
+
+## Dark Glitch Hover v11
+Keeps the existing dark Naoya Hub design and replaces purple hover glow on interactive UI with a CSS-only cyan/red glitch effect. No Persona 1 restyle was applied.
+
+## v12 — Video-inspired glass UI
+Dark atmospheric background + translucent glass dashboard cards inspired by the supplied screen recording. Existing Discord status, Facebook link, Depth Carousel, full Notepad, AFK rolling counter, Elastic Sliders, audio player and glitch hover are retained.
 
 
-## v64
-- Fixed WAVE/TURN frame placement and clipping.
-- Removed the Roman numeral rail from markup.
-- Fixed hostile SVG arrow fill bug that created a giant red band.
-- Centered Don HP/SP panel under Don.
-- Made E.G.O unlock robust at Turn 4, restores SP to +45, auto-opens tutorial once, and keeps the E.G.O button clickable.
+## v13 — Video background + refined glitch
+- Uses `assets/video/hu-tao-background.mp4` as a fullscreen looping background.
+- Source video was converted to browser-friendly H.264 1080p/30fps for smoother web playback.
+- Hover glitch now uses short RGB split/slice/scan bursts instead of constant shaking.
+- Existing Discord, Facebook, Depth Carousel, Elastic Slider, AFK Counter and Notepad features remain unchanged.
+
+Performance v14: background video is optimized to 720p/24fps, fullscreen CSS video filters are removed, glass blur is reduced, and the background video pauses while the tab is hidden.
+
+
+V15: Added a draggable/clickable profile-sidebar handle. On desktop it collapses to a compact icon rail; on tablet/mobile it tucks the profile drawer away. Main page content is constrained and centered for better focus.
+
+## v16 mobile/performance pass
+- Mobile/data-saver/low-memory devices use the Hu Tao poster instead of decoding the background video.
+- Desktop keeps the animated background.
+- Heavy backdrop blur is reduced to 0–2px on content cards.
+- Touch devices disable glitch hover animation.
+- Gallery carousel autoplay runs only while Gallery/Artwork is actually visible, and is disabled on touch/mobile.
+- Discord presence polling reduced to every 45 seconds.
+- Mobile UI now uses a compact profile header, collapsible profile/BGM area, centered content, and fixed bottom navigation dock.
+
+
+## v17 light-mode optimization
+- Rebalanced light mode so the Hu Tao background remains visible instead of being washed out by white overlays.
+- Replaced flat white surfaces with cool translucent gray glass using no additional backdrop blur.
+- Improved typography, border, nested-card and social-link contrast.
+- Reworked light-mode navigation/hover to use neutral surfaces plus the existing cyan/red glitch accent instead of purple wash.
+- Added dedicated light-mode styling for the v16 mobile bottom navigation, topbar and compact profile/BGM header.
+- Kept the v16 performance rules: no extra continuous animations or expensive blur passes.
+
+Discord Avatar v18: the loader/profile avatar now syncs from the existing Lanyard Discord presence response for user 869568513864519690. The local avatar remains as fallback if Discord data is unavailable.
+
+
+Game Project link update: the Limbus Feel the Don card opens https://feed-the-don.vercel.app/ in a new tab. The game itself is not bundled into this Naoya Hub package.
+
+Game Project v20: the live URL stays on the left side of the Limbus Feel the Don card while the PLAY button is pinned to the far-right corner of the same action row. No game source is embedded.
+
+## v21 — Interactive companions
+
+Open the **✦ PET** button in the top bar to choose Don Quixote or Naoya Plush.
+- Click/tap the character for a random Vietnamese line.
+- Drag with a mouse or finger to place the character. Dragging pauses roaming; turn **Tự đi dạo** on to resume.
+- After 25 seconds without activity the character rests; after 60 seconds it sleeps. Interacting with the page wakes it.
+- Character, visibility, roaming preference and dragged position are saved on this browser when local storage is available.
+- **Về góc màn hình** resets its position; **Chơi cùng Don** opens the existing game in another tab.
+- Mobile uses a smaller character above the navigation dock. Reduced-motion preferences disable breathing/hopping and automatic roaming. Hidden browser tabs pause roaming.
+- The source pictures are still images: movement uses CSS translation/rotation, not a frame-by-frame walk sprite.
+
+Files added: `companion.js`, `companion.css`, `assets/companions/don.png`, `assets/companions/plush.png`. Only two imports were added to `index.html`. Existing music, notes, gallery and AFK logic were left intact.
+
+To install this update into an existing checkout, copy those four new files/folders and the updated `index.html`. Keep your existing Git repository. Or use the whole extracted folder as your static website source. No build step or added npm packages are required. Deploy via your existing Vercel workflow. This archive itself has not been deployed.
+
+To customize: edit `characters` near the top of `companion.js` for labels, image paths and dialogue. CSS controls display sizes (116px desktop / 88px mobile). Idle thresholds are 25000 and 60000 milliseconds in `tick()`.
+
+Artwork: the two user-supplied images were processed with the built-in ImageGen tool to create transparent-background assets. Generation can make small visual differences from the originals. Edit instructions: remove only the white background (and floor shadow for the plush); preserve character identity, silhouette, colors, face, pose, clothing and linework/fabric texture; no new elements or text; one full character centered with a small transparent margin.

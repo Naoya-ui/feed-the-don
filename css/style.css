@@ -4863,3 +4863,9 @@ body.lc4-targeting #battleScreen .lc4-intent{filter:drop-shadow(0 0 8px rgba(255
   #battleScreen .lc4-don-plate{width:158px!important;bottom:8px!important;}
 }
 #battleScreen .lc61-ego-button[hidden]{display:none!important;}
+
+/* Wandering Wolf: readable combat states, using the existing badge layout. */
+.lc4-status.exhaust, .lc4-status.offenseDown { color: #c9b4ef; border-color: #8c70ad; }
+.lc4-status.panic { color: #ffacac; border-color: #ba6161; }
+.lc4-status.predator, .lc4-status.fragile { color: #e9c979; border-color: #a08043; }
+.wolf-spec-summary { font-size: 11px; line-height: 1.55; color: #d5c8aa; padding: 8px 0; }

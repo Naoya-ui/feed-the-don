@@ -1,0 +1,8 @@
+{
+  "name": "raise-don-quixote-web",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node tests/combat-core-smoke.mjs && node tests/wolf-boss-spec.mjs && node --experimental-vm-modules tests/combat-integration.mjs"
+  }
+}

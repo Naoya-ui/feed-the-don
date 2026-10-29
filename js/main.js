@@ -2,13 +2,17 @@ import { DOM as els } from "./ui/DOMManager.js";
 import { Helpers } from "./utils/Helpers.js";
 import { Player } from "./core/Player.js";
 import { BattleSystem } from "./core/BattleSystem.js";
+import { WolfBossSystem } from "./core/WolfBossSystem.js";
+import { SkillSystem } from "./core/SkillSystem.js";
+import { ClashSystem } from "./core/ClashSystem.js";
+import { EnemyAI } from "./core/EnemyAI.js";
 import { assets, battleDonSprites, battleDonAnimations, battleUiIcons, itemDB, characters } from "./data/characters.js";
 import { enemySprites, enemyBattleSkills, enemySkillText, enemySkillEffects, wolfBoss, wolfBattleSkills, wolfSkillRotation } from "./data/enemies.js";
 import { donBattleSkills, keywordDescriptions } from "./data/skills.js";
 import { travelTime, wolfIntroDialogue } from "./data/story.js";
 
   const SAVE_KEY = "raise-don-quixote-html-save-v1";
-  const BUILD_TAG = "v64-wave-arrow-ego-final";
+  const BUILD_TAG = "v69-wandering-wolf-web";
 
   const battleImagePreload = [
     ...Object.values(battleDonSprites),
@@ -648,13 +652,7 @@ import { travelTime, wolfIntroDialogue } from "./data/story.js";
   function makeWolfBattleState() {
     const wolf = mkBattleEnemy(0, wolfBoss.name, wolfBoss.maxHp || 360, "WOLF", "wolf");
     wolf.thresholds = [...(wolfBoss.staggerThresholds || [230, 115])];
-    wolf.sp = 10;
-    wolf.nextHaste = 0;
-    wolf.haste = 0;
-    wolf.damageUp = 1;
-    wolf.poisePotency = 2;
-    wolf.poiseCount = 3;
-    wolf.mirageUsed = false;
+    WolfBossSystem.initialize(wolf);
     return {
       active: true,
       encounter: "wolf",
@@ -776,12 +774,13 @@ import { travelTime, wolfIntroDialogue } from "./data/story.js";
     const living = aliveEnemies();
     const actionCount = Math.min(2 + battle.turn, 6);
     battle.donSlots = [];
+    const [minDonSpeed, maxDonSpeed] = WolfBossSystem.playerSpeedRange(battle.don);
     for (let i = 0; i < actionCount; i += 1) {
       const a = skillDeck[(battle.deckCursor + i * 2) % skillDeck.length];
       const b = skillDeck[(battle.deckCursor + i * 2 + 1) % skillDeck.length];
       battle.donSlots.push({
-        index: i,
-        speed: randomInt(3, 6) + battle.don.haste,
+        index: i, unitId: battle.don.id,
+        speed: randomInt(minDonSpeed, maxDonSpeed) + battle.don.haste,
         options: [a, b],
         selected: 0,
         defense: false,
@@ -790,25 +789,9 @@ import { travelTime, wolfIntroDialogue } from "./data/story.js";
     }
     battle.deckCursor = (battle.deckCursor + actionCount * 2) % skillDeck.length;
 
-    battle.enemySlots = [];
-    living.forEach((enemy, i) => {
-      const isWolf = enemy.spriteKey === "wolf";
-      const isBossLike = enemy.role === "LEADER" || enemy.role === "ELITE" || isWolf;
-      const count = isWolf ? Math.min(1 + Math.floor((battle.turn - 1) / 2), 3) : (isBossLike && battle.turn >= 3 ? 2 : 1);
-      const pool = getEnemySkillPool(enemy);
-      for (let n = 0; n < count; n += 1) {
-        const rotationIndex = isWolf ? ((battle.turn - 1) + n) % pool.length : (battle.turn + enemy.id + n - 1) % pool.length;
-        const skill = pool[rotationIndex];
-        const minSpeed = isWolf ? 4 : enemy.role === "ELITE" ? 4 : enemy.id === 2 ? 3 : 2;
-        const maxSpeed = isWolf ? 8 : enemy.role === "ELITE" ? 7 : enemy.id === 2 ? 7 : 6;
-        battle.enemySlots.push({
-          id: `e${enemy.id}-${n}`,
-          enemyId: enemy.id,
-          speed: randomInt(minSpeed, maxSpeed) + (enemy.haste || 0),
-          skill,
-          consumed: false,
-        });
-      }
+    battle.enemySlots = EnemyAI.buildIntents({
+      enemies: living, turn: battle.turn, getSkillPool: getEnemySkillPool,
+      randomInt, donSlots: battle.donSlots,
     });
 
     // No automatic targeting at turn start. Drag manually or use WIN RATE / DAMAGE.
@@ -839,22 +822,21 @@ import { travelTime, wolfIntroDialogue } from "./data/story.js";
     return false;
   }
 
-  function getSkillCoinPower(skill, unitSpeed) {
-    return skill.key === "justice" && unitSpeed >= 10 ? skill.coinPower + 2 : skill.coinPower;
+  function getSkillCoinPower(skill, unitSpeed, unit = battle?.don) {
+    return SkillSystem.getCoinPower(skill, 1, { speed: unitSpeed, unit });
   }
 
   function maxSkillPower(skill, slotSpeed = 0, attackUp = 0) {
-    return skill.base + (skill.defense ? 0 : attackUp) + getSkillCoinPower(skill, slotSpeed) * skill.coins;
+    return SkillSystem.maxPower(skill, skill.coins, { speed: slotSpeed, attackUp, unit: battle?.don });
   }
 
   function expectedSkillPower(skill, slotSpeed = 0, sp = 0, attackUp = 0) {
-    const chance = headsChance(sp) / 100;
-    return skill.base + (skill.defense ? 0 : attackUp) + skill.coins * getSkillCoinPower(skill, slotSpeed) * chance;
+    return SkillSystem.basePower(skill, { attackUp, unit: battle?.don }) + skill.coins * getSkillCoinPower(skill, slotSpeed) * headsChance(sp) / 100;
   }
 
   function enemyMaxPower(enemySlot) {
     if (!enemySlot) return 0;
-    return enemySlot.skill.base + enemySlot.skill.coinPower * enemySlot.skill.coins;
+    return SkillSystem.maxPower(enemySlot.skill, enemySlot.skill.coins, { speed: enemySlot.speed, unit: enemyById(enemySlot.enemyId) });
   }
 
   function clashForecast(slot) {
@@ -864,8 +846,11 @@ import { travelTime, wolfIntroDialogue } from "./data/story.js";
     const enemy = enemyById(enemySlot.enemyId);
     if (!enemy || enemy.hp <= 0 || enemy.staggered || enemySlot.consumed)
       return { label: "UNOPPOSED", cls: "unopposed", delta: 99 };
+    if (enemySlot.skill.counter) return { label: 'COUNTER', cls: 'neutral', delta: 0 };
+    if (WolfBossSystem.isWolf(enemy)) WolfBossSystem.updatePassive(enemy, aliveEnemies());
+    const bonuses = skill.defense ? 0 : ClashSystem.bonus(battle.don, enemy, skill, enemySlot.skill) - ClashSystem.bonus(enemy, battle.don, enemySlot.skill, skill);
     const clashPenalty = enemySlot.skill.opponentClashPowerModifier || 0;
-    const delta = maxSkillPower(skill, slot.speed, battle.don.attackUp) + clashPenalty - enemyMaxPower(enemySlot);
+    const delta = maxSkillPower(skill, slot.speed, battle.don.attackUp) + clashPenalty + bonuses - enemyMaxPower(enemySlot);
     if (skill.defense) {
       if (delta >= 4) return { label: "SAFE EVADE", cls: "favored", delta };
       if (delta >= 0) return { label: "EVEN EVADE", cls: "neutral", delta };
@@ -908,6 +893,9 @@ import { travelTime, wolfIntroDialogue } from "./data/story.js";
 
   function donStatusBadgesHTML() {
     const badges = [];
+    if (battle.don.exhaust) badges.push(statusBadgeHTML('exhaust', `EXHAUST ${battle.don.exhaust}`, '', 'Each stack lowers Max Speed by 1. Reaching 3 queues Offense Level -3 next turn. Cap 5; Turn End decay 1.'));
+    if (battle.don.exhaustPending) badges.push(statusBadgeHTML('exhaust', 'EXHAUST NEXT TURN'));
+    if (battle.don.offenseLevelDown) badges.push(statusBadgeHTML('offenseDown', `OFFENSE -${battle.don.offenseLevelDown}`));
     if (battle.don.haste) badges.push(statusBadgeHTML('haste', `HASTE ${battle.don.haste}`));
     if (battle.don.attackUp) badges.push(statusBadgeHTML('attackUp', `ATK+ ${battle.don.attackUp}`));
     if (battle.don.statuses?.bleed?.count > 0) badges.push(statusBadgeHTML('bleed', `BLEED ${battle.don.statuses.bleed.potency}/${battle.don.statuses.bleed.count}`));
@@ -919,6 +907,13 @@ import { travelTime, wolfIntroDialogue } from "./data/story.js";
 
   function enemyStatusBadgesHTML(enemy) {
     const badges = [];
+    if (WolfBossSystem.isWolf(enemy)) {
+      badges.push(statusBadgeHTML('sanity', `SP ${enemy.sp >= 0 ? '+' : ''}${enemy.sp}`));
+      if (enemy.panicActive) badges.push(statusBadgeHTML('panic', 'PANIC · BASE -2'));
+      else if (enemy.panicPending) badges.push(statusBadgeHTML('panic', 'PANIC NEXT TURN'));
+      if (enemy.clashPowerUp) badges.push(statusBadgeHTML('predator', 'CLASH +1', '', 'Lone Predator: active while Wolf has no living allies.'));
+      if (enemy.fragile) badges.push(statusBadgeHTML('fragile', `FRAGILE ${enemy.fragile}`));
+    }
     if (enemy.staggered) badges.push(statusBadgeHTML('stagger', 'STAGGER'));
     if (enemy.bleedCount > 0) badges.push(statusBadgeHTML('bleed', `BLEED ${enemy.bleedPotency}/${enemy.bleedCount}`));
     if (enemy.ruptureCount > 0) badges.push(statusBadgeHTML('rupture', `RUPTURE ${enemy.rupturePotency}/${enemy.ruptureCount}`));
@@ -1060,9 +1055,13 @@ import { travelTime, wolfIntroDialogue } from "./data/story.js";
       btn.dataset.intentId = slot.id;
       btn.dataset.enemyId = String(enemy.id);
 
+      const liveBase = SkillSystem.basePower(slot.skill, { unit: enemy });
+      const liveCoin = getSkillCoinPower(slot.skill, slot.speed, enemy);
+      const targetLabel = slot.skill.counter ? 'COUNTER' : (slot.targetSlotIndices || []).map(i => `#${i + 1}`).join(', ');
+      btn.title = `${slot.skill.affinity || slot.skill.type} · Target ${targetLabel}`;
       const intentGlyph = intentTypeGlyph(slot.skill.type, !!slot.skill.defense);
       const intentTypeImage = slot.skill.defense ? '' : damageTypeMarkup(slot.skill.type, 'lc60-intent-type-icon');
-      btn.innerHTML = `<span class="lc4-intent-speed">${slot.speed}</span><span class="lc4-intent-frame"></span><span class="lc34-intent-sigil">${intentTypeImage}<span class="lc34-intent-glyph">${intentGlyph}</span></span>${slot.skill.art ? `<img class="lc4-intent-art" src="${escapeHTML(slot.skill.art)}" alt="" />` : ""}<span class="lc32-intent-type">${escapeHTML((slot.skill.type || "ATK").toUpperCase())}</span><span class="lc32-intent-coin">${slot.skill.coins || 1} COIN</span><b title="${escapeHTML(slot.skill.name)}">${escapeHTML(slot.skill.name)}</b><small>${slot.skill.base} + ${slot.skill.coinPower}</small>`;
+      btn.innerHTML = `<span class="lc4-intent-speed">${slot.speed}</span><span class="lc4-intent-frame"></span><span class="lc34-intent-sigil">${intentTypeImage}<span class="lc34-intent-glyph">${intentGlyph}</span></span>${slot.skill.art ? `<img class="lc4-intent-art" src="${escapeHTML(slot.skill.art)}" alt="" />` : ""}<span class="lc32-intent-type">${escapeHTML((slot.skill.type || "ATK").toUpperCase())}</span><span class="lc32-intent-coin">${slot.skill.coins || 1} COIN</span><b title="${escapeHTML(slot.skill.name)}">${escapeHTML(slot.skill.name)}</b><small>${liveBase} + ${liveCoin} · ${escapeHTML(targetLabel)}</small>`;
 
       if (battle.selectedEnemyId === enemy.id) btn.classList.add("is-selected");
 
@@ -1128,7 +1127,9 @@ import { travelTime, wolfIntroDialogue } from "./data/story.js";
     const skill = enemySlot.skill;
     const enemy = enemyById(enemySlot.enemyId);
     battle.selectedEnemyId = enemy?.id ?? battle.selectedEnemyId;
-    const typeLabel = (skill.type || "Attack").toUpperCase();
+    const liveBase = SkillSystem.basePower(skill, { unit: enemy });
+    const liveCoin = getSkillCoinPower(skill, enemySlot.speed, enemy);
+    const typeLabel = `${skill.affinity ? skill.affinity + ' / ' : ''}${skill.counter ? 'COUNTER / ' : ''}${skill.type || 'Attack'}`.toUpperCase();
     const desc = enemySkillText[skill.key] || `A ${skill.type} attack. Clash it, redirect it, or leave it unopposed at your own risk.`;
     const effects = enemySkillEffects[skill.key] || [];
     const effectMarkup = effects.length
@@ -1153,17 +1154,18 @@ import { travelTime, wolfIntroDialogue } from "./data/story.js";
       els.enemyInspectorType.className = `lc10-chip lc60-type-chip ${intentTypeClass(skill.type)}`;
     }
     if (els.enemyInspectorCoins) els.enemyInspectorCoins.textContent = `${skill.coins} COIN${skill.coins > 1 ? "S" : ""}`;
-    els.enemyInspectorPower.textContent = `${skill.base} + ${skill.coinPower} · ${skill.coins} Coin${skill.coins > 1 ? "s" : ""}`;
+    els.enemyInspectorPower.textContent = `${liveBase} + ${liveCoin} · ${skill.coins} Coin${skill.coins > 1 ? "s" : ""}`;
     els.enemyInspectorText.innerHTML = `
       <div class="lc21-inspector-body">
         <div class="lc21-inspector-formula">
-          <span class="lc21-power-num">${skill.base}</span>
+          <span class="lc21-power-num">${liveBase}</span>
           <span class="lc21-op">+</span>
-          <span class="lc21-power-num is-coin">${skill.coinPower}</span>
+          <span class="lc21-power-num is-coin">${liveCoin}</span>
           <span class="lc21-op">·</span>
           <span class="lc21-coin-count">${skill.coins} Coin${skill.coins > 1 ? "s" : ""}</span>
         </div>
         <div class="lc21-inspector-desc">${escapeHTML(desc)}</div>
+        ${WolfBossSystem.isWolf(enemy) ? `<div class="wolf-spec-summary">HP ${enemy.hp}/${enemy.maxHp} · SP ${enemy.sp} · Speed 4–7<br>Offense ${enemy.offenseLevel} · Defense ${enemy.defenseLevel}<br>Slash ×0.5 · Pierce ×1 · Blunt ×2<br>${Object.entries(enemy.resistances.sin).map(([sin, value]) => `${sin} ×${value}`).join(' · ')}<br>Targets: ${(enemySlot.targetSlotIndices || []).map(i => `#${i + 1}`).join(', ') || 'Counter'}</div>` : ''}
         ${skill.keywords?.includes("Bleed") ? `<div class="lc21-bleed-row">${bleedMarkup("status on hit")}</div>` : ""}
         <div class="lc21-section">
           <div class="lc21-section-title">SKILL EFFECTS</div>
@@ -1789,18 +1791,9 @@ import { travelTime, wolfIntroDialogue } from "./data/story.js";
     resolve();
   }
 
-  function rollCoins(skill, activeCoins, slotSpeed, isEnemy = false) {
-    const chance = isEnemy ? 50 : headsChance(battle.don.sp);
-    const flips = [];
-    let heads = 0;
-    for (let i = 0; i < activeCoins; i += 1) {
-      const head = randomInt(1, 100) <= chance;
-      flips.push(head);
-      if (head) heads += 1;
-    }
-    const attackBonus = isEnemy || skill.defense ? 0 : battle.don.attackUp;
-    const coinPower = isEnemy ? skill.coinPower : getSkillCoinPower(skill, slotSpeed);
-    return { power: skill.base + attackBonus + heads * coinPower, flips, heads };
+  function rollCoins(skill, activeCoins, slotSpeed, isEnemy = false, unit = null) {
+    unit = unit || (isEnemy ? null : battle.don);
+    return SkillSystem.roll(skill, activeCoins, { unit, speed: slotSpeed, attackUp: isEnemy ? 0 : battle.don.attackUp });
   }
 
   function renderClashCoins(container, flips, activeCoins) {
@@ -1945,12 +1938,13 @@ import { travelTime, wolfIntroDialogue } from "./data/story.js";
     }
     if (enemy.bleedCount <= 0) enemy.bleedPotency = 0;
     enemy.hp = Math.max(0, enemy.hp - total);
+    checkStagger(enemy);
     return total;
   }
 
   function checkStagger(enemy) {
     if (!enemy || enemy.hp <= 0) return false;
-    if (enemy.spriteKey === "wolf" && !enemy.mirageUsed && wolfBattleSkills.mirageSlash.cannotBeStaggeredUntilSkillUsed) return false;
+    if (WolfBossSystem.isWolf(enemy)) return WolfBossSystem.checkStagger(enemy);
     const next = enemy.thresholds[enemy.staggerLevel];
     if (next !== undefined && enemy.hp <= next) {
       enemy.staggerLevel += 1;
@@ -1961,16 +1955,29 @@ import { travelTime, wolfIntroDialogue } from "./data/story.js";
     return false;
   }
 
+  function clearClashPresentation() {
+    els.clashOverlay.hidden = true;
+    if (els.battleMatchup) els.battleMatchup.hidden = true;
+    els.battleScreen.classList.remove("lc35-clash-cinematic", "lc40-clash-hud", "lc40-clash-rush", "lc42-clash-rush");
+    els.clashOverlay.classList.remove("is-active", "is-don-win", "is-enemy-win", "is-tie", "lc39-impact-beat");
+    els.battleScreen.classList.remove("lc35-clash-cinematic", "lc40-clash-hud", "lc40-clash-rush", "lc42-clash-rush");
+    setBattleDonState("idle");
+  }
+
   async function resolveClash(slot, enemySlot) {
+    try {
     const skill = getSelectedSkill(slot);
     const enemy = enemyById(enemySlot.enemyId);
     if (!enemy) return { winner: "don", remainingDon: skill.coins, remainingEnemy: 0 };
     setBattleDonState("guard");
     let donCoins = skill.coins;
     let enemyCoins = enemySlot.skill.coins;
-    if (enemySlot.skill.key === "mirageSlash") enemy.mirageUsed = true;
+    if (WolfBossSystem.isWolf(enemy)) {
+      WolfBossSystem.markSkillUsed(enemy, enemySlot.skill);
+      WolfBossSystem.updatePassive(enemy, aliveEnemies());
+    }
     let rounds = 0;
-    while (donCoins > 0 && enemyCoins > 0 && rounds < 9) {
+    while (donCoins > 0 && enemyCoins > 0 && rounds < 99) {
       rounds += 1;
       const donBleedDamage = BattleSystem.consumeBleed(battle.don, donCoins);
       if (donBleedDamage) {
@@ -1991,19 +1998,17 @@ import { travelTime, wolfIntroDialogue } from "./data/story.js";
           return { winner: "don", remainingDon: donCoins, remainingEnemy: 0 };
         }
       }
-      const dr = rollCoins(skill, donCoins, slot.speed, false);
-      const er = rollCoins(enemySlot.skill, enemyCoins, enemySlot.speed, true);
-      if (enemySlot.skill.opponentClashPowerModifier) {
-        dr.power += enemySlot.skill.opponentClashPowerModifier;
-      }
+      if (enemy.staggered) return { winner: 'don', remainingDon: donCoins, remainingEnemy: 0 };
+      const round = ClashSystem.resolveRound({
+        playerSkill: skill, enemySkill: enemySlot.skill, playerCoins: donCoins, enemyCoins,
+        playerRoll: rollCoins(skill, donCoins, slot.speed),
+        enemyRoll: rollCoins(enemySlot.skill, enemyCoins, enemySlot.speed, true, enemy),
+        playerUnit: battle.don, enemyUnit: enemy,
+      });
+      const dr = round.playerRoll;
+      const er = round.enemyRoll;
       await showClash(slot, enemySlot, donCoins, enemyCoins, dr, er, rounds === 1 ? "CLASH" : `CLASH ${rounds}`);
       if (dr.power > er.power) {
-        if (enemySlot.skill.key === "mirageSlash" && enemySlot.skill.onClashLose?.effect === "selfStagger") {
-          enemy.staggered = true;
-          enemy.staggerTurns = 1;
-          enemy.mirageUsed = true;
-          combatLog("WOLF STAGGER — MIRAGE SLASH LOST", "stagger");
-        }
         enemyCoins -= 1;
         spawnCoinBurst(enemyCoins + 1);
         spawnClashImpact("don");
@@ -2041,13 +2046,10 @@ import { travelTime, wolfIntroDialogue } from "./data/story.js";
       }
       await delay(390);
     }
-    els.clashOverlay.hidden = true;
-    if (els.battleMatchup) els.battleMatchup.hidden = true;
-    els.battleScreen.classList.remove("lc35-clash-cinematic", "lc40-clash-hud", "lc40-clash-rush", "lc42-clash-rush");
-    els.clashOverlay.classList.remove("is-active", "is-don-win", "is-enemy-win", "is-tie", "lc39-impact-beat");
-    els.battleScreen.classList.remove("lc35-clash-cinematic", "lc40-clash-hud", "lc40-clash-rush", "lc42-clash-rush");
-    setBattleDonState("idle");
-    return { winner: donCoins > 0 ? "don" : "enemy", remainingDon: Math.max(0, donCoins), remainingEnemy: Math.max(0, enemyCoins) };
+    return { winner: donCoins > 0 && enemyCoins > 0 ? "tie" : donCoins > 0 ? "don" : "enemy", remainingDon: Math.max(0, donCoins), remainingEnemy: Math.max(0, enemyCoins) };
+    } finally {
+      clearClashPresentation();
+    }
   }
 
   function enemyElement(enemyId) {
@@ -2334,7 +2336,7 @@ import { travelTime, wolfIntroDialogue } from "./data/story.js";
       const variance = skill.key === 'laSangre' ? 0 : randomInt(1, 4);
       const raw = skill.base + roll.heads * getSkillCoinPower(skill, slot.speed) + battle.don.attackUp + variance;
       let damage = Math.max(1, Math.round(raw * (crit ? 1.35 : 1)));
-      if (enemy.staggered) damage = Math.round(damage * 2);
+      damage = Math.max(0, Math.round(damage * BattleSystem.resistanceMultiplier(enemy, skill) * BattleSystem.staggerMultiplier(enemy)));
       enemy.hp = Math.max(0, enemy.hp - damage);
       total += damage;
       battle.totalDamage += damage;
@@ -2381,15 +2383,15 @@ import { travelTime, wolfIntroDialogue } from "./data/story.js";
     }
     if (skill.key === "joust" && clashWon) battle.don.nextHaste += 2;
     if (skill.key === "gallop" && clashWon) battle.don.nextAttackUp += 2;
+    const counter = battle.enemySlots.find(intent => intent.enemyId === enemy.id && intent.skill.counter && !intent.consumed);
+    if (counter) {
+      counter.consumed = true;
+      if (enemy.hp > 0 && !enemy.staggered && battle.don.hp > 0) await enemyAttack(counter, counter.skill.coins);
+    }
     return total;
   }
 
   function getWolfCriticalBonusPercent(enemy, skill, poisePotencyAtUse = 0) {
-    if (!enemy || enemy.spriteKey !== "wolf") return 20;
-    if (skill?.key === "mirageSlash") return 200;
-    if (skill?.key === "indigoBlade") {
-      return 100 + Math.min(50, Math.max(0, poisePotencyAtUse) * 2);
-    }
     return 20;
   }
 
@@ -2402,10 +2404,49 @@ import { travelTime, wolfIntroDialogue } from "./data/story.js";
     return results;
   }
 
+  async function wolfAttack(enemySlot, remainingCoins = null) {
+    const enemy = enemyById(enemySlot.enemyId);
+    const skill = enemySlot.skill;
+    const coins = Math.max(0, remainingCoins ?? skill.coins);
+    enemySlot.consumed = true;
+    if (!enemy || enemy.hp <= 0 || enemy.staggered || battle.don.hp <= 0 || !coins) return;
+    if (skill.key === 'mirageSlash' && !WolfBossSystem.canUseMirage(enemy)) return;
+    WolfBossSystem.markSkillUsed(enemy, skill);
+    const targets = EnemyAI.uniqueTargetUnits(enemySlot.targetSlotIndices || [], battle.donSlots, [battle.don]);
+    if (!targets.length) return;
+    setEnemyPose(enemy.id, skill.key, 920);
+    await delay(400);
+    let power = SkillSystem.basePower(skill, { unit: enemy });
+    for (let coin = 0; coin < coins; coin += 1) {
+      const bleedDamage = applyBleedTick(enemy, 1);
+      if (bleedDamage) await floatDamage(enemy.id, bleedDamage, 'bleed');
+      if (enemy.hp <= 0 || enemy.staggered || battle.don.hp <= 0) break;
+      const roll = SkillSystem.roll(skill, 1, { unit: enemy, speed: enemySlot.speed });
+      if (roll.heads) power += getSkillCoinPower(skill, enemySlot.speed, enemy);
+      for (const target of targets) {
+        if (target.hp <= 0) continue;
+        const damage = Math.max(1, Math.round(power * BattleSystem.resistanceMultiplier(target, skill) * BattleSystem.staggerMultiplier(target)));
+        const result = target.takeDamage(damage);
+        target.staggered = target.isStaggered;
+        if (skill.onHitExhaust) WolfBossSystem.addExhaust(target, skill.onHitExhaust);
+        combatLog(`${skill.name} · COIN ${coin + 1} · ${result.damage}${skill.onHitExhaust ? ` · EXHAUST ${target.exhaust}` : ''}`, 'lose');
+        setBattleDonState(target.hp <= 0 ? 'dead' : 'hurt');
+        await floatDamage('don', result.damage, 'lose');
+      }
+      renderBattleHUD();
+      renderEnemies();
+    }
+    if (battle.don.hp > 0) setBattleDonState('idle');
+  }
+
   async function enemyAttack(enemySlot, remainingCoins = null) {
     const enemy = enemyById(enemySlot.enemyId);
     if (!enemy || enemy.hp <= 0 || enemy.staggered || battle.don.hp <= 0) {
       enemySlot.consumed = true;
+      return;
+    }
+    if (WolfBossSystem.isWolf(enemy)) {
+      await wolfAttack(enemySlot, remainingCoins);
       return;
     }
     const coins = Math.max(1, remainingCoins ?? enemySlot.skill.coins);
@@ -2428,7 +2469,7 @@ import { travelTime, wolfIntroDialogue } from "./data/story.js";
       { transform: "translate(0,0)" },
     ], { duration: 820, easing: "cubic-bezier(.2,.8,.2,1)" });
     await delay(400);
-    const roll = rollCoins(enemySlot.skill, coins, enemySlot.speed, true);
+    const roll = rollCoins(enemySlot.skill, coins, enemySlot.speed, true, enemy);
     const damageScale = enemySlot.skill.defense ? 0.38 : 0.72;
     const poisePotencyAtUse = enemy.poisePotency || 0;
     const poiseChanceAtUse = BattleSystem.poiseCritChance(enemy);
@@ -2439,34 +2480,10 @@ import { travelTime, wolfIntroDialogue } from "./data/story.js";
     const critMultiplier = 1 + (critBonusPercent / 100) * critShare;
     let damage = Math.max(1, Math.round((roll.power + (enemy.damageUp || 0) + randomInt(1, 4)) * damageScale * critMultiplier));
     let damageResult = { staggerTriggered: false };
-    const isWolf = enemy.spriteKey === "wolf";
-    if (isWolf && enemySlot.skill.key === "azureRend") {
-      const spDamage = Math.max(3, Math.round(damage * 0.8));
-      battle.don.changeSp(-spDamage);
-      damage = 0;
-      combatLog(`AZURE REND  -${spDamage} SP`, "lose");
-    } else {
-      damageResult = battle.don.takeDamage(damage);
-      battle.don.staggered = battle.don.isStaggered;
-    }
+    damageResult = battle.don.takeDamage(damage);
+    battle.don.staggered = battle.don.isStaggered;
     for (const effect of enemySlot.skill.applyOnHit || []) {
       BattleSystem.addStatus(battle.don, effect.type, effect.potency, effect.count);
-    }
-    if (isWolf) {
-      if (enemySlot.skill.key === "sever") {
-        enemy.nextHaste = (enemy.nextHaste || 0) + 1;
-        BattleSystem.gainPoise(enemy, 2, 4);
-        combatLog(`WOLF GAINS POISE ${enemy.poisePotency}/${enemy.poiseCount}`, "neutral");
-      }
-      if (enemySlot.skill.key === "indigoBlade") enemy.sp = clamp((enemy.sp || 0) + 10, -45, 45);
-      if (enemySlot.skill.key === "shimmeringCleave") {
-        enemy.sp = clamp((enemy.sp || 0) + 6, -45, 45);
-        enemy.damageUp = Math.min(6, (enemy.damageUp || 0) + 2);
-        // Coin II grants Poise Potency on hit; its Heads Hit grants +4 Count.
-        const coinTwoHead = !!roll.flips?.[Math.max(0, roll.flips.length - 1)];
-        BattleSystem.gainPoise(enemy, 4, coinTwoHead ? 4 : 0);
-        combatLog(`WOLF GAINS POISE ${enemy.poisePotency}/${enemy.poiseCount}${coinTwoHead ? " (HEADS +4 COUNT)" : ""}`, "neutral");
-      }
     }
     if (damageResult.staggerTriggered) combatLog("DON STAGGER", "stagger");
     if (criticalCount > 0) {
@@ -2478,12 +2495,8 @@ import { travelTime, wolfIntroDialogue } from "./data/story.js";
     els.battleScreen.classList.remove("hit-shake");
     void els.battleScreen.offsetWidth;
     els.battleScreen.classList.add("hit-shake");
-    if (!(enemy.spriteKey === "wolf" && enemySlot.skill.key === "azureRend")) {
-      combatLog(`${enemySlot.skill.name}  ${damage}`, "lose");
-      await floatDamage("don", damage, criticalCount > 0 ? "critical" : "lose");
-    } else {
-      await floatDamage("don", "SP", "lose");
-    }
+    combatLog(`${enemySlot.skill.name}  ${damage}`, "lose");
+    await floatDamage("don", damage, criticalCount > 0 ? "critical" : "lose");
     renderBattleHUD();
     await delay(260);
     if (battle.don.hp > 0) setBattleDonState("idle");
@@ -2492,10 +2505,11 @@ import { travelTime, wolfIntroDialogue } from "./data/story.js";
   async function resolveEvade(slot, enemySlot) {
     const enemy = enemyById(enemySlot.enemyId);
     if (!enemy || enemy.hp <= 0) { enemySlot.consumed = true; return; }
+    if (WolfBossSystem.isWolf(enemy)) WolfBossSystem.markSkillUsed(enemy, enemySlot.skill);
     const skill = donBattleSkills.evade;
     await playSkillCutin(skill);
     const dr = rollCoins(skill, 1, slot.speed, false);
-    const er = rollCoins(enemySlot.skill, enemySlot.skill.coins, enemySlot.speed, true);
+    const er = rollCoins(enemySlot.skill, enemySlot.skill.coins, enemySlot.speed, true, enemy);
     await showClash(slot, enemySlot, 1, enemySlot.skill.coins, dr, er, "EVADE");
     if (dr.power >= er.power) {
       enemySlot.consumed = true;
@@ -2534,6 +2548,7 @@ import { travelTime, wolfIntroDialogue } from "./data/story.js";
     const skill = getSelectedSkill(slot);
 
     if (battle.don.staggered || battle.don.isStaggered) {
+      if (enemySlot.skill.counter) return;
       combatLog("DON STAGGERED — UNOPPOSED", "stagger");
       await enemyAttack(enemySlot, enemySlot.skill.coins);
       battle.don.staggered = false;
@@ -2548,6 +2563,11 @@ import { travelTime, wolfIntroDialogue } from "./data/story.js";
       return;
     }
 
+    if (enemySlot.skill.counter) {
+      if (!skill.defense) await donAttack(slot, skill, enemy, skill.coins, false);
+      return;
+    }
+
     if (skill.defense) {
       await resolveEvade(slot, enemySlot);
       return;
@@ -2555,6 +2575,8 @@ import { travelTime, wolfIntroDialogue } from "./data/story.js";
 
     const result = await resolveClash(slot, enemySlot);
     enemySlot.consumed = true;
+    if (result.winner === 'tie') { combatLog('CLASH DRAW — BOTH ACTIONS END', 'neutral'); return; }
+    if (WolfBossSystem.isWolf(enemy)) WolfBossSystem.onClashEnd(enemy, enemySlot.skill, result.winner === 'enemy');
     if (result.winner === "don") {
       battle.don.changeSp(10);
       await donAttack(slot, skill, enemy, Math.max(1, result.remainingDon), true);
@@ -2585,7 +2607,7 @@ import { travelTime, wolfIntroDialogue } from "./data/story.js";
     const processed = new Set();
     const queue = [
       ...battle.donSlots.map((slot) => ({ type: "don", speed: slot.speed, slot })),
-      ...battle.enemySlots.map((slot) => ({ type: "enemy", speed: slot.speed, slot })),
+      ...battle.enemySlots.filter(slot => !slot.skill.counter).map((slot) => ({ type: "enemy", speed: slot.speed, slot })),
     ].sort((a, b) => b.speed - a.speed || (a.type === "don" ? -1 : 1));
 
     for (const action of queue) {
@@ -2619,6 +2641,7 @@ import { travelTime, wolfIntroDialogue } from "./data/story.js";
   }
 
   function applyTurnStartBuffs() {
+    WolfBossSystem.applyExhaustTurnStart(battle.don);
     battle.don.haste = battle.don.nextHaste;
     battle.don.nextHaste = 0;
     battle.don.attackUp = battle.don.nextAttackUp;
@@ -2626,6 +2649,7 @@ import { travelTime, wolfIntroDialogue } from "./data/story.js";
     battle.enemies.forEach((enemy) => {
       if (enemy.staggerTurns <= 0) enemy.staggered = false;
       if (enemy.spriteKey === "wolf") {
+        WolfBossSystem.beginTurn(enemy, aliveEnemies());
         enemy.haste = enemy.nextHaste || 0;
         enemy.nextHaste = 0;
       }
@@ -2635,7 +2659,9 @@ import { travelTime, wolfIntroDialogue } from "./data/story.js";
   }
 
   function finishTurn() {
+    WolfBossSystem.decayExhaustTurnEnd(battle.don);
     battle.enemies.forEach((enemy) => {
+      if (WolfBossSystem.isWolf(enemy)) WolfBossSystem.endTurn(enemy);
       if (enemy.staggerTurns > 0) enemy.staggerTurns -= 1;
       if ((enemy.poiseCount || 0) > 0) {
         const before = enemy.poiseCount;
@@ -2721,7 +2747,7 @@ import { travelTime, wolfIntroDialogue } from "./data/story.js";
     if (els.battleLoadingArea) els.battleLoadingArea.textContent = wolf ? "FOREST // DEEP SECTOR" : "FOREST // OUTSKIRTS";
     if (els.battleLoadingTitle) els.battleLoadingTitle.textContent = wolf ? "WOLF // BOSS ENCOUNTER" : "BACKSTREET AMBUSH";
     if (els.battleLoadingHint) els.battleLoadingHint.textContent = wolf
-      ? "High threat detected. E.G.O synchronization available from Turn 4."
+      ? "Wolf: 1200 HP · Exhaust lowers Max Speed · E.G.O from Turn 4."
       : "Reading enemy actions and synchronizing combat slots...";
     if (els.battleLoadingBar) els.battleLoadingBar.style.width = "0%";
     if (els.battleLoadingPercent) els.battleLoadingPercent.textContent = "00%";

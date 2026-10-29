@@ -43,7 +43,7 @@ export const keywordDescriptions = {
   'Multi-Coin':'This skill attacks with multiple Coins. Winning a Clash preserves more Coins for the follow-up attack.',
   'Clash Win':'Activates after Don wins the Clash.',
   'Heads Hit':'Activates only on a Heads result for that Coin.',
-  'E.G.O':'A manifested E.G.O attack. It unlocks after Turn 5 in the Wolf fight and costs SP when used.',
+  'E.G.O':'A manifested E.G.O attack. It unlocks from Turn 4 in the Wolf fight and costs SP when used.',
   Defense:'A defensive action that competes against the incoming enemy action instead of dealing normal damage.',
   Evade:'If the defensive roll wins, Don avoids the incoming hit and takes no damage from that action.',
 };
