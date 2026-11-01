@@ -38,7 +38,13 @@ export class Player {
       this.staggerTurns = 1;
       staggerTriggered = true;
     }
-    return { oldHp, newHp: this.hp, damage: oldHp - this.hp, staggerTriggered, staggerThreshold: staggerTriggered ? threshold : null };
+    return {
+      oldHp,
+      newHp: this.hp,
+      damage: oldHp - this.hp,
+      staggerTriggered,
+      staggerThreshold: staggerTriggered ? threshold : null,
+    };
   }
 
   heal(amount) {

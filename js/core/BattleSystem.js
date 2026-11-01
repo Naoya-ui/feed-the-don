@@ -36,7 +36,6 @@ export class BattleSystem {
     return damage;
   }
 
-
   static gainPoise(target, potency = 0, count = 0) {
     if (!target) return { potency: 0, count: 0 };
     target.poisePotency = Math.max(0, (target.poisePotency || 0) + Math.max(0, potency));
@@ -64,7 +63,8 @@ export class BattleSystem {
   }
 
   static decayPoise(target, amount = 1) {
-    if (!target || (target.poiseCount || 0) <= 0) return { potency: target?.poisePotency || 0, count: 0 };
+    if (!target || (target.poiseCount || 0) <= 0)
+      return { potency: target?.poisePotency || 0, count: 0 };
     target.poiseCount = Math.max(0, target.poiseCount - Math.max(0, amount));
     if (target.poiseCount <= 0) {
       target.poiseCount = 0;

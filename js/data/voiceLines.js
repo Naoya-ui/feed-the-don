@@ -17,13 +17,9 @@ export const VOICE_LINE_CATALOG = Object.freeze({
     attacks: Object.freeze({
       // Joust / Skill 1 did not have a battle_s1 clip in the supplied archive.
       // Keep the existing local callout rather than mis-assigning another voice line.
-      joust: Object.freeze([
-        'assets/audio/don-skills/028_donquixote_base_skill1_a_v1.wav',
-      ]),
+      joust: Object.freeze(['assets/audio/don-skills/028_donquixote_base_skill1_a_v1.wav']),
       // K / Gallop is the LCB Sinner Skill 2 voice callout.
-      gallop: Object.freeze([
-        `${DON_VOICE}battle_s2_10301_1.wav`,
-      ]),
+      gallop: Object.freeze([`${DON_VOICE}battle_s2_10301_1.wav`]),
       // U / Justice cycles the three supplied Skill 3 vocal cues.
       justice: Object.freeze([
         `${DON_VOICE}battle_s3_10301_1_1.wav`,
@@ -84,7 +80,11 @@ export const VOICE_LINE_CATALOG = Object.freeze({
         'assets/audio/enemy/003_backstreet_mob_skill3_a_v1.wav',
       ]),
     }),
-    events: Object.freeze({ hurt: Object.freeze([]), block: Object.freeze([]), evade: Object.freeze([]) }),
+    events: Object.freeze({
+      hurt: Object.freeze([]),
+      block: Object.freeze([]),
+      evade: Object.freeze([]),
+    }),
   }),
   wolf: Object.freeze({
     displayName: 'Wolf Boss',
@@ -92,7 +92,11 @@ export const VOICE_LINE_CATALOG = Object.freeze({
       wolfSlash: Object.freeze(['assets/audio/enemy/004_backstreet_boss_skill2_a_v1.wav']),
       enemyHeavy: Object.freeze(['assets/audio/enemy/004_backstreet_boss_skill2_a_v1.wav']),
     }),
-    events: Object.freeze({ hurt: Object.freeze([]), block: Object.freeze([]), evade: Object.freeze([]) }),
+    events: Object.freeze({
+      hurt: Object.freeze([]),
+      block: Object.freeze([]),
+      evade: Object.freeze([]),
+    }),
   }),
   heathcliff: Object.freeze({
     displayName: 'Heathcliff',
@@ -120,6 +124,11 @@ export const VOICE_LINE_CATALOG = Object.freeze({
       ]),
     }),
     // These files are indexed for future use but not auto-played until their exact event is known.
-    events: Object.freeze({ referenceUnassigned: Object.freeze([]), hurt: Object.freeze([]), block: Object.freeze([]), evade: Object.freeze([]) }),
+    events: Object.freeze({
+      referenceUnassigned: Object.freeze([]),
+      hurt: Object.freeze([]),
+      block: Object.freeze([]),
+      evade: Object.freeze([]),
+    }),
   }),
 });

@@ -4,7 +4,12 @@
  * rewind or cut off another currently playing line. Missing/empty buckets are no-ops.
  */
 export class VoiceLineManager {
-  constructor({ catalog = {}, volumeProvider = () => 1, enabledProvider = () => true, audioFactory = null } = {}) {
+  constructor({
+    catalog = {},
+    volumeProvider = () => 1,
+    enabledProvider = () => true,
+    audioFactory = null,
+  } = {}) {
     this.catalog = catalog;
     this.volumeProvider = volumeProvider;
     this.enabledProvider = enabledProvider;
@@ -39,7 +44,9 @@ export class VoiceLineManager {
     }
   }
 
-  setEnabled(enabled) { this.enabled = !!enabled; }
+  setEnabled(enabled) {
+    this.enabled = !!enabled;
+  }
 
   playAttack(characterId, skillId, options = {}) {
     return this.#playBucket(characterId, 'attacks', skillId, options);
@@ -59,7 +66,7 @@ export class VoiceLineManager {
     const character = this.catalog?.[characterId];
     const bucket = character?.[bucketName]?.[key];
     const clips = (Array.isArray(bucket) ? bucket : bucket?.clips || [])
-      .map((clip) => typeof clip === 'string' ? { src: clip } : clip)
+      .map((clip) => (typeof clip === 'string' ? { src: clip } : clip))
       .filter((clip) => clip?.src && typeof clip.src === 'string');
     if (!clips.length) return false;
 
@@ -100,10 +107,17 @@ export class VoiceLineManager {
       audio = template.cloneNode(true);
     } catch {
       // Some minimal Audio mocks do not expose cloneNode; create a fresh element instead.
-      try { audio = this.audioFactory(src); } catch { return false; }
+      try {
+        audio = this.audioFactory(src);
+      } catch {
+        return false;
+      }
     }
     const master = Number(this.volumeProvider());
-    audio.volume = Math.max(0, Math.min(1, (Number.isFinite(master) ? master : 1) * Number(volume)));
+    audio.volume = Math.max(
+      0,
+      Math.min(1, (Number.isFinite(master) ? master : 1) * Number(volume))
+    );
     audio.playbackRate = Math.max(0.5, Math.min(1.5, Number(playbackRate) || 1));
     this.active.add(audio);
     const cleanup = () => this.active.delete(audio);
@@ -121,7 +135,12 @@ export class VoiceLineManager {
 
   stopAll() {
     for (const audio of this.active) {
-      try { audio.pause?.(); audio.currentTime = 0; } catch { /* ignore cleanup errors */ }
+      try {
+        audio.pause?.();
+        audio.currentTime = 0;
+      } catch {
+        /* ignore cleanup errors */
+      }
     }
     this.active.clear();
   }

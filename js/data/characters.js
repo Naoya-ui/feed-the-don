@@ -1,6 +1,9 @@
 export const characters = {
   donQuixote: {
-    id: 'don', name: 'Don Quixote', maxHp: 203, staggerThresholds: [120, 50],
+    id: 'don',
+    name: 'Don Quixote',
+    maxHp: 203,
+    staggerThresholds: [120, 50],
   },
 };
 
@@ -41,12 +44,24 @@ export const battleDonSprites = {
 
 export const battleDonAnimations = {
   joust: {
-    frames: ['assets/images/battle/don/base/skill1_1.png','assets/images/battle/don/base/skill1_2.png','assets/images/battle/don/base/skill1_3.png'],
-    duration: 1500, hitTimes: [0.66], css: 'skill1',
+    frames: [
+      'assets/images/battle/don/base/skill1_1.png',
+      'assets/images/battle/don/base/skill1_2.png',
+      'assets/images/battle/don/base/skill1_3.png',
+    ],
+    duration: 1500,
+    hitTimes: [0.66],
+    css: 'skill1',
   },
   gallop: {
-    frames: ['assets/images/battle/don/base/skill2_1.png','assets/images/battle/don/base/skill2_2.png','assets/images/battle/don/base/skill2_3.png'],
-    duration: 1500, hitTimes: [0.40, 0.70], css: 'skill2',
+    frames: [
+      'assets/images/battle/don/base/skill2_1.png',
+      'assets/images/battle/don/base/skill2_2.png',
+      'assets/images/battle/don/base/skill2_3.png',
+    ],
+    duration: 1500,
+    hitTimes: [0.4, 0.7],
+    css: 'skill2',
   },
   justice: {
     // Frames 3 and 6 are slash-trail-only sprites (no Don body). Keep them as impact FX,
@@ -67,7 +82,9 @@ export const battleDonAnimations = {
       { src: 'assets/images/battle/don/base/skill3_3.png', activeOffset: 1 },
       { src: 'assets/images/battle/don/base/skill3_6.png', activeOffset: 5 },
     ],
-    duration: 2600, hitTimes: [0.34, 0.62, 0.86], css: 'skill3',
+    duration: 2600,
+    hitTimes: [0.34, 0.62, 0.86],
+    css: 'skill3',
   },
 };
 

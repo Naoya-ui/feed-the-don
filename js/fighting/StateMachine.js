@@ -5,7 +5,7 @@ export class StateMachine {
     this.current = initialState;
     this.previous = null;
     this.transitions = new Map(
-      Object.entries(transitions).map(([state, nextStates]) => [state, new Set(nextStates)]),
+      Object.entries(transitions).map(([state, nextStates]) => [state, new Set(nextStates)])
     );
     this.history = [{ from: null, to: initialState, at: 0 }];
     this.rejectedTransitions = [];
@@ -13,7 +13,9 @@ export class StateMachine {
   }
 
   canTransition(nextState) {
-    return nextState === this.current || this.transitions.get(this.current)?.has(nextState) === true;
+    return (
+      nextState === this.current || this.transitions.get(this.current)?.has(nextState) === true
+    );
   }
 
   transition(nextState, { force = false } = {}) {

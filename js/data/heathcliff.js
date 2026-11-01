@@ -1,6 +1,7 @@
 /** Heathcliff runtime data. Keep asset paths and animation timing here so new Identity/E.G.O content can be added without rewriting the renderer. */
 const ROOT = 'assets/images/battle/heathcliff/';
-const frames = (prefix, count) => Array.from({ length: count }, (_, index) => `${ROOT}${prefix}_${index + 1}.png`);
+const frames = (prefix, count) =>
+  Array.from({ length: count }, (_, index) => `${ROOT}${prefix}_${index + 1}.png`);
 
 export const heathcliffSprites = Object.freeze({
   idle: `${ROOT}idle.png`,
@@ -16,14 +17,16 @@ export const heathcliffSprites = Object.freeze({
 
 export const heathcliffAnimations = Object.freeze({
   skill1: Object.freeze({
-    frames: frames('skill1', 4), animationFrames: 24,
+    frames: frames('skill1', 4),
+    animationFrames: 24,
     effectFrames: [
       { src: `${ROOT}skill1_2_e.png`, at: 0.25 },
       { src: `${ROOT}skill1_3_e.png`, at: 0.72 },
     ],
   }),
   skill2: Object.freeze({
-    frames: frames('skill2', 4), animationFrames: 35,
+    frames: frames('skill2', 4),
+    animationFrames: 35,
     effectFrames: [
       { src: `${ROOT}skill2_2_e.png`, at: 0.22 },
       { src: `${ROOT}skill2_3_e.png`, at: 0.58 },
@@ -33,12 +36,13 @@ export const heathcliffAnimations = Object.freeze({
   // The provided skill-3 sequence is used as Heathcliff's E.G.O cinematic attack.
   // The separate *_e sprites are layered as slash/effect frames over the character.
   ego: Object.freeze({
-    frames: frames('skill3', 16), animationFrames: 54,
+    frames: frames('skill3', 16),
+    animationFrames: 54,
     effectFrames: [
       { src: `${ROOT}skill3_2_e.png`, at: 0.08 },
       { src: `${ROOT}skill3_4_e.png`, at: 0.22 },
       { src: `${ROOT}skill3_5_e.png`, at: 0.36 },
-      { src: `${ROOT}skill3_8_e.png`, at: 0.50 },
+      { src: `${ROOT}skill3_8_e.png`, at: 0.5 },
       { src: `${ROOT}skill3_11_e.png`, at: 0.66 },
       { src: `${ROOT}skill3_14_e.png`, at: 0.82 },
       { src: `${ROOT}skill3_15_e.png`, at: 0.94 },
@@ -75,10 +79,22 @@ export function chargeHeathcliffEgoFromEvent(event) {
   const attacker = event.attacker;
   const target = event.target;
   if (attacker?.drawKey === 'heathcliff') {
-    changed.push({ fighter: attacker, value: gainHeathcliffEgo(attacker, event.blocked ? HEATHCLIFF_EGO_CONFIG.onBlock : HEATHCLIFF_EGO_CONFIG.onHit) });
+    changed.push({
+      fighter: attacker,
+      value: gainHeathcliffEgo(
+        attacker,
+        event.blocked ? HEATHCLIFF_EGO_CONFIG.onBlock : HEATHCLIFF_EGO_CONFIG.onHit
+      ),
+    });
   }
   if (target?.drawKey === 'heathcliff') {
-    changed.push({ fighter: target, value: gainHeathcliffEgo(target, event.blocked ? HEATHCLIFF_EGO_CONFIG.whenBlocked : HEATHCLIFF_EGO_CONFIG.whenHit) });
+    changed.push({
+      fighter: target,
+      value: gainHeathcliffEgo(
+        target,
+        event.blocked ? HEATHCLIFF_EGO_CONFIG.whenBlocked : HEATHCLIFF_EGO_CONFIG.whenHit
+      ),
+    });
   }
   return changed;
 }
