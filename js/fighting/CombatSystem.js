@@ -52,6 +52,7 @@ export class CombatSystem {
         attackerX: dominant.attackerX,
         damage: totalDamage,
         move: dominant.move,
+        hitIndex: dominant.hitIndex,
         blocked: allBlocked,
         allowFrameTrade: true,
       });

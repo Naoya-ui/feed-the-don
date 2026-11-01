@@ -7,13 +7,21 @@ Edit `js/fighting/Fighter.js` → `MOVE_DATA`:
 - `startup`, `active`, `recovery`: frame data at 60 simulation frames per second.
 - `hitboxWidth`, `hitboxHeight`, `hitboxCenterY`: rectangular AABB for the lance/attack. `hitboxCenterY` is measured as a ratio of the logical fighter body height from its top.
 - `lungeStartFrame`, `lungeEndFrame`, `lungeSpeed`: optional forward slide window during a move.
-- `hitWindows`: optional multi-hit pulses, relative to the start of active frames. `start` is inclusive, `end` is exclusive, and `damageMultiplier` scales that pulse's damage.
+- `movementPhases`: timed movement segments (`start`/`end` are move frames) supporting `forward` and `away` dashes; `faceOpponentAt` turns a fighter at a phase boundary.
+- `hitWindows`: optional multi-hit pulses relative to active-frame start. `start` is inclusive, `end` is exclusive; use `damage` for fixed per-hit power or `damageMin`/`damageMax` for a rolled hit.
 
-Current Don moves:
+Current realtime move profiles:
 
-- J / Joust: long, narrow single thrust.
-- K / Gallop: two distinct spear thrusts, each dealing half the move's configured damage.
-- U / Justice: broad, low lance sweep with a forward slide. Only this move triggers the dramatic camera shake on impact.
+- Don J / Joust: 10 raw damage, one narrow lance thrust.
+- Don K / Gallop: 20 raw total, two separate 10-damage thrusts.
+- Don U / Justice: three 15-damage hit windows; entry lunge, cross-through/backstep, then a returning lunge. 20-second cooldown and Super Armor.
+- Don I / La Sangre: dedicated E.G.O move when equipped and gauge is full.
+- Heathcliff J: 10 raw damage, quick bat attack.
+- Heathcliff K / Groundbreaker: 11 damage + knockdown, followed 13 active frames later by a rolled 8–11 damage slam.
+- Heathcliff U / Quick Suppression: four 10-damage bat hits, a retreat step, then a 20-damage Homerun. 20-second cooldown and Super Armor.
+- Heathcliff I / Bodysack: dedicated E.G.O move when equipped and gauge is full.
+
+Combat is simulated at 60 fixed frames per second. `hitWindows` timing is relative to startup's end; `movementPhases` timing is measured from the move's first frame.
 
 ## Sprite orientation and animation alignment
 

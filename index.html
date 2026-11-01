@@ -10,9 +10,12 @@
     <title>Raise Don Quixote — HTML Edition</title>
     <link rel="icon" href="assets/images/ui/window-icon.png" />
     <link rel="stylesheet" href="css/style.css?v=71-main-modes" />
-    <link rel="stylesheet" href="css/realtime-battle.css?v=3-main-modes" />
+    <link rel="stylesheet" href="css/realtime-battle.css?v=melty-select-v1" />
   </head>
   <body>
+    <section id="assetLoadingScreen" class="asset-loading-screen" role="status" aria-live="polite">
+      <div class="asset-loading-card"><span class="asset-loading-mark">LIMBUS</span><strong id="assetLoadingText">LOADING ASSETS · 0%</strong><div class="asset-loading-track"><i id="assetLoadingFill"></i></div><small>Preparing sprites, backgrounds and audio cache</small></div>
+    </section>
     <main id="game" class="game" aria-label="Raise Don Quixote visual novel">
       <button id="globalSettingsButton" class="global-settings-button" type="button" aria-label="Open Settings">⚙ <span>SETTINGS</span></button>
       <div id="background" class="background" aria-hidden="true"></div>
@@ -45,54 +48,29 @@
         </div>
       </section>
 
-      <section id="versusSelectScreen" class="versus-select-screen" hidden aria-label="Versus character and E.G.O selection">
-        <div class="versus-select-card">
-          <p class="eyebrow">LOCAL MULTIPLAYER · SAME KEYBOARD / GAMEPAD</p>
-          <div id="versusCharacterStep">
-            <h2 class="menu-subtitle">CHOOSE YOUR FIGHTERS</h2>
-            <p class="title-copy">Pick a Sinner for each player. Heathcliff is Don’s comrade; Versus is a friendly spar between players.</p>
-            <div class="versus-picker-grid">
-              <section class="versus-picker" aria-labelledby="versusP1Label">
-                <div class="versus-picker-heading"><span>PLAYER 1</span><b id="versusP1Label">LEFT SIDE</b></div>
-                <label>Character<select id="versusP1Character"><option value="don">Don Quixote</option><option value="heathcliff">Heathcliff</option></select></label>
-                <p id="versusP1Identity" class="versus-identity-note">LCB Sinner · Base Appearance</p>
-              </section>
-              <div class="versus-emblem" aria-hidden="true">VS</div>
-              <section class="versus-picker" aria-labelledby="versusP2Label">
-                <div class="versus-picker-heading"><span>PLAYER 2</span><b id="versusP2Label">RIGHT SIDE</b></div>
-                <label>Character<select id="versusP2Character"><option value="don">Don Quixote</option><option value="heathcliff">Heathcliff</option></select></label>
-                <p id="versusP2Identity" class="versus-identity-note">LCB Sinner · Base Appearance</p>
-              </section>
-            </div>
-            <div class="versus-select-actions">
-              <button id="versusCancelBtn" class="secondary-btn" type="button">BACK TO MENU</button>
-              <button id="versusToEgoBtn" class="primary-btn" type="button">NEXT · E.G.O LOADOUT</button>
-            </div>
-          </div>
-          <div id="versusEgoStep" hidden>
-            <h2 class="menu-subtitle">CHOOSE E.G.O LOADOUT</h2>
-            <p class="title-copy">Only E.G.O options compatible with each selected character are shown. The equipped E.G.O activates with Skill 3 when its gauge reaches 100%.</p>
-            <div class="versus-picker-grid">
-              <section class="versus-picker" aria-labelledby="versusP1EgoTitle">
-                <div class="versus-picker-heading"><span>PLAYER 1</span><b id="versusP1EgoTitle">DON QUIXOTE</b></div>
-                <p id="versusP1EgoIdentity" class="versus-identity-note"></p>
-                <label>E.G.O<select id="versusP1Ego"></select></label>
-                <p id="versusP1EgoDescription" class="versus-identity-note"></p>
-              </section>
-              <div class="versus-emblem" aria-hidden="true">E.G.O</div>
-              <section class="versus-picker" aria-labelledby="versusP2EgoTitle">
-                <div class="versus-picker-heading"><span>PLAYER 2</span><b id="versusP2EgoTitle">HEATHCLIFF</b></div>
-                <p id="versusP2EgoIdentity" class="versus-identity-note"></p>
-                <label>E.G.O<select id="versusP2Ego"></select></label>
-                <p id="versusP2EgoDescription" class="versus-identity-note"></p>
-              </section>
-            </div>
-            <div class="versus-select-actions">
-              <button id="versusBackToCharactersBtn" class="secondary-btn" type="button">BACK · CHARACTERS</button>
-              <button id="startVersusMatchBtn" class="primary-btn" type="button">START VERSUS</button>
-            </div>
-          </div>
+      <section id="versusSelectScreen" class="versus-select-screen mb-select-screen" hidden aria-label="Versus character select">
+        <div class="mb-select-topline"><button id="versusCancelBtn" class="mb-back" type="button">← BACK</button><div class="mb-select-title"><small>LOCAL VERSUS</small><h2>CHARACTER SELECT</h2></div><span class="mb-tip">P1 WASD · J CONFIRM <i>／</i> P2 ARROWS · NUM 1 CONFIRM</span></div>
+        <div class="mb-select-stage">
+          <aside class="mb-side mb-side-p1" id="mbP1Panel">
+            <div class="mb-side-heading"><span>1 PLAYER SIDE</span><b id="mbP1Phase">SELECT FIGHTER</b></div>
+            <figure class="mb-portrait-frame"><img id="mbP1Portrait" alt="Player 1 selected character" /><figcaption><small>PLAYER 1</small><strong id="mbP1Name">DON QUIXOTE</strong><span id="mbP1Identity">LCB Sinner</span></figcaption></figure>
+            <div id="mbP1Egos" class="mb-ego-list" hidden aria-label="Player 1 E.G.O choices"></div>
+          </aside>
+          <main class="mb-center-select">
+            <div class="mb-grid-caption"><span>— CHARACTER SELECT —</span><b>1P <i>RED</i> <em>·</em> 2P <i class="violet">VIOLET</i></b></div>
+            <div id="mbCharacterGrid" class="mb-character-grid" role="grid" aria-label="Character roster"></div>
+            <div class="mb-random-mark"><b>?</b><small>ROSTER</small></div>
+            <div class="mb-time-block"><label for="mbTimeLimit">TIME LIMIT</label><select id="mbTimeLimit"><option value="99">99</option><option value="199">199</option><option value="Infinity" selected>∞</option></select></div>
+            <div class="mb-center-hint" id="mbSelectHint">MOVE CURSOR · CONFIRM CHARACTER · CHOOSE E.G.O</div>
+          </main>
+          <aside class="mb-side mb-side-p2" id="mbP2Panel">
+            <div class="mb-side-heading"><span>2 PLAYER SIDE</span><b id="mbP2Phase">SELECT FIGHTER</b></div>
+            <figure class="mb-portrait-frame"><img id="mbP2Portrait" alt="Player 2 selected character" /><figcaption><small>PLAYER 2</small><strong id="mbP2Name">HEATHCLIFF</strong><span id="mbP2Identity">LCB Sinner</span></figcaption></figure>
+            <div id="mbP2Egos" class="mb-ego-list" hidden aria-label="Player 2 E.G.O choices"></div>
+          </aside>
         </div>
+        <footer class="mb-select-footer"><span>Both players lock character + E.G.O to begin</span><button id="mbStartButton" type="button" disabled>FIGHT</button><span>SELECT · J / NUM 1</span></footer>
+        <div class="mb-fade-overlay" aria-hidden="true"></div>
       </section>
 
       <div id="hud" class="hud" hidden>
@@ -179,7 +157,8 @@
           </header>
           <div id="rtMessage" class="rt-message" aria-live="polite">READY — FIGHT!</div>
           <div class="rt-bottom-tools">
-            <button id="rtSettingsButton" type="button">SETTINGS</button>
+            <button id="rtSettingsButton" type="button">Ⅱ SETTINGS</button>
+            <span id="rtTimer" class="rt-timer" aria-live="off">99</span>
             <button id="rtResetRound" type="button">RESET ROUND (R)</button>
             <span id="rtLiveStatus" class="rt-live-status">INITIALIZING FIGHTER…</span>
             <span id="rtFpsStatus" class="rt-fps-status">FIXED 60 Hz</span>
@@ -578,6 +557,6 @@
       ></audio>
     </main>
 
-    <script type="module" src="js/main.js?v=71-main-modes"></script>
+    <script type="module" src="js/main.js?v=full-moveset-choreo-v3"></script>
   </body>
 </html>

@@ -32,8 +32,8 @@ export class GamepadInputAdapter {
       if (up) nextKeys.add(controls.jump);
       if (down) nextKeys.add(controls.guard);
       const buttonMap = settings.buttons || {};
-      for (const action of ['jump', 'guard', 'light', 'heavy', 'special', 'dash']) {
-        const defaultIndex = ({ jump: 0, dash: 1, light: 2, heavy: 3, special: 4, guard: 5 })[action];
+      for (const action of ['jump', 'guard', 'light', 'heavy', 'special', 'dash', 'ego']) {
+        const defaultIndex = ({ jump: 0, dash: 1, light: 2, heavy: 3, special: 4, guard: 5, ego: 6 })[action];
         const index = Number.isInteger(Number(buttonMap[action])) ? Number(buttonMap[action]) : defaultIndex;
         if (pressed(index)) nextKeys.add(controls[action]);
       }

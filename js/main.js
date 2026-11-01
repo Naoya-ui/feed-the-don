@@ -18,6 +18,20 @@ import { assets, battleDonSprites, battleDonAnimations, battleUiIcons, itemDB, c
 import { enemySprites, enemyBattleSkills, enemySkillText, enemySkillEffects, wolfBoss, wolfBattleSkills, wolfSkillRotation } from "./data/enemies.js";
 import { donBattleSkills, keywordDescriptions } from "./data/skills.js";
 import { travelTime, wolfIntroDialogue } from "./data/story.js";
+import { AssetManager } from "./core/AssetManager.js";
+import assetManifest from "./core/asset-manifest.json" with { type: "json" };
+import { AudioManager } from "./utils/AudioManager.js";
+import { ASSETS } from "./core/Constants.js";
+import { CharacterSelect } from "./ui/CharacterSelect.js";
+
+const loaderText = document.getElementById('assetLoadingText');
+const loaderFill = document.getElementById('assetLoadingFill');
+await AssetManager.preload(assetManifest, { concurrency: 12, onProgress(done, total) {
+  const percent = total ? Math.round(done / total * 100) : 100;
+  if (loaderText) loaderText.textContent = `LOADING ASSETS · ${percent}%`;
+  if (loaderFill) loaderFill.style.transform = `scaleX(${percent / 100})`;
+} });
+document.getElementById('assetLoadingScreen')?.classList.add('is-ready');
 
   const SAVE_KEY = "raise-don-quixote-html-save-v1";
   const BUILD_TAG = "v74-local-versus-loadouts-global-settings";
@@ -155,18 +169,18 @@ import { travelTime, wolfIntroDialogue } from "./data/story.js";
   const KEY_BINDINGS_STORAGE_KEY = "raise-don-quixote-key-bindings-v1";
   const CONTROLLER_STORAGE_KEY = "raise-don-quixote-controller-settings-v1";
   const DEFAULT_KEY_BINDINGS = Object.freeze({
-    p1: Object.freeze({ left: "a", right: "d", jump: "w", guard: "s", light: "j", heavy: "k", special: "u", dash: "l" }),
-    p2: Object.freeze({ left: "arrowleft", right: "arrowright", jump: "arrowup", guard: "arrowdown", light: "numpad1", heavy: "numpad2", special: "numpad3", dash: "numpad4" }),
+    p1: Object.freeze({ left: "a", right: "d", jump: "w", guard: "s", light: "j", heavy: "k", special: "u", ego: "i", dash: "l" }),
+    p2: Object.freeze({ left: "arrowleft", right: "arrowright", jump: "arrowup", guard: "arrowdown", light: "numpad1", heavy: "numpad2", special: "numpad3", dash: "numpad4", ego: "numpad5" }),
   });
   const CONTROL_ACTIONS = [
     { key: "left", label: "Move left" }, { key: "right", label: "Move right" },
     { key: "jump", label: "Jump" }, { key: "guard", label: "Guard" },
     { key: "light", label: "Skill 1 / Light" }, { key: "heavy", label: "Skill 2 / Heavy" },
-    { key: "special", label: "Skill 3 / E.G.O" }, { key: "dash", label: "Dash / Evade" },
+    { key: "special", label: "Skill 3" }, { key: "ego", label: "E.G.O Move / Form" }, { key: "dash", label: "Dash" },
   ];
   const DEFAULT_CONTROLLER_SETTINGS = {
     player: "p1", index: -1, deadzone: 0.35,
-    buttons: { jump: 0, dash: 1, light: 2, heavy: 3, special: 4, guard: 5 },
+    buttons: { jump: 0, dash: 1, light: 2, heavy: 3, special: 4, guard: 5, ego: 6 },
   };
   function readJsonSetting(key, fallback) {
     try {
@@ -201,6 +215,7 @@ import { travelTime, wolfIntroDialogue } from "./data/story.js";
 
 
   // ===== V48 AUDIO =====
+  const audioEngine = new AudioManager();
   const battleBgm = new Audio("assets/audio/canto-1-battle-theme-a2.wav");
   battleBgm.loop = true;
   battleBgm.preload = "auto";
@@ -224,31 +239,20 @@ import { travelTime, wolfIntroDialogue } from "./data/story.js";
     ],
   };
 
-  const DON_SKILL_SFX_CACHE = Object.fromEntries(
-    Object.entries(DON_SKILL_SFX).map(([skillKey, sounds]) => [
-      skillKey,
-      sounds.map((src) => {
-        const audio = new Audio(src);
-        audio.preload = "auto";
-        return audio;
-      }),
-    ]),
-  );
-
   const ENEMY_ATTACK_SFX = {
     clumsyChop: "assets/audio/enemy/001_backstreet_mob_skill1_a_v1.wav",
     clunkyStab: "assets/audio/enemy/002_backstreet_mob_skill2_a_v1.wav",
     weakBlow: "assets/audio/enemy/003_backstreet_mob_skill3_a_v1.wav",
     heavyStrike: "assets/audio/enemy/004_backstreet_boss_skill2_a_v1.wav",
   };
-
-  const ENEMY_ATTACK_SFX_CACHE = Object.fromEntries(
-    Object.entries(ENEMY_ATTACK_SFX).map(([skillKey, src]) => {
-      const audio = new Audio(src);
-      audio.preload = "auto";
-      return [skillKey, audio];
-    }),
-  );
+  // Decode the most-used combat cues while the loading screen is still active; actual playback
+  // remains gated by browser user gesture, but the first frame no longer pays decode cost.
+  void audioEngine.preloadSfx({
+    'sfx:don:joust:0': DON_SKILL_SFX.joust[0], 'sfx:don:gallop:0': DON_SKILL_SFX.gallop[0],
+    'sfx:heathcliff:heathcliffSkill1': 'assets/audio/heathcliff/040_heathclif_base_skill1_a_v1.wav',
+    'sfx:heathcliff:heathcliffSkill2': 'assets/audio/heathcliff/041_heathclif_base_skill2_a_v1.wav',
+    'sfx:enemy:clumsyChop': ENEMY_ATTACK_SFX.clumsyChop, 'sfx:enemy:heavyStrike': ENEMY_ATTACK_SFX.heavyStrike,
+  });
 
   function masterVolume() {
     return Math.max(0, Math.min(1, Number(state?.volume ?? 20) / 100));
@@ -287,6 +291,14 @@ import { travelTime, wolfIntroDialogue } from "./data/story.js";
     // Animation keys are stable catalogue keys for both player and AI moves.
     const attackKey = move.animationKey || move.id || "joust";
     voiceLineManager.playAttack(characterId, attackKey);
+    if (attacker.drawKey === 'heathcliff') {
+      const skill = move.id === 'heathcliffSkill2' ? '041_heathclif_base_skill2_a_v1.wav'
+        : (move.id === 'heathcliffSkill3' || move.id === 'heathcliffBodysack' || move.id === 'heathcliffEgo') ? '042_heathclif_base_skill3-1_a_v1.wav'
+          : '040_heathclif_base_skill1_a_v1.wav';
+      void audioEngine.playSFX(`heathcliff:${move.id}`, `assets/audio/heathcliff/${skill}`, { volume: masterVolume() * 0.88, maxVoices: 2, minIntervalMs: 40 });
+    } else if (attacker.drawKey === 'don' && (move.isEgo || move.id === 'donEgo')) {
+      playDonSkillHitSfx('laSangre', 0);
+    }
   }
 
   function playRealtimeReactionVoice(event) {
@@ -359,13 +371,9 @@ import { travelTime, wolfIntroDialogue } from "./data/story.js";
   function playBattleTheme() {
     musicMode = "battle";
     const target = masterVolume();
-    if (battleBgm.paused) {
-      battleBgm.currentTime = 0;
-      battleBgm.volume = 0;
-      battleBgm.play().catch(() => {});
-    }
     fadeAudio(els.bgm, 0, 550, true);
-    fadeAudio(battleBgm, target, 700);
+    battleBgm.pause();
+    void audioEngine.playBGM('battle', ASSETS.audio.bgm.story, { volume: target, loop: true, fadeSeconds: 0.7 });
   }
 
   function restoreStoryTheme() {
@@ -375,7 +383,7 @@ import { travelTime, wolfIntroDialogue } from "./data/story.js";
       els.bgm.volume = 0;
       els.bgm.play().catch(() => {});
     }
-    fadeAudio(battleBgm, 0, 550, true);
+    audioEngine.stopBGM(0.55);
     fadeAudio(els.bgm, target, 700);
   }
 
@@ -384,29 +392,22 @@ import { travelTime, wolfIntroDialogue } from "./data/story.js";
     battleBgm.pause();
     battleBgm.currentTime = 0;
     battleBgm.volume = 0;
+    audioEngine.stopBGM(0);
     musicMode = "story";
   }
 
   function playDonSkillHitSfx(skillKey, hitIndex = 0) {
-    const sounds = DON_SKILL_SFX_CACHE[skillKey];
-    if (!sounds?.length) return false;
-    const multiCue = skillKey === "justice" || skillKey === "laSangre";
-    if (!multiCue && hitIndex > 0) return true;
-    const index = multiCue ? Math.min(hitIndex, sounds.length - 1) : 0;
-    const template = sounds[index];
-    if (!template) return false;
-    const sound = template.cloneNode(true);
-    sound.volume = Math.max(0, Math.min(1, masterVolume() * 0.9));
-    sound.play().catch(() => {});
+    const sounds = DON_SKILL_SFX[skillKey];
+    if (!sounds?.length || (!['justice', 'laSangre'].includes(skillKey) && hitIndex > 0)) return false;
+    const index = ['justice', 'laSangre'].includes(skillKey) ? Math.min(hitIndex, sounds.length - 1) : 0;
+    void audioEngine.playSFX(`don:${skillKey}:${index}`, sounds[index], { volume: masterVolume() * 0.9, maxVoices: 3, minIntervalMs: 24 });
     return true;
   }
 
   function playEnemyAttackSfx(skillKey) {
-    const template = ENEMY_ATTACK_SFX_CACHE[skillKey];
-    if (!template) return false;
-    const sound = template.cloneNode(true);
-    sound.volume = Math.max(0, Math.min(1, masterVolume() * 0.92));
-    sound.play().catch(() => {});
+    const src = ENEMY_ATTACK_SFX[skillKey];
+    if (!src) return false;
+    void audioEngine.playSFX(`enemy:${skillKey}`, src, { volume: masterVolume() * 0.92, maxVoices: 3, minIntervalMs: 28 });
     return true;
   }
 
@@ -3582,7 +3583,8 @@ import { travelTime, wolfIntroDialogue } from "./data/story.js";
     const volume = state.volume / 100;
     els.volumeSlider.value = String(state.volume);
     if (musicMode === "battle") {
-      battleBgm.volume = volume;
+      battleBgm.volume = 0;
+      audioEngine.setBgmVolume(volume);
       els.bgm.volume = 0;
     } else {
       els.bgm.volume = volume;
@@ -3830,116 +3832,35 @@ import { travelTime, wolfIntroDialogue } from "./data/story.js";
 
   document.addEventListener("pointerdown", () => { ensureSfxContext(); }, { once: true });
 
-  const versusSelectionState = { player1: { characterId: "don", egoId: "none" }, player2: { characterId: "heathcliff", egoId: "heathcliff-burst" } };
-
-  function updateVersusCharacterPreview(playerKey) {
-    const charSelect = playerKey === "player1" ? els.versusP1Character : els.versusP2Character;
-    const preview = playerKey === "player1" ? els.versusP1Identity : els.versusP2Identity;
-    const roster = getVersusCharacter(charSelect?.value || "don");
-    versusSelectionState[playerKey].characterId = roster.id;
-    const matching = roster.egos.some((ego) => ego.id === versusSelectionState[playerKey].egoId);
-    if (!matching) versusSelectionState[playerKey].egoId = roster.egos[0].id;
-    if (preview) preview.textContent = `${roster.identity.name} · ${roster.maxHp} HP`;
-  }
-
-  function populateVersusEgoSelect(playerKey) {
-    const key = playerKey === "player1" ? "player1" : "player2";
-    const roster = getVersusCharacter(versusSelectionState[key].characterId);
-    const select = key === "player1" ? els.versusP1Ego : els.versusP2Ego;
-    const title = key === "player1" ? els.versusP1EgoTitle : els.versusP2EgoTitle;
-    const identity = key === "player1" ? els.versusP1EgoIdentity : els.versusP2EgoIdentity;
-    const desc = key === "player1" ? els.versusP1EgoDescription : els.versusP2EgoDescription;
-    if (!select) return;
-    select.replaceChildren();
-    for (const ego of roster.egos) {
-      const option = document.createElement("option");
-      option.value = ego.id;
-      option.textContent = ego.name;
-      select.append(option);
-    }
-    select.value = roster.egos.some((ego) => ego.id === versusSelectionState[key].egoId)
-      ? versusSelectionState[key].egoId : roster.egos[0].id;
-    versusSelectionState[key].egoId = select.value;
-    if (title) title.textContent = roster.name.toUpperCase();
-    if (identity) identity.textContent = roster.identity.name;
-    const selected = getVersusEgo(roster.id, select.value);
-    if (desc) desc.textContent = selected.description;
-  }
-
-  function updateVersusEgoDescription(playerKey) {
-    const key = playerKey === "player1" ? "player1" : "player2";
-    const select = key === "player1" ? els.versusP1Ego : els.versusP2Ego;
-    const desc = key === "player1" ? els.versusP1EgoDescription : els.versusP2EgoDescription;
-    const character = getVersusCharacter(versusSelectionState[key].characterId);
-    versusSelectionState[key].egoId = select?.value || character.egos[0].id;
-    const selected = getVersusEgo(character.id, versusSelectionState[key].egoId);
-    if (desc) desc.textContent = selected.description;
-  }
-
-  function populateVersusCharacterOptions(select, preferredId) {
-    if (!select) return;
-    const previous = preferredId || select.value || "don";
-    select.replaceChildren();
-    for (const roster of Object.values(VERSUS_ROSTER)) {
-      const option = document.createElement("option");
-      option.value = roster.id;
-      option.textContent = roster.name;
-      select.append(option);
-    }
-    select.value = Object.hasOwn(VERSUS_ROSTER, previous) ? previous : (Object.keys(VERSUS_ROSTER)[0] || "don");
-  }
+  const characterSelect = new CharacterSelect({
+    root: els.versusSelectScreen,
+    roster: Object.values(VERSUS_ROSTER),
+    fadeMs: 1500,
+    onCancel: () => {
+      els.titleScreen.hidden = false;
+      els.mainMenuView.hidden = false;
+      els.storyModeView.hidden = true;
+      syncGlobalSettingsButton();
+    },
+    onStart: async (selection) => {
+      // CharacterSelect emits its clean app-domain shape. Adapt it to the battle engine's
+      // existing player1/player2 loadout contract at this boundary only.
+      const toCombatantId = (id) => id === 'don_quixote' ? 'don' : id;
+      const config = {
+        localMultiplayer: true,
+        timeLimit: Number.isFinite(selection.timeLimit) ? selection.timeLimit : 0,
+        player1: { characterId: toCombatantId(selection.p1.character), egoId: selection.p1.ego },
+        player2: { characterId: toCombatantId(selection.p2.character), egoId: selection.p2.ego },
+      };
+      await startStandaloneRealtime('versus', config);
+    },
+  });
 
   function openVersusSelection() {
-    populateVersusCharacterOptions(els.versusP1Character, versusSelectionState.player1.characterId);
-    populateVersusCharacterOptions(els.versusP2Character, versusSelectionState.player2.characterId);
-    versusSelectionState.player1.characterId = els.versusP1Character?.value || "don";
-    versusSelectionState.player2.characterId = els.versusP2Character?.value || "heathcliff";
-    updateVersusCharacterPreview("player1");
-    updateVersusCharacterPreview("player2");
     els.titleScreen.hidden = true;
-    els.versusSelectScreen.hidden = false;
-    els.versusCharacterStep.hidden = false;
-    els.versusEgoStep.hidden = true;
+    characterSelect.open();
     syncGlobalSettingsButton();
-    els.versusP1Character?.focus?.();
   }
-
-  function startSelectedVersus() {
-    const loadout = (key) => {
-      const character = getVersusCharacter(versusSelectionState[key].characterId);
-      const ego = getVersusEgo(character.id, versusSelectionState[key].egoId);
-      return { characterId: character.id, identityId: character.identity.id, egoId: ego.id };
-    };
-    const config = { localMultiplayer: true, player1: loadout("player1"), player2: loadout("player2") };
-    els.versusSelectScreen.hidden = true;
-    startStandaloneRealtime("versus", config);
-  }
-
-  els.versusP1Character?.addEventListener("change", () => updateVersusCharacterPreview("player1"));
-  els.versusP2Character?.addEventListener("change", () => updateVersusCharacterPreview("player2"));
-  els.versusToEgoBtn?.addEventListener("click", () => {
-    updateVersusCharacterPreview("player1");
-    updateVersusCharacterPreview("player2");
-    populateVersusEgoSelect("player1");
-    populateVersusEgoSelect("player2");
-    els.versusCharacterStep.hidden = true;
-    els.versusEgoStep.hidden = false;
-    els.versusP1Ego?.focus?.();
-  });
-  els.versusBackToCharactersBtn?.addEventListener("click", () => {
-    els.versusEgoStep.hidden = true;
-    els.versusCharacterStep.hidden = false;
-  });
-  els.versusP1Ego?.addEventListener("change", () => updateVersusEgoDescription("player1"));
-  els.versusP2Ego?.addEventListener("change", () => updateVersusEgoDescription("player2"));
-  els.startVersusMatchBtn?.addEventListener("click", startSelectedVersus);
-  els.versusCancelBtn?.addEventListener("click", () => {
-    els.versusSelectScreen.hidden = true;
-    els.titleScreen.hidden = false;
-    els.mainMenuView.hidden = false;
-    els.storyModeView.hidden = true;
-    syncGlobalSettingsButton();
-  });
 
   let newGameStarting = false;
   async function startNewGameFlow() {
