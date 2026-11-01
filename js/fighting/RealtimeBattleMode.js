@@ -47,6 +47,8 @@ export function getSkillIconForMove(drawKey, move = {}) {
     return 'assets/images/battle/skills/joust-icon.png';
   }
   if (key === 'heathcliff') {
+    if (id === 'heathcliffbodysack')
+      return 'assets/images/ego/heathcliff/bodysack/20701_awaken_profile.png';
     if (isEgo) return 'assets/images/battle/heathcliff/ego-sigil.png';
     if (id.includes('skill3') || name.includes('savage') || name.includes('special'))
       return 'assets/images/battle/heathcliff/skill3_1.png';
@@ -1315,7 +1317,11 @@ export class RealtimeBattleMode {
         if (frames.length) {
           const duration =
             move.data.animationFrames || animation.animationFrames || fighter.moveTotalFrames;
-          const progress = clamp((move.frame - 1) / Math.max(1, duration), 0, 0.9999);
+          if (move.data.animationKey === 'bodysack' && move.frame < move.data.startup)
+            return heathcliffSprites.egoCharge;
+          const animationFrame =
+            move.data.animationKey === 'bodysack' ? move.frame - move.data.startup : move.frame - 1;
+          const progress = clamp(animationFrame / Math.max(1, duration), 0, 0.9999);
           return frames[Math.min(frames.length - 1, Math.floor(progress * frames.length))];
         }
       }

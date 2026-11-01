@@ -111,6 +111,13 @@ export const VOICE_LINE_CATALOG = Object.freeze({
         'assets/audio/heathcliff/heathcliff_2_1-1.wav',
         'assets/audio/heathcliff/heathcliff_2_2.wav',
       ]),
+      bodysack: Object.freeze([
+        'assets/audio/heathcliff/bodysack/battle_awaken_20701_1.wav',
+        'assets/audio/heathcliff/bodysack/battle_awaken_20701_2.wav',
+        'assets/audio/heathcliff/bodysack/battle_awaken_20701_3.wav',
+        'assets/audio/heathcliff/bodysack/139_heathclif_base_ego-1_a_v1.wav',
+        'assets/audio/heathcliff/bodysack/139_heathclif_base_ego-2_a_v1.wav',
+      ]),
       ego: Object.freeze([
         'assets/audio/heathcliff/042_heathclif_base_skill3-1_a_v1.wav',
         'assets/audio/heathcliff/042_heathclif_base_skill3-2_a_v1.wav',

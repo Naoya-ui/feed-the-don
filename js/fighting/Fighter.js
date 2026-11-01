@@ -248,6 +248,7 @@ export const MOVE_DATA = Object.freeze({
     id: 'heathcliffBodysack',
     animationKey: 'bodysack',
     cinematicPath: 'assets/images/ego/heathcliff/bodysack-preview.gif',
+    sfxPath: 'assets/audio/heathcliff/bodysack/07HC.wav',
     name: 'Bodysack · Base Form E.G.O',
     isEgo: true,
     startup: 18,
@@ -270,7 +271,7 @@ export const MOVE_DATA = Object.freeze({
       { start: 0, end: 5, damageMultiplier: 0.45 },
       { start: 9, end: 14, damageMultiplier: 0.55 },
     ],
-    animationFrames: 54,
+    animationFrames: 18,
   },
   heathcliffEgo: {
     id: 'heathcliffEgo',

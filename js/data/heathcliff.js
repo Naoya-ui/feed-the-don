@@ -15,6 +15,20 @@ export const heathcliffSprites = Object.freeze({
   egoSigil: `${ROOT}ego-sigil.png`,
 });
 
+const bodysackFrames = Object.freeze(
+  Array.from({ length: 23 }, (_, index) => `${ROOT}bodysack/skill1_${index + 8}.png`)
+);
+const bodysackEffects = Object.freeze([
+  { src: `${ROOT}bodysack/skill1_15_e.png`, at: 0.32 },
+  { src: `${ROOT}bodysack/skill1_16_e.png`, at: 0.4 },
+  { src: `${ROOT}bodysack/skill1_21_e.png`, at: 0.62 },
+  { src: `${ROOT}bodysack/skill1_22_e.png`, at: 0.68 },
+  { src: `${ROOT}bodysack/skill1_23_e.png`, at: 0.74 },
+  { src: `${ROOT}bodysack/skill1_28_e.png`, at: 0.9 },
+  { src: `${ROOT}bodysack/skill1_29_e.png`, at: 0.95 },
+  { src: `${ROOT}bodysack/skill1_30_e.png`, at: 0.99 },
+]);
+
 const heathcliffSkill3Frames = Object.freeze({
   frames: frames('skill3', 16),
   animationFrames: 54,
@@ -47,10 +61,14 @@ export const heathcliffAnimations = Object.freeze({
       { src: `${ROOT}skill2_4_e.png`, at: 0.82 },
     ],
   }),
-  // The base-form Bodysack GIF is the move-specific cinematic. Keep separate keys so
-  // its combat timing and presentation can evolve independently of ordinary Skill 3.
+  // Dedicated base-form E.G.O frames and effect overlays from the provided sprite folder.
+  // The GIF is still used for its cinematic; these transparent PNGs animate the fighter.
+  bodysack: Object.freeze({
+    frames: bodysackFrames,
+    animationFrames: 18,
+    effectFrames: bodysackEffects,
+  }),
   skill3: heathcliffSkill3Frames,
-  bodysack: heathcliffSkill3Frames,
   ego: heathcliffSkill3Frames,
 });
 

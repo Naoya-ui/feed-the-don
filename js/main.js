@@ -381,6 +381,16 @@ function playRealtimeMoveVoice({ attacker, move }) {
   // Animation keys are stable catalogue keys for both player and AI moves.
   const attackKey = move.animationKey || move.id || 'joust';
   voiceLineManager.playAttack(characterId, attackKey);
+  if (attacker.drawKey === 'heathcliff' && move.id === 'heathcliffBodysack') {
+    if (move.sfxPath) {
+      void audioEngine.playSFX(`heathcliff:${move.id}:sfx`, move.sfxPath, {
+        volume: masterVolume() * 0.9,
+        maxVoices: 1,
+        minIntervalMs: 500,
+      });
+    }
+    return;
+  }
   if (attacker.drawKey === 'heathcliff') {
     const skill =
       move.id === 'heathcliffSkill2'
