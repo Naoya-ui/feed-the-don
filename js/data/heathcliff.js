@@ -1,6 +1,7 @@
 /** Heathcliff runtime data. Keep asset paths and animation timing here so new Identity/E.G.O content can be added without rewriting the renderer. */
 const ROOT = 'assets/images/battle/heathcliff/';
-const frames = (prefix, count) => Array.from({ length: count }, (_, index) => `${ROOT}${prefix}_${index + 1}.png`);
+const frames = (prefix, count) =>
+  Array.from({ length: count }, (_, index) => `${ROOT}${prefix}_${index + 1}.png`);
 
 export const heathcliffSprites = Object.freeze({
   idle: `${ROOT}idle.png`,
@@ -14,36 +15,61 @@ export const heathcliffSprites = Object.freeze({
   egoSigil: `${ROOT}ego-sigil.png`,
 });
 
+const bodysackFrames = Object.freeze(
+  Array.from({ length: 23 }, (_, index) => `${ROOT}bodysack/skill1_${index + 8}.png`)
+);
+const bodysackEffects = Object.freeze([
+  { src: `${ROOT}bodysack/skill1_15_e.png`, at: 0.32 },
+  { src: `${ROOT}bodysack/skill1_16_e.png`, at: 0.4 },
+  { src: `${ROOT}bodysack/skill1_21_e.png`, at: 0.62 },
+  { src: `${ROOT}bodysack/skill1_22_e.png`, at: 0.68 },
+  { src: `${ROOT}bodysack/skill1_23_e.png`, at: 0.74 },
+  { src: `${ROOT}bodysack/skill1_28_e.png`, at: 0.9 },
+  { src: `${ROOT}bodysack/skill1_29_e.png`, at: 0.95 },
+  { src: `${ROOT}bodysack/skill1_30_e.png`, at: 0.99 },
+]);
+
+const heathcliffSkill3Frames = Object.freeze({
+  frames: frames('skill3', 16),
+  animationFrames: 54,
+  effectFrames: [
+    { src: `${ROOT}skill3_2_e.png`, at: 0.08 },
+    { src: `${ROOT}skill3_4_e.png`, at: 0.22 },
+    { src: `${ROOT}skill3_5_e.png`, at: 0.36 },
+    { src: `${ROOT}skill3_8_e.png`, at: 0.5 },
+    { src: `${ROOT}skill3_11_e.png`, at: 0.66 },
+    { src: `${ROOT}skill3_14_e.png`, at: 0.82 },
+    { src: `${ROOT}skill3_15_e.png`, at: 0.94 },
+  ],
+});
+
 export const heathcliffAnimations = Object.freeze({
   skill1: Object.freeze({
-    frames: frames('skill1', 4), animationFrames: 24,
+    frames: frames('skill1', 4),
+    animationFrames: 24,
     effectFrames: [
       { src: `${ROOT}skill1_2_e.png`, at: 0.25 },
       { src: `${ROOT}skill1_3_e.png`, at: 0.72 },
     ],
   }),
   skill2: Object.freeze({
-    frames: frames('skill2', 4), animationFrames: 35,
+    frames: frames('skill2', 4),
+    animationFrames: 35,
     effectFrames: [
       { src: `${ROOT}skill2_2_e.png`, at: 0.22 },
       { src: `${ROOT}skill2_3_e.png`, at: 0.58 },
       { src: `${ROOT}skill2_4_e.png`, at: 0.82 },
     ],
   }),
-  // The provided skill-3 sequence is used as Heathcliff's E.G.O cinematic attack.
-  // The separate *_e sprites are layered as slash/effect frames over the character.
-  ego: Object.freeze({
-    frames: frames('skill3', 16), animationFrames: 54,
-    effectFrames: [
-      { src: `${ROOT}skill3_2_e.png`, at: 0.08 },
-      { src: `${ROOT}skill3_4_e.png`, at: 0.22 },
-      { src: `${ROOT}skill3_5_e.png`, at: 0.36 },
-      { src: `${ROOT}skill3_8_e.png`, at: 0.50 },
-      { src: `${ROOT}skill3_11_e.png`, at: 0.66 },
-      { src: `${ROOT}skill3_14_e.png`, at: 0.82 },
-      { src: `${ROOT}skill3_15_e.png`, at: 0.94 },
-    ],
+  // Dedicated base-form E.G.O frames and effect overlays from the provided sprite folder.
+  // The GIF is still used for its cinematic; these transparent PNGs animate the fighter.
+  bodysack: Object.freeze({
+    frames: bodysackFrames,
+    animationFrames: 18,
+    effectFrames: bodysackEffects,
   }),
+  skill3: heathcliffSkill3Frames,
+  ego: heathcliffSkill3Frames,
 });
 
 export const HEATHCLIFF_EGO_CONFIG = Object.freeze({
@@ -75,10 +101,22 @@ export function chargeHeathcliffEgoFromEvent(event) {
   const attacker = event.attacker;
   const target = event.target;
   if (attacker?.drawKey === 'heathcliff') {
-    changed.push({ fighter: attacker, value: gainHeathcliffEgo(attacker, event.blocked ? HEATHCLIFF_EGO_CONFIG.onBlock : HEATHCLIFF_EGO_CONFIG.onHit) });
+    changed.push({
+      fighter: attacker,
+      value: gainHeathcliffEgo(
+        attacker,
+        event.blocked ? HEATHCLIFF_EGO_CONFIG.onBlock : HEATHCLIFF_EGO_CONFIG.onHit
+      ),
+    });
   }
   if (target?.drawKey === 'heathcliff') {
-    changed.push({ fighter: target, value: gainHeathcliffEgo(target, event.blocked ? HEATHCLIFF_EGO_CONFIG.whenBlocked : HEATHCLIFF_EGO_CONFIG.whenHit) });
+    changed.push({
+      fighter: target,
+      value: gainHeathcliffEgo(
+        target,
+        event.blocked ? HEATHCLIFF_EGO_CONFIG.whenBlocked : HEATHCLIFF_EGO_CONFIG.whenHit
+      ),
+    });
   }
   return changed;
 }

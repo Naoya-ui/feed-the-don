@@ -11,9 +11,10 @@ export class GamepadInputAdapter {
     if (!input || !controls) return { connected: false, id: '', slot: -1 };
     const pads = Array.from(this.getGamepads?.() || []);
     const requestedIndex = Number.isInteger(Number(settings.index)) ? Number(settings.index) : -1;
-    const gamepad = requestedIndex >= 0
-      ? pads.find((pad) => pad && pad.connected && pad.index === requestedIndex)
-      : pads.find((pad) => pad && pad.connected);
+    const gamepad =
+      requestedIndex >= 0
+        ? pads.find((pad) => pad && pad.connected && pad.index === requestedIndex)
+        : pads.find((pad) => pad && pad.connected);
 
     if (this.previousInput && this.previousInput !== input) this.#release(this.previousInput);
     this.previousInput = input;
@@ -33,8 +34,12 @@ export class GamepadInputAdapter {
       if (down) nextKeys.add(controls.guard);
       const buttonMap = settings.buttons || {};
       for (const action of ['jump', 'guard', 'light', 'heavy', 'special', 'dash', 'ego']) {
-        const defaultIndex = ({ jump: 0, dash: 1, light: 2, heavy: 3, special: 4, guard: 5, ego: 6 })[action];
-        const index = Number.isInteger(Number(buttonMap[action])) ? Number(buttonMap[action]) : defaultIndex;
+        const defaultIndex = { jump: 0, dash: 1, light: 2, heavy: 3, special: 4, guard: 5, ego: 6 }[
+          action
+        ];
+        const index = Number.isInteger(Number(buttonMap[action]))
+          ? Number(buttonMap[action])
+          : defaultIndex;
         if (pressed(index)) nextKeys.add(controls[action]);
       }
       for (const key of this.previousKeys) if (!nextKeys.has(key)) input.setVirtualKey(key, false);

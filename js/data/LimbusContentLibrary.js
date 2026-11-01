@@ -1,4 +1,15 @@
-const ALLOWED_TYPES = new Set(['character', 'identity', 'ego', 'skill', 'passive', 'enemy', 'status', 'stage', 'asset', 'voiceLine']);
+const ALLOWED_TYPES = new Set([
+  'character',
+  'identity',
+  'ego',
+  'skill',
+  'passive',
+  'enemy',
+  'status',
+  'stage',
+  'asset',
+  'voiceLine',
+]);
 const DEFAULT_STORAGE_KEY = 'raise-don-quixote.limbus-library-overrides.v1';
 
 /**
@@ -7,10 +18,19 @@ const DEFAULT_STORAGE_KEY = 'raise-don-quixote.limbus-library-overrides.v1';
  * to assets/data/limbus-library/catalog.json instead.
  */
 export class LimbusContentLibrary {
-  constructor({ url = 'assets/data/limbus-library/catalog.json', fetchImpl = (...args) => fetch(...args), storage = null, storageKey = DEFAULT_STORAGE_KEY } = {}) {
+  constructor({
+    url = 'assets/data/limbus-library/catalog.json',
+    fetchImpl = (...args) => fetch(...args),
+    storage = null,
+    storageKey = DEFAULT_STORAGE_KEY,
+  } = {}) {
     this.url = url;
     this.fetchImpl = fetchImpl;
-    try { this.storage = storage || globalThis.localStorage || null; } catch { this.storage = null; }
+    try {
+      this.storage = storage || globalThis.localStorage || null;
+    } catch {
+      this.storage = null;
+    }
     this.storageKey = storageKey;
     this.records = new Map();
     this.overrides = new Map();
@@ -23,14 +43,17 @@ export class LimbusContentLibrary {
     let payload;
     try {
       const response = await this.fetchImpl(this.url, { cache: 'no-cache' });
-      if (!response?.ok) throw new Error(`Catalogue request failed (${response?.status ?? 'no response'}).`);
+      if (!response?.ok)
+        throw new Error(`Catalogue request failed (${response?.status ?? 'no response'}).`);
       payload = await response.json();
     } catch (error) {
       this.loadError = error;
       throw new Error(`Could not load Limbus content catalogue at ${this.url}: ${error.message}`);
     }
     if (!payload || payload.schemaVersion !== 1 || !Array.isArray(payload.records)) {
-      throw new TypeError('Invalid Limbus catalogue: expected schemaVersion 1 and a records array.');
+      throw new TypeError(
+        'Invalid Limbus catalogue: expected schemaVersion 1 and a records array.'
+      );
     }
 
     this.records.clear();
@@ -47,13 +70,21 @@ export class LimbusContentLibrary {
   }
 
   #validate(record) {
-    if (!record || typeof record !== 'object') throw new TypeError('A content record must be an object.');
+    if (!record || typeof record !== 'object')
+      throw new TypeError('A content record must be an object.');
     if (typeof record.id !== 'string' || !/^[a-z0-9][a-z0-9._-]*$/i.test(record.id)) {
-      throw new TypeError('Content record id must be a stable non-empty ID using letters, digits, dot, underscore or hyphen.');
+      throw new TypeError(
+        'Content record id must be a stable non-empty ID using letters, digits, dot, underscore or hyphen.'
+      );
     }
-    if (!ALLOWED_TYPES.has(record.type)) throw new TypeError(`Unsupported content type: ${record.type}`);
-    if (typeof record.name !== 'string' || !record.name.trim()) throw new TypeError(`Content record ${record.id} needs a name.`);
-    if (record.assetPaths != null && (typeof record.assetPaths !== 'object' || Array.isArray(record.assetPaths))) {
+    if (!ALLOWED_TYPES.has(record.type))
+      throw new TypeError(`Unsupported content type: ${record.type}`);
+    if (typeof record.name !== 'string' || !record.name.trim())
+      throw new TypeError(`Content record ${record.id} needs a name.`);
+    if (
+      record.assetPaths != null &&
+      (typeof record.assetPaths !== 'object' || Array.isArray(record.assetPaths))
+    ) {
       throw new TypeError(`assetPaths on ${record.id} must be an object of path strings.`);
     }
     return record;
@@ -72,26 +103,49 @@ export class LimbusContentLibrary {
       for (const id of removedIds) if (typeof id === 'string') this.removedIds.add(id);
       if (!Array.isArray(records)) return;
       for (const record of records) {
-        try { this.#validate(record); this.overrides.set(record.id, record); } catch { /* ignore corrupt local record */ }
+        try {
+          this.#validate(record);
+          this.overrides.set(record.id, record);
+        } catch {
+          /* ignore corrupt local record */
+        }
       }
-    } catch { /* storage can be disabled; the static catalogue still works */ }
+    } catch {
+      /* storage can be disabled; the static catalogue still works */
+    }
   }
 
-  get(id) { return this.records.get(String(id)) || null; }
+  get(id) {
+    return this.records.get(String(id)) || null;
+  }
 
   list(type = null) {
     const values = [...this.records.values()];
-    return values.filter((record) => !type || record.type === type).map((record) => structuredClone(record));
+    return values
+      .filter((record) => !type || record.type === type)
+      .map((record) => structuredClone(record));
   }
 
   search(query, { type = null, limit = 100 } = {}) {
-    const q = String(query || '').trim().toLocaleLowerCase();
+    const q = String(query || '')
+      .trim()
+      .toLocaleLowerCase();
     if (!q) return this.list(type).slice(0, Math.max(0, limit));
-    return this.list(type).filter((record) => {
-      const text = [record.id, record.name, record.characterId, ...(record.tags || []), ...(record.aliases || [])]
-        .filter(Boolean).join(' ').toLocaleLowerCase();
-      return text.includes(q);
-    }).slice(0, Math.max(0, limit));
+    return this.list(type)
+      .filter((record) => {
+        const text = [
+          record.id,
+          record.name,
+          record.characterId,
+          ...(record.tags || []),
+          ...(record.aliases || []),
+        ]
+          .filter(Boolean)
+          .join(' ')
+          .toLocaleLowerCase();
+        return text.includes(q);
+      })
+      .slice(0, Math.max(0, limit));
   }
 
   upsert(record) {
@@ -116,7 +170,10 @@ export class LimbusContentLibrary {
 
   #persistOverrides() {
     try {
-      this.storage?.setItem(this.storageKey, JSON.stringify({ records: [...this.overrides.values()], removedIds: [...this.removedIds] }));
+      this.storage?.setItem(
+        this.storageKey,
+        JSON.stringify({ records: [...this.overrides.values()], removedIds: [...this.removedIds] })
+      );
     } catch (error) {
       console.warn('[LimbusContentLibrary] Could not persist local overrides:', error);
     }

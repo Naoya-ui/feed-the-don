@@ -5,6 +5,10 @@ export class AssetManager extends AssetLoader {
   static async preload(sources = [], options = {}) {
     return this.load(sources, options);
   }
-  static getImage(src) { return this.imageCache.get(src) || null; }
-  static getAudio(src) { return this.audioCache.get(src) || null; }
+  static getImage(src) {
+    return this.imageCache.get(src) || null;
+  }
+  static getAudio(src) {
+    return this.audioCache.get(src) || null;
+  }
 }

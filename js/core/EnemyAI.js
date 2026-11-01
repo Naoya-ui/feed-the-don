@@ -15,7 +15,7 @@ export class EnemyAI {
     if (!pool.length) return null;
     const isWolf = enemy?.spriteKey === 'wolf';
     const rotationIndex = isWolf
-      ? ((turn - 1) + actionIndex) % pool.length
+      ? (turn - 1 + actionIndex) % pool.length
       : (turn + Number(enemy?.id || 0) + actionIndex - 1) % pool.length;
     return pool[rotationIndex];
   }

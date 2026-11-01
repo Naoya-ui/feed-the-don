@@ -17,24 +17,18 @@ export const VOICE_LINE_CATALOG = Object.freeze({
     attacks: Object.freeze({
       // Joust / Skill 1 did not have a battle_s1 clip in the supplied archive.
       // Keep the existing local callout rather than mis-assigning another voice line.
-      joust: Object.freeze([
-        'assets/audio/don-skills/028_donquixote_base_skill1_a_v1.wav',
-      ]),
+      joust: Object.freeze(['assets/audio/don-skills/028_donquixote_base_skill1_a_v1.wav']),
       // K / Gallop is the LCB Sinner Skill 2 voice callout.
-      gallop: Object.freeze([
-        `${DON_VOICE}battle_s2_10301_1.wav`,
-      ]),
+      gallop: Object.freeze([`${DON_VOICE}battle_s2_10301_1.wav`]),
       // U / Justice cycles the three supplied Skill 3 vocal cues.
       justice: Object.freeze([
         `${DON_VOICE}battle_s3_10301_1_1.wav`,
         `${DON_VOICE}battle_s3_10301_1_2.wav`,
         `${DON_VOICE}battle_s3_10301_1_3.wav`,
       ]),
-      // La Sangre's existing indexed cinematic cues remain unchanged.
+      // Dedicated La Sangre E.G.O awakening callout from the supplied audio pack.
       laSangre: Object.freeze([
-        'assets/audio/don-skills/030_donquixote_base_skill3-1_a_v1.wav',
-        'assets/audio/don-skills/030_donquixote_base_skill3-2_a_v1.wav',
-        'assets/audio/don-skills/030_donquixote_base_skill3-3_a_v1.wav',
+        'assets/audio/don-skills/la-sangre/battle_awaken_20301_1.wav',
       ]),
     }),
     events: Object.freeze({
@@ -84,7 +78,11 @@ export const VOICE_LINE_CATALOG = Object.freeze({
         'assets/audio/enemy/003_backstreet_mob_skill3_a_v1.wav',
       ]),
     }),
-    events: Object.freeze({ hurt: Object.freeze([]), block: Object.freeze([]), evade: Object.freeze([]) }),
+    events: Object.freeze({
+      hurt: Object.freeze([]),
+      block: Object.freeze([]),
+      evade: Object.freeze([]),
+    }),
   }),
   wolf: Object.freeze({
     displayName: 'Wolf Boss',
@@ -92,7 +90,11 @@ export const VOICE_LINE_CATALOG = Object.freeze({
       wolfSlash: Object.freeze(['assets/audio/enemy/004_backstreet_boss_skill2_a_v1.wav']),
       enemyHeavy: Object.freeze(['assets/audio/enemy/004_backstreet_boss_skill2_a_v1.wav']),
     }),
-    events: Object.freeze({ hurt: Object.freeze([]), block: Object.freeze([]), evade: Object.freeze([]) }),
+    events: Object.freeze({
+      hurt: Object.freeze([]),
+      block: Object.freeze([]),
+      evade: Object.freeze([]),
+    }),
   }),
   heathcliff: Object.freeze({
     displayName: 'Heathcliff',
@@ -107,6 +109,13 @@ export const VOICE_LINE_CATALOG = Object.freeze({
         'assets/audio/heathcliff/heathcliff_2_1-1.wav',
         'assets/audio/heathcliff/heathcliff_2_2.wav',
       ]),
+      bodysack: Object.freeze([
+        'assets/audio/heathcliff/bodysack/battle_awaken_20701_1.wav',
+        'assets/audio/heathcliff/bodysack/battle_awaken_20701_2.wav',
+        'assets/audio/heathcliff/bodysack/battle_awaken_20701_3.wav',
+        'assets/audio/heathcliff/bodysack/139_heathclif_base_ego-1_a_v1.wav',
+        'assets/audio/heathcliff/bodysack/139_heathclif_base_ego-2_a_v1.wav',
+      ]),
       ego: Object.freeze([
         'assets/audio/heathcliff/042_heathclif_base_skill3-1_a_v1.wav',
         'assets/audio/heathcliff/042_heathclif_base_skill3-2_a_v1.wav',
@@ -120,6 +129,11 @@ export const VOICE_LINE_CATALOG = Object.freeze({
       ]),
     }),
     // These files are indexed for future use but not auto-played until their exact event is known.
-    events: Object.freeze({ referenceUnassigned: Object.freeze([]), hurt: Object.freeze([]), block: Object.freeze([]), evade: Object.freeze([]) }),
+    events: Object.freeze({
+      referenceUnassigned: Object.freeze([]),
+      hurt: Object.freeze([]),
+      block: Object.freeze([]),
+      evade: Object.freeze([]),
+    }),
   }),
 });

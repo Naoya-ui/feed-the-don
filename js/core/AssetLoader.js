@@ -14,11 +14,17 @@ export class AssetLoader {
           if (/\.(mp3|wav|ogg|opus|m4a|aac)(?:[?#]|$)/i.test(src)) {
             let audio = this.audioCache.get(src);
             if (!audio) {
-              audio = new Audio(); audio.preload = 'auto'; audio.src = src;
+              audio = new Audio();
+              audio.preload = 'auto';
+              audio.src = src;
               this.audioCache.set(src, audio);
               await new Promise((resolve) => {
                 if (audio.readyState >= 2) return resolve();
-                const done = () => { audio.removeEventListener('canplaythrough', done); audio.removeEventListener('error', done); resolve(); };
+                const done = () => {
+                  audio.removeEventListener('canplaythrough', done);
+                  audio.removeEventListener('error', done);
+                  resolve();
+                };
                 audio.addEventListener('canplaythrough', done, { once: true });
                 audio.addEventListener('error', done, { once: true });
                 audio.load();
@@ -28,15 +34,26 @@ export class AssetLoader {
           } else if (/\.(png|jpe?g|webp|gif|avif)(?:[?#]|$)/i.test(src)) {
             let image = this.imageCache.get(src);
             if (!image) {
-              image = new Image(); image.decoding = 'async'; this.imageCache.set(src, image);
+              image = new Image();
+              image.decoding = 'async';
+              this.imageCache.set(src, image);
               await new Promise((resolve) => {
-                image.onload = async () => { try { await image.decode?.(); } catch {} resolve(); };
-                image.onerror = resolve; image.src = src;
+                image.onload = async () => {
+                  try {
+                    await image.decode?.();
+                  } catch {}
+                  resolve();
+                };
+                image.onerror = resolve;
+                image.src = src;
                 if (image.complete) resolve();
               });
             }
           }
-        } finally { completed++; onProgress(completed, paths.length, src); }
+        } finally {
+          completed++;
+          onProgress(completed, paths.length, src);
+        }
       }
     };
     await Promise.all(Array.from({ length: Math.min(concurrency, paths.length) }, worker));

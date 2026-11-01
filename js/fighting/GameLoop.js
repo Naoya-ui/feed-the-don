@@ -13,7 +13,8 @@ export class GameLoop {
     if (typeof update !== 'function' || typeof render !== 'function') {
       throw new TypeError('GameLoop requires update(dt) and render(alpha, frameDelta) callbacks.');
     }
-    if (typeof raf !== 'function') throw new Error('requestAnimationFrame is not available. Run this game in a browser.');
+    if (typeof raf !== 'function')
+      throw new Error('requestAnimationFrame is not available. Run this game in a browser.');
     this.updateCallback = update;
     this.renderCallback = render;
     this.fixedDelta = Math.max(1 / 240, fixedDelta);

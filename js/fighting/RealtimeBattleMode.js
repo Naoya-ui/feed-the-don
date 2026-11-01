@@ -7,7 +7,12 @@ import { CombatSystem } from './CombatSystem.js';
 import { battleDonSprites, battleDonAnimations } from '../data/characters.js';
 import { VERSUS_ROSTER, getVersusCharacter, getVersusEgo } from '../data/versusRoster.js';
 import { enemySprites } from '../data/enemies.js';
-import { heathcliffSprites, heathcliffAnimations, HEATHCLIFF_EGO_CONFIG, chargeHeathcliffEgoFromEvent } from '../data/heathcliff.js';
+import {
+  heathcliffSprites,
+  heathcliffAnimations,
+  HEATHCLIFF_EGO_CONFIG,
+  chargeHeathcliffEgoFromEvent,
+} from '../data/heathcliff.js';
 
 const LOGICAL_WIDTH = 1280;
 const LOGICAL_HEIGHT = 720;
@@ -23,7 +28,9 @@ const ENEMY_MOVE_BY_ROLE = Object.freeze({
   KNIFE: MOVE_DATA.enemyLight,
 });
 
-function safeId(value) { return String(value).replace(/[^a-zA-Z0-9_-]/g, '-'); }
+function safeId(value) {
+  return String(value).replace(/[^a-zA-Z0-9_-]/g, '-');
+}
 
 /** Return an existing project icon for the move that was actually started. */
 export function getSkillIconForMove(drawKey, move = {}) {
@@ -32,25 +39,36 @@ export function getSkillIconForMove(drawKey, move = {}) {
   const name = String(move.name || '').toLowerCase();
   const isEgo = !!move.isEgo || id.includes('ego') || name.includes('e.g.o');
   if (key === 'don') {
-    if (isEgo) return 'assets/images/battle/skills/justice-badge.png';
-    if (id.includes('heavy') || id.includes('gallop') || name.includes('gallop')) return 'assets/images/battle/skills/gallop-icon.png';
-    if (id.includes('special') || id.includes('justice') || name.includes('justice')) return 'assets/images/battle/skills/justice-icon.png';
-    return 'assets/images/battle/skills/joust-icon.png';
+    if (isEgo && id.includes('ego'))
+      return 'assets/images/battle/skill-icons/don/skill4-alt.png';
+    if (id.includes('heavy') || id.includes('gallop') || name.includes('gallop'))
+      return 'assets/images/battle/skill-icons/don/skill2.png';
+    if (id.includes('special') || id.includes('justice') || name.includes('justice'))
+      return 'assets/images/battle/skill-icons/don/skill3.png';
+    return 'assets/images/battle/skill-icons/don/skill1.png';
   }
   if (key === 'heathcliff') {
-    if (isEgo) return 'assets/images/battle/heathcliff/ego-sigil.png';
-    if (id.includes('skill3') || name.includes('savage') || name.includes('special')) return 'assets/images/battle/heathcliff/skill3_1.png';
-    if (id.includes('skill2') || id.includes('heavy') || name.includes('swing')) return 'assets/images/battle/heathcliff/skill2_1.png';
-    return 'assets/images/battle/heathcliff/skill1_1.png';
+    if (id === 'heathcliffbodysack')
+      return 'assets/images/ego/heathcliff/bodysack/20701_awaken_profile.png';
+    if (isEgo) return 'assets/images/battle/skill-icons/heathcliff/skill4.png';
+    if (id.includes('skill3') || name.includes('savage') || name.includes('special'))
+      return 'assets/images/battle/skill-icons/heathcliff/skill3.png';
+    if (id.includes('skill2') || id.includes('heavy') || name.includes('swing'))
+      return 'assets/images/battle/skill-icons/heathcliff/skill2.png';
+    return 'assets/images/battle/skill-icons/heathcliff/skill1.png';
   }
   if (key === 'wolf') {
-    if (id.includes('mirage') || name.includes('mirage')) return 'assets/images/battle/wolf-skills/mirage-slash.png';
-    if (id.includes('heavy') || name.includes('rend')) return 'assets/images/battle/wolf-skills/azure-rend.png';
+    if (id.includes('mirage') || name.includes('mirage'))
+      return 'assets/images/battle/wolf-skills/mirage-slash.png';
+    if (id.includes('heavy') || name.includes('rend'))
+      return 'assets/images/battle/wolf-skills/azure-rend.png';
     return 'assets/images/battle/wolf-skills/indigo-blade.png';
   }
   if (isEgo || id.includes('special')) return 'assets/images/battle/enemy-skills/heavy-strike.png';
-  if (id.includes('heavy') || name.includes('heavy')) return 'assets/images/battle/enemy-skills/heavy-strike.png';
-  if (id.includes('guard') || name.includes('block')) return 'assets/images/battle/enemy-skills/block.png';
+  if (id.includes('heavy') || name.includes('heavy'))
+    return 'assets/images/battle/enemy-skills/heavy-strike.png';
+  if (id.includes('guard') || name.includes('block'))
+    return 'assets/images/battle/enemy-skills/block.png';
   return 'assets/images/battle/enemy-skills/weak-blow.png';
 }
 
@@ -86,8 +104,20 @@ export function getSpriteFacingScale(team, facing, drawKey = null) {
 }
 
 export class RealtimeBattleMode {
-  constructor({ root = document.getElementById('realtimeArena'), onFps = () => {}, onHit = () => {}, onMoveStart = () => {}, onRoundStart = () => {}, trainingMode = false, standaloneMode = false, versusConfig = null, controlsConfig = null, controllerConfig = null } = {}) {
-    if (!root) throw new Error('Realtime battle overlay #realtimeArena is missing from index.html.');
+  constructor({
+    root = document.getElementById('realtimeArena'),
+    onFps = () => {},
+    onHit = () => {},
+    onMoveStart = () => {},
+    onRoundStart = () => {},
+    trainingMode = false,
+    standaloneMode = false,
+    versusConfig = null,
+    controlsConfig = null,
+    controllerConfig = null,
+  } = {}) {
+    if (!root)
+      throw new Error('Realtime battle overlay #realtimeArena is missing from index.html.');
     this.root = root;
     this.canvas = root.querySelector('#realtimeCanvas');
     this.ctx = this.canvas?.getContext('2d');
@@ -184,7 +214,7 @@ export class RealtimeBattleMode {
       if (!this._resultResolver) return;
       const resolve = this._resultResolver;
       this._resultResolver = null;
-      resolve(this._standaloneResult ? 'retry' : (this._resultVictory ? 'continue' : 'retry'));
+      resolve(this._standaloneResult ? 'retry' : this._resultVictory ? 'continue' : 'retry');
     });
     this.mainMenuButton?.addEventListener('click', () => {
       if (!this._resultResolver) return;
@@ -215,7 +245,9 @@ export class RealtimeBattleMode {
         ...(animation.frames || []),
         ...(animation.effectFrames || []).map((frame) => frame.src),
       ]),
-      ...Object.values(VERSUS_ROSTER).flatMap((character) => character.egos.map((ego) => ego.preview).filter(Boolean)),
+      ...Object.values(VERSUS_ROSTER).flatMap((character) =>
+        character.egos.map((ego) => ego.preview).filter(Boolean)
+      ),
       this._background.src,
     ];
     [...new Set(paths.filter(Boolean))].forEach((src) => this._image(src));
@@ -231,7 +263,9 @@ export class RealtimeBattleMode {
     return image;
   }
 
-  _isReady(image) { return !!image && image.complete && image.naturalWidth > 0; }
+  _isReady(image) {
+    return !!image && image.complete && image.naturalWidth > 0;
+  }
 
   async runRound(battle, encounter = 'bandit') {
     if (this._disposed) throw new Error('RealtimeBattleMode was disposed.');
@@ -239,9 +273,15 @@ export class RealtimeBattleMode {
     this.encounter = encounter;
     const bossEncounter = encounter === 'wolf';
     const versusSeconds = Number(this.versusConfig?.timeLimit ?? 99);
-    this.remainingSeconds = bossEncounter || (encounter === 'versus' && versusSeconds === 0) ? Infinity : encounter === 'versus' ? versusSeconds : 99;
+    this.remainingSeconds =
+      bossEncounter || (encounter === 'versus' && versusSeconds === 0)
+        ? Infinity
+        : encounter === 'versus'
+          ? versusSeconds
+          : 99;
     this.#renderTimer();
-    this.seriesActive = encounter === 'wolf' || encounter === 'heathcliff' || encounter === 'versus';
+    this.seriesActive =
+      encounter === 'wolf' || encounter === 'heathcliff' || encounter === 'versus';
     this.seriesScores = { player: 0, enemy: 0 };
     this.seriesRound = 1;
     this.seriesRoundEndFrames = 0;
@@ -262,31 +302,45 @@ export class RealtimeBattleMode {
     this.openingCardFrames = 52;
     this.poseTransitions.clear();
     this.#buildFighters();
-    this.onRoundStart({ encounter: this.encounter, round: this.seriesRound || 1, fighters: this.fighters });
+    this.onRoundStart({
+      encounter: this.encounter,
+      round: this.seriesRound || 1,
+      fighters: this.fighters,
+    });
     this.#updateModeBadge();
     this.#renderEnemyHud();
     this.#updateHud();
     this.#updateSeriesHud();
-    this.fightLabel.textContent = encounter === 'wolf'
-      ? 'BOSS DUEL · WOLF'
-      : encounter === 'heathcliff'
-        ? 'FRIENDLY SPAR · HEATHCLIFF / E.G.O'
-        : encounter === 'training'
-        ? 'TRAINING ROOM'
-        : encounter === 'versus'
-          ? 'VERSUS MATCH'
-          : `FOREST AMBUSH · WAVE ${battle.wave}/${battle.totalWaves}`;
-    this.setMessage(encounter === 'training'
-      ? 'TRAINING — Practice JOUST (J), GALLOP (K), JUSTICE (U), dash (L) and guard (S). Press ESC to leave.'
-      : encounter === 'heathcliff'
-        ? 'HEATHCLIFF: “What are you grinning at, tin-can?” DON: “A noble challenger! Let justice ring!” Heathcliff snarls and charges—Don braces for the clash.'
-        : 'READY — FIGHT!  A/D Move · W Jump · S Guard · J Joust · K Gallop · U Justice · L Dash');
+    this.fightLabel.textContent =
+      encounter === 'wolf'
+        ? 'BOSS DUEL · WOLF'
+        : encounter === 'heathcliff'
+          ? 'FRIENDLY SPAR · HEATHCLIFF / E.G.O'
+          : encounter === 'training'
+            ? 'TRAINING ROOM'
+            : encounter === 'versus'
+              ? 'VERSUS MATCH'
+              : `FOREST AMBUSH · WAVE ${battle.wave}/${battle.totalWaves}`;
+    this.setMessage(
+      encounter === 'training'
+        ? 'TRAINING — Practice JOUST (J), GALLOP (K), JUSTICE (U), dash (L) and guard (S). Press ESC to leave.'
+        : encounter === 'heathcliff'
+          ? 'HEATHCLIFF: “What are you grinning at, tin-can?” DON: “A noble challenger! Let justice ring!” Heathcliff snarls and charges—Don braces for the clash.'
+          : 'READY — FIGHT!  A/D Move · W Jump · S Guard · J Joust · K Gallop · U Justice · L Dash'
+    );
     this.runningRound = true;
     this.loop.start();
-    return new Promise((resolve) => { this.roundResolver = resolve; });
+    return new Promise((resolve) => {
+      this.roundResolver = resolve;
+    });
   }
 
-  #renderTimer() { if (this.timerLabel) this.timerLabel.textContent = Number.isFinite(this.remainingSeconds) ? String(Math.ceil(this.remainingSeconds)).padStart(2, '0') : '∞'; }
+  #renderTimer() {
+    if (this.timerLabel)
+      this.timerLabel.textContent = Number.isFinite(this.remainingSeconds)
+        ? String(Math.ceil(this.remainingSeconds)).padStart(2, '0')
+        : '∞';
+  }
 
   /** Pause simulation while the in-battle Settings modal is open. */
   pause() {
@@ -303,12 +357,18 @@ export class RealtimeBattleMode {
   }
 
   #updateModeBadge() {
-    if (this.modeBadge) this.modeBadge.textContent = this.trainingMode ? 'TRAINING' : (this.encounter === 'versus' && this.versusConfig?.localMultiplayer ? 'LOCAL VERSUS' : 'PLAYER');
-    if (this.controlsSummary) this.controlsSummary.textContent = this.trainingMode
-      ? 'Practice controls · ESC Return to Menu'
-      : this.encounter === 'versus' && this.versusConfig?.localMultiplayer
-        ? 'P1 WASD + J/K/U/L · P2 ARROWS + NUMPAD 1–4'
-        : 'A/D Move · W Jump · S Guard · J Joust · K Gallop · U Justice · L Dash';
+    if (this.modeBadge)
+      this.modeBadge.textContent = this.trainingMode
+        ? 'TRAINING'
+        : this.encounter === 'versus' && this.versusConfig?.localMultiplayer
+          ? 'LOCAL VERSUS'
+          : 'PLAYER';
+    if (this.controlsSummary)
+      this.controlsSummary.textContent = this.trainingMode
+        ? 'Practice controls · ESC Return to Menu'
+        : this.encounter === 'versus' && this.versusConfig?.localMultiplayer
+          ? 'P1 WASD + J/K/U/L · P2 ARROWS + NUMPAD 1–4'
+          : 'A/D Move · W Jump · S Guard · J Joust · K Gallop · U Justice · L Dash';
   }
 
   #updateSeriesHud() {
@@ -329,8 +389,15 @@ export class RealtimeBattleMode {
     this.seriesScores[winner] += 1;
     this.seriesRoundEndFrames = 84; // hold the result long enough to read the awarded round coin
     const localVersus = this.encounter === 'versus' && !!this.versusConfig?.localMultiplayer;
-    const winnerLabel = winner === 'player' ? (localVersus ? this.player?.name : 'DON QUIXOTE') : (this.enemies[0]?.name || 'OPPONENT');
-    this.setMessage(`${winnerLabel.toUpperCase()} WINS ROUND ${this.seriesRound} · ${this.seriesScores.player}–${this.seriesScores.enemy} COINS`);
+    const winnerLabel =
+      winner === 'player'
+        ? localVersus
+          ? this.player?.name
+          : 'DON QUIXOTE'
+        : this.enemies[0]?.name || 'OPPONENT';
+    this.setMessage(
+      `${winnerLabel.toUpperCase()} WINS ROUND ${this.seriesRound} · ${this.seriesScores.player}–${this.seriesScores.enemy} COINS`
+    );
     this.#updateSeriesHud();
     this.#updateHud();
   }
@@ -363,13 +430,19 @@ export class RealtimeBattleMode {
     this.seriesRoundEndFrames = 0;
     this.seriesRoundWinner = null;
     this.#buildFighters();
-    this.onRoundStart({ encounter: this.encounter, round: this.seriesRound, fighters: this.fighters });
+    this.onRoundStart({
+      encounter: this.encounter,
+      round: this.seriesRound,
+      fighters: this.fighters,
+    });
     this.#renderEnemyHud();
     this.#updateHud();
     this.#updateSeriesHud();
-    this.setMessage(this.seriesRound === 3
-      ? 'TIEBREAKER — 1–1. The winner of this round takes the match!'
-      : `ROUND ${this.seriesRound} — Fighters recovered to full HP. FIGHT!`);
+    this.setMessage(
+      this.seriesRound === 3
+        ? 'TIEBREAKER — 1–1. The winner of this round takes the match!'
+        : `ROUND ${this.seriesRound} — Fighters recovered to full HP. FIGHT!`
+    );
   }
 
   /** Called from Settings; hitboxes are deliberately not exposed as a battle-HUD toggle. */
@@ -380,29 +453,62 @@ export class RealtimeBattleMode {
   #buildFighters() {
     const battle = this.battle;
     const localVersus = this.encounter === 'versus' && !!this.versusConfig?.localMultiplayer;
-    const p1Roster = localVersus ? getVersusCharacter(this.versusConfig.player1?.characterId || 'don') : null;
-    const p1Ego = localVersus ? getVersusEgo(p1Roster.id, this.versusConfig.player1?.egoId || 'none') : null;
+    const p1Roster = localVersus
+      ? getVersusCharacter(this.versusConfig.player1?.characterId || 'don')
+      : null;
+    const p1Ego = localVersus
+      ? getVersusEgo(p1Roster.id, this.versusConfig.player1?.egoId || 'none')
+      : null;
     const don = battle.don;
-    const p1DrawKey = localVersus ? p1Roster.drawKey : (don.drawKey || 'don');
+    const p1DrawKey = localVersus ? p1Roster.drawKey : don.drawKey || 'don';
     const p1Controls = this.controlsConfig?.p1 || {};
     const p1IsHeathcliff = p1DrawKey === 'heathcliff';
     this.player = new Fighter({
-      id: 'don', name: don.name || p1Roster?.name || 'Don Quixote', team: 'player', combatant: don,
-      x: 230, groundY: GROUND_Y, bodyWidth: p1IsHeathcliff ? 82 : 72, bodyHeight: p1IsHeathcliff ? 154 : 150, facing: 1,
-      walkSpeed: 330, acceleration: 2650, friction: 3050, gravity: 2100, jumpSpeed: 760,
+      id: 'don',
+      name: don.name || p1Roster?.name || 'Don Quixote',
+      team: 'player',
+      combatant: don,
+      x: 230,
+      groundY: GROUND_Y,
+      bodyWidth: p1IsHeathcliff ? 82 : 72,
+      bodyHeight: p1IsHeathcliff ? 154 : 150,
+      facing: 1,
+      walkSpeed: 330,
+      acceleration: 2650,
+      friction: 3050,
+      gravity: 2100,
+      jumpSpeed: 760,
       controls: p1Controls,
       lightMoveData: p1IsHeathcliff ? MOVE_DATA.heathcliffSkill1 : MOVE_DATA.light,
       heavyMoveData: p1IsHeathcliff ? MOVE_DATA.heathcliffSkill2 : MOVE_DATA.heavy,
       specialMoveData: p1IsHeathcliff ? MOVE_DATA.heathcliffSkill3 : MOVE_DATA.special,
-      egoMoveData: p1Ego?.id === 'none' ? (this.encounter === 'heathcliff' ? (p1IsHeathcliff ? MOVE_DATA.heathcliffBodysack : MOVE_DATA.donEgo) : null) : (p1IsHeathcliff ? (p1Ego?.id === 'bodysack' ? MOVE_DATA.heathcliffBodysack : MOVE_DATA.heathcliffEgo) : MOVE_DATA.donEgo),
-      egoEquipped: (!!p1Ego && p1Ego.id !== 'none') || (this.encounter === 'heathcliff' && !p1IsHeathcliff),
+      egoMoveData:
+        p1Ego?.id === 'none'
+          ? this.encounter === 'heathcliff'
+            ? p1IsHeathcliff
+              ? MOVE_DATA.heathcliffBodysack
+              : MOVE_DATA.donEgo
+            : null
+          : p1IsHeathcliff
+            ? p1Ego?.id === 'bodysack'
+              ? MOVE_DATA.heathcliffBodysack
+              : MOVE_DATA.heathcliffEgo
+            : MOVE_DATA.donEgo,
+      egoEquipped:
+        (!!p1Ego && p1Ego.id !== 'none') || (this.encounter === 'heathcliff' && !p1IsHeathcliff),
     });
     this.player.drawKey = p1DrawKey;
     this.player.egoId = p1Ego?.id || 'none';
-    this.player.egoPreviewPath = p1Ego?.preview || (this.encounter === 'heathcliff' && !p1IsHeathcliff ? 'assets/images/ego/don/la-sangre-preview.gif' : null);
+    this.player.egoPreviewPath =
+      p1Ego?.preview ||
+      (this.encounter === 'heathcliff' && !p1IsHeathcliff
+        ? 'assets/images/ego/don/la-sangre-preview.gif'
+        : null);
     if (this.playerNameLabel) this.playerNameLabel.textContent = this.player.name.toUpperCase();
-    if (this.playerIdentityLabel) this.playerIdentityLabel.textContent = p1Roster?.identity?.name || 'JOUST / GALLOP / JUSTICE';
-    if (this.playerEgoName) this.playerEgoName.textContent = p1Ego?.id && p1Ego.id !== 'none' ? p1Ego.name : 'E.G.O';
+    if (this.playerIdentityLabel)
+      this.playerIdentityLabel.textContent = p1Roster?.identity?.name || 'JOUST / GALLOP / JUSTICE';
+    if (this.playerEgoName)
+      this.playerEgoName.textContent = p1Ego?.id && p1Ego.id !== 'none' ? p1Ego.name : 'E.G.O';
     this.player.egoMeter = 0;
     this.player.egoMeterMax = 100;
     this.player.aiAttackRange = 154;
@@ -412,28 +518,50 @@ export class RealtimeBattleMode {
     this.player.aiActionCount = 0;
 
     this.enemies = battle.enemies.map((enemy, index) => {
-      const x = localVersus ? 1010 : (battle.encounter === 'wolf' || encounterIsWolf(this.encounter)
-        ? 1000
-        : battle.encounter === 'heathcliff' || this.encounter === 'heathcliff'
-          ? 1010
-          : [800, 990, 1130, 1160][index] || 1130);
-      const p2Roster = localVersus ? getVersusCharacter(this.versusConfig.player2?.characterId || 'heathcliff') : null;
-      const p2Ego = localVersus ? getVersusEgo(p2Roster.id, this.versusConfig.player2?.egoId || 'none') : null;
-      const drawKey = localVersus ? p2Roster.drawKey : (enemy.spriteKey || 'club');
+      const x = localVersus
+        ? 1010
+        : battle.encounter === 'wolf' || encounterIsWolf(this.encounter)
+          ? 1000
+          : battle.encounter === 'heathcliff' || this.encounter === 'heathcliff'
+            ? 1010
+            : [800, 990, 1130, 1160][index] || 1130;
+      const p2Roster = localVersus
+        ? getVersusCharacter(this.versusConfig.player2?.characterId || 'heathcliff')
+        : null;
+      const p2Ego = localVersus
+        ? getVersusEgo(p2Roster.id, this.versusConfig.player2?.egoId || 'none')
+        : null;
+      const drawKey = localVersus ? p2Roster.drawKey : enemy.spriteKey || 'club';
       const isPlayer2 = localVersus;
       const isHeathcliff = drawKey === 'heathcliff';
       const fighter = new Fighter({
-        id: `enemy-${enemy.id}`, name: enemy.name, team: isPlayer2 ? 'player2' : 'enemy', combatant: enemy,
-        x, groundY: GROUND_Y,
+        id: `enemy-${enemy.id}`,
+        name: enemy.name,
+        team: isPlayer2 ? 'player2' : 'enemy',
+        combatant: enemy,
+        x,
+        groundY: GROUND_Y,
         bodyWidth: drawKey === 'wolf' ? 112 : isHeathcliff ? 82 : 72,
         bodyHeight: drawKey === 'wolf' ? 172 : isHeathcliff ? 154 : 150,
-        facing: -1, walkSpeed: isHeathcliff ? 330 : 320,
-        acceleration: 2500, friction: 3000, gravity: 2100, jumpSpeed: 760, aiIndex: index,
-        controls: isPlayer2 ? (this.controlsConfig?.p2 || {}) : null,
+        facing: -1,
+        walkSpeed: isHeathcliff ? 330 : 320,
+        acceleration: 2500,
+        friction: 3000,
+        gravity: 2100,
+        jumpSpeed: 760,
+        aiIndex: index,
+        controls: isPlayer2 ? this.controlsConfig?.p2 || {} : null,
         lightMoveData: isHeathcliff ? MOVE_DATA.heathcliffSkill1 : MOVE_DATA.light,
         heavyMoveData: isHeathcliff ? MOVE_DATA.heathcliffSkill2 : MOVE_DATA.heavy,
         specialMoveData: isHeathcliff ? MOVE_DATA.heathcliffSkill3 : MOVE_DATA.special,
-        egoMoveData: p2Ego?.id === 'none' ? null : (isHeathcliff ? (p2Ego?.id === 'bodysack' ? MOVE_DATA.heathcliffBodysack : MOVE_DATA.heathcliffEgo) : MOVE_DATA.donEgo),
+        egoMoveData:
+          p2Ego?.id === 'none'
+            ? null
+            : isHeathcliff
+              ? p2Ego?.id === 'bodysack'
+                ? MOVE_DATA.heathcliffBodysack
+                : MOVE_DATA.heathcliffEgo
+              : MOVE_DATA.donEgo,
         egoEquipped: !!p2Ego && p2Ego.id !== 'none',
       });
       fighter.drawKey = drawKey;
@@ -445,7 +573,9 @@ export class RealtimeBattleMode {
       fighter.aiDefenseCooldownFrames = 50 + index * 35;
       fighter.aiGuardFrames = 0;
       fighter.aiAttackRange = drawKey === 'wolf' ? 198 : isHeathcliff ? 232 : 178;
-      fighter.aiMove = isHeathcliff ? MOVE_DATA.heathcliffSkill1 : (ENEMY_MOVE_BY_ROLE[enemy.role] || MOVE_DATA.enemyLight);
+      fighter.aiMove = isHeathcliff
+        ? MOVE_DATA.heathcliffSkill1
+        : ENEMY_MOVE_BY_ROLE[enemy.role] || MOVE_DATA.enemyLight;
       if (drawKey === 'wolf') fighter.aiMove = MOVE_DATA.wolfSlash;
       fighter.aiActionCount = 0;
       return fighter;
@@ -459,14 +589,24 @@ export class RealtimeBattleMode {
 
   /** Register late-supplied E.G.O pose paths; preload before attaching to avoid frame hitching. */
   async setEgoSpriteSet(characterId, spriteSet) {
-    const fighter = this.fighters.find((item) => item.drawKey === characterId && (item.team === 'player' || item.team === 'player2'));
+    const fighter = this.fighters.find(
+      (item) => item.drawKey === characterId && (item.team === 'player' || item.team === 'player2')
+    );
     if (!fighter || !spriteSet || typeof spriteSet !== 'object') return false;
-    const paths = Object.values(spriteSet).flatMap((value) => Array.isArray(value) ? value : [value]).filter((value) => typeof value === 'string');
-    await Promise.all(paths.map((src) => new Promise((resolve) => {
-      const image = this._image(src);
-      if (!image || image.complete) return resolve();
-      image.addEventListener('load', resolve, { once: true }); image.addEventListener('error', resolve, { once: true });
-    })));
+    const paths = Object.values(spriteSet)
+      .flatMap((value) => (Array.isArray(value) ? value : [value]))
+      .filter((value) => typeof value === 'string');
+    await Promise.all(
+      paths.map(
+        (src) =>
+          new Promise((resolve) => {
+            const image = this._image(src);
+            if (!image || image.complete) return resolve();
+            image.addEventListener('load', resolve, { once: true });
+            image.addEventListener('error', resolve, { once: true });
+          })
+      )
+    );
     fighter.egoSpriteSet = spriteSet;
     return true;
   }
@@ -480,15 +620,25 @@ export class RealtimeBattleMode {
   }
 
   setControllerConfig(config = {}) {
-    this.controllerConfig = { ...this.controllerConfig, ...(config || {}), buttons: { ...(this.controllerConfig.buttons || {}), ...(config?.buttons || {}) } };
+    this.controllerConfig = {
+      ...this.controllerConfig,
+      ...(config || {}),
+      buttons: { ...(this.controllerConfig.buttons || {}), ...(config?.buttons || {}) },
+    };
   }
 
   #updateGamepad() {
     if (!(this.encounter === 'versus' && this.versusConfig?.localMultiplayer)) return;
     const playerKey = this.controllerConfig?.player === 'p2' ? 'p2' : 'p1';
-    const fighter = this.fighters.find((item) => item.team === (playerKey === 'p2' ? 'player2' : 'player'));
+    const fighter = this.fighters.find(
+      (item) => item.team === (playerKey === 'p2' ? 'player2' : 'player')
+    );
     if (!fighter) return;
-    this.gamepadAdapter.update({ input: this.input, controls: fighter.controls, settings: this.controllerConfig });
+    this.gamepadAdapter.update({
+      input: this.input,
+      controls: fighter.controls,
+      settings: this.controllerConfig,
+    });
   }
 
   #renderEnemyHud() {
@@ -499,7 +649,11 @@ export class RealtimeBattleMode {
       const card = document.createElement('div');
       card.className = 'rt-enemy-card';
       card.dataset.enemyId = fighter.id;
-      if (fighter.egoEquipped || (fighter.drawKey === 'heathcliff' && this.encounter === 'heathcliff')) card.classList.add('has-ego');
+      if (
+        fighter.egoEquipped ||
+        (fighter.drawKey === 'heathcliff' && this.encounter === 'heathcliff')
+      )
+        card.classList.add('has-ego');
       const label = document.createElement('div');
       label.className = 'rt-enemy-label';
       label.textContent = fighter.name;
@@ -523,7 +677,10 @@ export class RealtimeBattleMode {
       card.append(label, value, track, skillHistory);
       let cachedEgoFill = null;
       let cachedEgoLabel = null;
-      if (fighter.egoEquipped || (fighter.drawKey === 'heathcliff' && this.encounter === 'heathcliff')) {
+      if (
+        fighter.egoEquipped ||
+        (fighter.drawKey === 'heathcliff' && this.encounter === 'heathcliff')
+      ) {
         const egoMeter = document.createElement('div');
         egoMeter.className = 'rt-ego-meter';
         const egoHeader = document.createElement('div');
@@ -542,17 +699,27 @@ export class RealtimeBattleMode {
         egoFill.dataset.egoFill = fighter.id;
         egoFill.setAttribute('data-ego-fill', fighter.id);
         cachedEgoFill = egoFill;
-        egoFill.style.transform = `scaleX(${((fighter.egoMeter || 0) / HEATHCLIFF_EGO_CONFIG.maxGauge)})`;
-        egoFill.style.width = '100%'; egoFill.style.transformOrigin = 'left center';
+        egoFill.style.transform = `scaleX(${(fighter.egoMeter || 0) / HEATHCLIFF_EGO_CONFIG.maxGauge})`;
+        egoFill.style.width = '100%';
+        egoFill.style.transformOrigin = 'left center';
         egoTrack.append(egoFill);
         const egoHint = document.createElement('small');
         egoHint.className = 'rt-ego-hint';
-        egoHint.textContent = fighter.egoEquipped ? `Equipped · ${fighter.egoId || 'E.G.O'}` : 'Builds on hit / block';
+        egoHint.textContent = fighter.egoEquipped
+          ? `Equipped · ${fighter.egoId || 'E.G.O'}`
+          : 'Builds on hit / block';
         egoMeter.append(egoHeader, egoTrack, egoHint);
         card.append(egoMeter);
       }
       this.enemyHud.append(card);
-      this.enemyHudRefs.set(fighter.id, { fill, label: value, card, skillHistory, egoFill: cachedEgoFill, egoLabel: cachedEgoLabel });
+      this.enemyHudRefs.set(fighter.id, {
+        fill,
+        label: value,
+        card,
+        skillHistory,
+        egoFill: cachedEgoFill,
+        egoLabel: cachedEgoLabel,
+      });
       this.#renderSkillHistory(fighter);
     }
   }
@@ -573,9 +740,10 @@ export class RealtimeBattleMode {
   }
 
   #renderSkillHistory(fighter) {
-    const container = fighter === this.player
-      ? this.playerSkillHistory
-      : this.enemyHud?.querySelector?.(`[data-skill-history="${safeId(fighter?.id || '')}"]`);
+    const container =
+      fighter === this.player
+        ? this.playerSkillHistory
+        : this.enemyHud?.querySelector?.(`[data-skill-history="${safeId(fighter?.id || '')}"]`);
     if (!container) return;
     const history = this.skillHistory.get(fighter.id) || [];
     container.replaceChildren();
@@ -590,15 +758,26 @@ export class RealtimeBattleMode {
       const chip = document.createElement('span');
       chip.className = `rt-skill-chip${index === history.length - 1 ? ' is-latest' : ''}`;
       chip.title = item.name;
-      chip.setAttribute('aria-label', `${item.name}${index === history.length - 1 ? ', most recent' : ''}`);
+      chip.setAttribute(
+        'aria-label',
+        `${item.name}${index === history.length - 1 ? ', most recent' : ''}`
+      );
+      chip.dataset.character = fighter.drawKey || 'club';
       const image = document.createElement('img');
+      image.className = 'rt-skill-icon';
       image.src = item.icon;
       image.alt = '';
       image.loading = 'eager';
       image.draggable = false;
+      const frame = document.createElement('img');
+      frame.className = 'rt-skill-frame';
+      frame.src = 'assets/images/battle/skill-frames/frame-base.png';
+      frame.alt = '';
+      frame.setAttribute('aria-hidden', 'true');
+      frame.draggable = false;
       const label = document.createElement('b');
       label.textContent = item.shortLabel;
-      chip.append(image, label);
+      chip.append(image, frame, label);
       container.append(chip);
     });
   }
@@ -611,11 +790,17 @@ export class RealtimeBattleMode {
     if (!this.runningRound || !this.battle) return;
     this.effectClock += dt;
     this.hudRefreshTimer = (this.hudRefreshTimer || 0) + dt;
-    if (this.hudRefreshTimer >= 0.12) { this.hudRefreshTimer = 0; this.#updateHud(); }
+    if (this.hudRefreshTimer >= 0.12) {
+      this.hudRefreshTimer = 0;
+      this.#updateHud();
+    }
     if (Number.isFinite(this.remainingSeconds)) {
       this.remainingSeconds = Math.max(0, this.remainingSeconds - dt);
       this.#renderTimer();
-      if (this.remainingSeconds <= 0) { this.#endRound(this.player.hp >= (this.enemies[0]?.hp || 0) ? 'victory' : 'defeat'); return; }
+      if (this.remainingSeconds <= 0) {
+        this.#endRound(this.player.hp >= (this.enemies[0]?.hp || 0) ? 'victory' : 'defeat');
+        return;
+      }
     }
     this.cameraShake = Math.max(0, this.cameraShake - 36 * dt);
     this.egoCutinFrames = Math.max(0, this.egoCutinFrames - 1);
@@ -659,10 +844,14 @@ export class RealtimeBattleMode {
     const target = this.player;
     // Capture move IDs before the fixed update so a voice line plays once when an
     // attack starts, not only after a hit. This keeps calls audible on whiff/block too.
-    const previousMoveIds = new Map(this.fighters.map((fighter) => [fighter.id, fighter.currentMove?.data?.id ?? null]));
+    const previousMoveIds = new Map(
+      this.fighters.map((fighter) => [fighter.id, fighter.currentMove?.data?.id ?? null])
+    );
     // Don keeps the last direction the player chose with A/D. Do not auto-turn toward an
     // opponent while standing still; the player may deliberately face either way.
-    const opponent = this.enemies.filter((enemy) => enemy.alive).sort((a, b) => Math.abs(a.x - target.x) - Math.abs(b.x - target.x))[0];
+    const opponent = this.enemies
+      .filter((enemy) => enemy.alive)
+      .sort((a, b) => Math.abs(a.x - target.x) - Math.abs(b.x - target.x))[0];
     target.opponentX = opponent?.x;
     target.update(dt, this.input, ARENA_BOUNDS);
     for (const enemy of this.enemies) this.#updateEnemy(enemy, target, dt);
@@ -671,8 +860,19 @@ export class RealtimeBattleMode {
       const previousId = previousMoveIds.get(fighter.id) ?? null;
       if (move && move.id !== previousId) {
         this.#recordSkillUse(fighter, move);
-        if (move.isEgo || move.id === 'donEgo' || move.id === 'heathcliffEgo' || move.id === 'heathcliffBodysack') {
-          this.egoCutinImage = this._image(fighter.egoPreviewPath || (fighter.drawKey === 'heathcliff' ? heathcliffSprites.egoCutin : 'assets/images/battle/ego/frame-art.png'));
+        if (
+          move.isEgo ||
+          move.id === 'donEgo' ||
+          move.id === 'heathcliffEgo' ||
+          move.id === 'heathcliffBodysack'
+        ) {
+          this.egoCutinImage = this._image(
+            move.cinematicPath ||
+              fighter.egoPreviewPath ||
+              (fighter.drawKey === 'heathcliff'
+                ? heathcliffSprites.egoCutin
+                : 'assets/images/battle/ego/frame-art.png')
+          );
           this.egoCutinLabel = `${fighter.name.toUpperCase()} · ${move.name.toUpperCase()}`;
           this.egoCutinFrames = 90;
         }
@@ -730,9 +930,11 @@ export class RealtimeBattleMode {
     const playerMove = player.currentMove;
     const playerFrame = playerMove?.frame ?? -1;
     const dangerRange = (playerMove?.data?.range || 145) + enemy.bodyWidth * 0.82;
-    const incoming = !!playerMove && playerFrame >= Math.max(1, playerMove.data.startup - 2)
-      && playerFrame <= playerMove.data.startup + playerMove.data.active + 1
-      && distance <= dangerRange;
+    const incoming =
+      !!playerMove &&
+      playerFrame >= Math.max(1, playerMove.data.startup - 2) &&
+      playerFrame <= playerMove.data.startup + playerMove.data.active + 1 &&
+      distance <= dangerRange;
 
     // Enemies read the same startup window the player sees: some retreat through an
     // invulnerable dash, others guard briefly. The pattern is deterministic, not damage RNG.
@@ -747,14 +949,17 @@ export class RealtimeBattleMode {
     }
 
     if (!enemy.blockHeld && enemy.canAct()) {
-      const egoReady = enemy.drawKey === 'heathcliff' && enemy.egoMeter >= HEATHCLIFF_EGO_CONFIG.maxGauge;
+      const egoReady =
+        enemy.drawKey === 'heathcliff' && enemy.egoMeter >= HEATHCLIFF_EGO_CONFIG.maxGauge;
       if (egoReady && distance <= HEATHCLIFF_EGO_CONFIG.activationRange) {
         if (enemy.beginAttack(MOVE_DATA.heathcliffEgo)) {
           enemy.egoMeter = 0;
           enemy.egoActivationCount = (enemy.egoActivationCount || 0) + 1;
           enemy.aiCooldownFrames = 150;
           this.egoCutinFrames = 54;
-          this.setMessage('E.G.O ACTIVATED — Heathcliff unleashes a full-gauge burst! Guard or evade, then punish the long recovery.');
+          this.setMessage(
+            'E.G.O ACTIVATED — Heathcliff unleashes a full-gauge burst! Guard or evade, then punish the long recovery.'
+          );
         }
       } else if (distance > enemy.aiAttackRange * 0.78) {
         enemy.aiDirection = dx >= 0 ? 1 : -1;
@@ -762,15 +967,20 @@ export class RealtimeBattleMode {
         let move = enemy.aiMove || MOVE_DATA.enemyLight;
         if (enemy.drawKey === 'heathcliff') {
           // Alternate the fast bat strike and the slower double-pulse swing.
-          move = (enemy.aiActionCount % 3 === 2) ? MOVE_DATA.heathcliffSkill2 : MOVE_DATA.heathcliffSkill1;
+          move =
+            enemy.aiActionCount % 3 === 2 ? MOVE_DATA.heathcliffSkill2 : MOVE_DATA.heathcliffSkill1;
           enemy.aiActionCount = (enemy.aiActionCount || 0) + 1;
         }
         if (enemy.beginAttack(move)) {
           // Offset enemy timing so the fight has readable beats instead of one synchronized swarm.
-          enemy.aiCooldownFrames = (move.id === 'wolfSlash' ? 73 : move.id === 'heathcliffEgo' ? 150 : 67) + enemy.aiIndex * 28;
-          this.setMessage(move.id === 'heathcliffEgo'
-            ? 'Heathcliff is gathering E.G.O power — prepare to defend.'
-            : `${enemy.name} is winding up — guard with S or time a dash through the swing.`);
+          enemy.aiCooldownFrames =
+            (move.id === 'wolfSlash' ? 73 : move.id === 'heathcliffEgo' ? 150 : 67) +
+            enemy.aiIndex * 28;
+          this.setMessage(
+            move.id === 'heathcliffEgo'
+              ? 'Heathcliff is gathering E.G.O power — prepare to defend.'
+              : `${enemy.name} is winding up — guard with S or time a dash through the swing.`
+          );
         }
       }
     }
@@ -780,9 +990,15 @@ export class RealtimeBattleMode {
   #onHit(event) {
     if (event.evaded) {
       this.effects.push({
-        kind: 'evade', x: event.target.x, y: event.target.y + 28,
-        text: 'EVADED', detail: '', at: this.effectClock, duration: 0.56,
-        attackerX: event.attacker.x, targetX: event.target.x,
+        kind: 'evade',
+        x: event.target.x,
+        y: event.target.y + 28,
+        text: 'EVADED',
+        detail: '',
+        at: this.effectClock,
+        duration: 0.56,
+        attackerX: event.attacker.x,
+        targetX: event.target.x,
       });
       this.setMessage(`${event.target.name} evaded ${event.attacker.name}'s ${event.move.name}.`);
       this.onHit(event);
@@ -791,42 +1007,82 @@ export class RealtimeBattleMode {
 
     // Impact overlays are anchored to the actual collision event (not a guessed timeout),
     // so multi-hit animation, hitstop and follow-up frames stay in lockstep.
-    if (!event.blocked && event.attacker?.drawKey === 'heathcliff' && event.move?.id === 'heathcliffSkill2') {
-      this.effects.push({ kind: 'sprite', src: event.hitIndex === 0 ? heathcliffAnimations.skill2.effectFrames[0].src : heathcliffAnimations.skill2.effectFrames.at(-1).src,
-        x: event.target.x, y: event.target.y + event.target.bodyHeight * 0.62, facing: event.attacker.facing,
-        width: 250, height: 170, at: this.effectClock, duration: 0.22 });
+    if (
+      !event.blocked &&
+      event.attacker?.drawKey === 'heathcliff' &&
+      event.move?.id === 'heathcliffSkill2'
+    ) {
+      this.effects.push({
+        kind: 'sprite',
+        src:
+          event.hitIndex === 0
+            ? heathcliffAnimations.skill2.effectFrames[0].src
+            : heathcliffAnimations.skill2.effectFrames.at(-1).src,
+        x: event.target.x,
+        y: event.target.y + event.target.bodyHeight * 0.62,
+        facing: event.attacker.facing,
+        width: 250,
+        height: 170,
+        at: this.effectClock,
+        duration: 0.22,
+      });
     }
     if (this.encounter !== 'versus') chargeHeathcliffEgoFromEvent(event);
     if (this.encounter === 'versus' && !event.evaded) {
-      if (event.attacker?.egoEquipped) event.attacker.egoMeter = clampEgoMeter((event.attacker.egoMeter || 0) + (event.blocked ? 8 : 12), 100);
-      if (event.target?.egoEquipped) event.target.egoMeter = clampEgoMeter((event.target.egoMeter || 0) + (event.blocked ? 4 : 7), 100);
+      if (event.attacker?.egoEquipped)
+        event.attacker.egoMeter = clampEgoMeter(
+          (event.attacker.egoMeter || 0) + (event.blocked ? 8 : 12),
+          100
+        );
+      if (event.target?.egoEquipped)
+        event.target.egoMeter = clampEgoMeter(
+          (event.target.egoMeter || 0) + (event.blocked ? 4 : 7),
+          100
+        );
     }
     const kind = event.blocked ? 'block' : 'hit';
     this.hitstopFrames = Math.max(this.hitstopFrames, event.hitstop || (event.blocked ? 1 : 0));
     // Regular hits/blocks use hitstop and hit VFX, but never shake the whole screen.
     // Only Don's original third skill (U / Justice) keeps the dramatic camera shake.
-    if (event.move?.id === 'special' || event.move?.id === 'donEgo' || event.move?.id === 'heathcliffEgo' || event.move?.id === 'heathcliffBodysack') {
+    if (
+      event.move?.id === 'special' ||
+      event.move?.id === 'donEgo' ||
+      event.move?.id === 'heathcliffEgo' ||
+      event.move?.id === 'heathcliffBodysack'
+    ) {
       const shakeStrength = event.blocked ? 3.5 : 9 + Math.min(5, event.damage * 0.07);
       this.cameraShake = Math.max(this.cameraShake, shakeStrength);
     }
     this.effects.push({
-      kind, x: event.target.x, y: event.target.y + 35,
+      kind,
+      x: event.target.x,
+      y: event.target.y + 35,
       text: event.blocked ? 'BLOCKED' : String(event.damage),
       detail: event.blocked ? `-${event.damage} CHIP` : event.move.name.toUpperCase(),
-      at: this.effectClock, duration: event.blocked ? 0.62 : 0.82,
-      attackerX: event.attacker.x, targetX: event.target.x,
+      at: this.effectClock,
+      duration: event.blocked ? 0.62 : 0.82,
+      attackerX: event.attacker.x,
+      targetX: event.target.x,
       damage: event.damage,
     });
     if (!event.blocked) {
       // A compact slash burst remains attached to the impact point while the numbers rise.
       this.effects.push({
-        kind: 'impact', x: event.target.x, y: event.target.y + event.target.bodyHeight * 0.36,
-        text: '', detail: '', at: this.effectClock, duration: 0.32,
-        attackerX: event.attacker.x, targetX: event.target.x,
+        kind: 'impact',
+        x: event.target.x,
+        y: event.target.y + event.target.bodyHeight * 0.36,
+        text: '',
+        detail: '',
+        at: this.effectClock,
+        duration: 0.32,
+        attackerX: event.attacker.x,
+        targetX: event.target.x,
       });
     }
-    if (event.blocked) this.setMessage(`${event.target.name} BLOCKED the hit · ${event.damage} chip damage.`);
-    else this.setMessage(`${event.attacker.name} landed ${event.move.name} · ${event.damage} damage.`);
+    if (event.blocked)
+      this.setMessage(`${event.target.name} BLOCKED the hit · ${event.damage} chip damage.`);
+    else
+      this.setMessage(`${event.attacker.name} landed ${event.move.name} · ${event.damage} damage.`);
     this.onHit(event);
     this.#updateHud();
   }
@@ -841,8 +1097,10 @@ export class RealtimeBattleMode {
   }
 
   #updateHud() {
-    if (this.playerBar) this.playerBar.style.transform = `scaleX(${clamp((this.player?.hp || 0) / (this.player?.maxHp || 1), 0, 1)})`;
-    if (this.playerHpLabel && this.player) this.playerHpLabel.textContent = `${this.player.hp} / ${this.player.maxHp}`;
+    if (this.playerBar)
+      this.playerBar.style.transform = `scaleX(${clamp((this.player?.hp || 0) / (this.player?.maxHp || 1), 0, 1)})`;
+    if (this.playerHpLabel && this.player)
+      this.playerHpLabel.textContent = `${this.player.hp} / ${this.player.maxHp}`;
     if (this.playerEgoMeter && this.player) {
       this.playerEgoMeter.hidden = !this.player.egoEquipped;
       const meter = clampEgoMeter(this.player.egoMeter || 0, 100);
@@ -858,7 +1116,10 @@ export class RealtimeBattleMode {
       if (label) label.textContent = `${fighter.hp}/${fighter.maxHp}`;
       const card = refs?.card;
       if (card) card.classList.toggle('is-defeated', !fighter.alive);
-      if (fighter.egoEquipped || (fighter.drawKey === 'heathcliff' && this.encounter === 'heathcliff')) {
+      if (
+        fighter.egoEquipped ||
+        (fighter.drawKey === 'heathcliff' && this.encounter === 'heathcliff')
+      ) {
         const meter = clampEgoMeter(fighter.egoMeter || 0, 100);
         const egoFill = refs?.egoFill;
         const egoLabel = refs?.egoLabel;
@@ -889,14 +1150,16 @@ export class RealtimeBattleMode {
     this.#drawBackground(ctx);
     this.#drawAtmosphere(ctx);
     this.#drawStage(ctx);
-    for (const fighter of this.fighters.slice().sort((a, b) => a.y - b.y)) this.#drawFighter(ctx, fighter, this.renderAlpha);
+    for (const fighter of this.fighters.slice().sort((a, b) => a.y - b.y))
+      this.#drawFighter(ctx, fighter, this.renderAlpha);
     this.#drawEffects(ctx);
     ctx.restore();
     this.#drawEgoCutin(ctx);
     this.#drawCombatReadout(ctx);
     if (this.openingCardFrames > 0) this.#drawOpeningCard(ctx);
     this.onFps(this.loop.fps);
-    if (this.fpsStatus) this.fpsStatus.textContent = `${Math.round(this.loop.fps || 60)} FPS · FIXED 60 Hz SIMULATION`;
+    if (this.fpsStatus)
+      this.fpsStatus.textContent = `${Math.round(this.loop.fps || 60)} FPS · FIXED 60 Hz SIMULATION`;
   }
 
   #drawAtmosphere(ctx) {
@@ -905,7 +1168,7 @@ export class RealtimeBattleMode {
     for (const particle of this.ambientParticles) {
       const age = this.effectClock * particle.speed + particle.phase;
       const x = (particle.x + Math.sin(age * 0.17) * 26 + LOGICAL_WIDTH) % LOGICAL_WIDTH;
-      const y = ((particle.y - age * 0.42) % LOGICAL_HEIGHT + LOGICAL_HEIGHT) % LOGICAL_HEIGHT;
+      const y = (((particle.y - age * 0.42) % LOGICAL_HEIGHT) + LOGICAL_HEIGHT) % LOGICAL_HEIGHT;
       const alpha = 0.12 + (Math.sin(age * 0.3) + 1) * 0.12;
       ctx.globalAlpha = alpha;
       ctx.fillStyle = particle.phase % 3 < 1 ? '#cce6ec' : '#e8ba70';
@@ -926,23 +1189,40 @@ export class RealtimeBattleMode {
     ctx.strokeStyle = 'rgba(230,194,118,.7)';
     ctx.lineWidth = 2;
     ctx.beginPath();
-    ctx.moveTo(320, 280); ctx.lineTo(960, 280);
-    ctx.moveTo(320, 421); ctx.lineTo(960, 421);
+    ctx.moveTo(320, 280);
+    ctx.lineTo(960, 280);
+    ctx.moveTo(320, 421);
+    ctx.lineTo(960, 421);
     ctx.stroke();
     ctx.textAlign = 'center';
     ctx.fillStyle = '#d8bd7b';
     ctx.font = '900 13px system-ui,sans-serif';
-    ctx.fillText(this.seriesActive
-      ? (this.seriesRound === 3 ? 'FINAL ROUND · TIEBREAKER' : `ROUND ${this.seriesRound} OF 3`)
-      : (this.trainingMode ? 'TRAINING MODE' : (this.encounter === 'versus' ? 'VERSUS MATCH' : 'REAL-TIME FIGHTING')), LOGICAL_WIDTH / 2, 317);
+    ctx.fillText(
+      this.seriesActive
+        ? this.seriesRound === 3
+          ? 'FINAL ROUND · TIEBREAKER'
+          : `ROUND ${this.seriesRound} OF 3`
+        : this.trainingMode
+          ? 'TRAINING MODE'
+          : this.encounter === 'versus'
+            ? 'VERSUS MATCH'
+            : 'REAL-TIME FIGHTING',
+      LOGICAL_WIDTH / 2,
+      317
+    );
     ctx.fillStyle = '#fff0cc';
     ctx.font = '1000 58px Georgia,serif';
-    ctx.shadowColor = '#f7c65d'; ctx.shadowBlur = 20;
+    ctx.shadowColor = '#f7c65d';
+    ctx.shadowBlur = 20;
     ctx.fillText('FIGHT!', LOGICAL_WIDTH / 2, 385);
     ctx.shadowBlur = 0;
     ctx.fillStyle = '#dfd0b5';
     ctx.font = '800 11px system-ui,sans-serif';
-    ctx.fillText(`${this.player?.name || 'DON QUIXOTE'}  //  ${this.enemies.filter((enemy) => enemy.alive)[0]?.name || 'OPPONENT'}`.toUpperCase(), LOGICAL_WIDTH / 2, 405);
+    ctx.fillText(
+      `${this.player?.name || 'DON QUIXOTE'}  //  ${this.enemies.filter((enemy) => enemy.alive)[0]?.name || 'OPPONENT'}`.toUpperCase(),
+      LOGICAL_WIDTH / 2,
+      405
+    );
     ctx.restore();
   }
 
@@ -962,7 +1242,14 @@ export class RealtimeBattleMode {
     }
     ctx.fillStyle = 'rgba(7, 9, 14, .28)';
     ctx.fillRect(0, 0, LOGICAL_WIDTH, LOGICAL_HEIGHT);
-    const vignette = ctx.createRadialGradient(LOGICAL_WIDTH / 2, LOGICAL_HEIGHT / 2, 150, LOGICAL_WIDTH / 2, LOGICAL_HEIGHT / 2, 820);
+    const vignette = ctx.createRadialGradient(
+      LOGICAL_WIDTH / 2,
+      LOGICAL_HEIGHT / 2,
+      150,
+      LOGICAL_WIDTH / 2,
+      LOGICAL_HEIGHT / 2,
+      820
+    );
     vignette.addColorStop(0, 'rgba(0,0,0,0)');
     vignette.addColorStop(1, 'rgba(0,0,0,.68)');
     ctx.fillStyle = vignette;
@@ -986,9 +1273,13 @@ export class RealtimeBattleMode {
     // E.G.O sheets are optional until supplied. Once loaded, choose an E.G.O pose without
     // changing bodyWidth/bodyHeight, hurtboxes, or the canvas's logical scale.
     if (fighter.egoFormActive && fighter.egoSpriteSet) {
-      const poseKey = fighter.state === 'Attack' && fighter.currentMove ? (fighter.currentMove.data.animationKey || 'attack') : fighter.state.toLowerCase();
+      const poseKey =
+        fighter.state === 'Attack' && fighter.currentMove
+          ? fighter.currentMove.data.animationKey || 'attack'
+          : fighter.state.toLowerCase();
       const pose = fighter.egoSpriteSet[poseKey] || fighter.egoSpriteSet.idle;
-      if (Array.isArray(pose) && pose.length) return pose[Math.floor(this.effectClock * 12) % pose.length];
+      if (Array.isArray(pose) && pose.length)
+        return pose[Math.floor(this.effectClock * 12) % pose.length];
       if (typeof pose === 'string') return pose;
     }
     if (fighter.drawKey === 'don') {
@@ -1004,9 +1295,17 @@ export class RealtimeBattleMode {
         const animation = battleDonAnimations[animationKey];
         const frames = animation?.frames || [];
         if (frames.length) {
-          const animationDuration = fighter.currentMove.data.animationFrames || fighter.moveTotalFrames;
-          const frame = Math.max(0, Math.min(frames.length - 1,
-            Math.floor((fighter.currentMove.frame / Math.max(1, animationDuration)) * frames.length)));
+          const animationDuration =
+            fighter.currentMove.data.animationFrames || fighter.moveTotalFrames;
+          const frame = Math.max(
+            0,
+            Math.min(
+              frames.length - 1,
+              Math.floor(
+                (fighter.currentMove.frame / Math.max(1, animationDuration)) * frames.length
+              )
+            )
+          );
           return frames[frame];
         }
       }
@@ -1015,31 +1314,44 @@ export class RealtimeBattleMode {
     if (fighter.drawKey === 'heathcliff') {
       if (!fighter.alive || fighter.state === 'Knockdown') return heathcliffSprites.hurt;
       if (fighter.state === 'Hit') return heathcliffSprites.hurt;
-      if (fighter.state === 'Block' || fighter.state === 'Blockstun') return heathcliffSprites.guard;
-      if (fighter.state === 'Dash' || fighter.state === 'Run' || fighter.state === 'Jump') return heathcliffSprites.moving;
+      if (fighter.state === 'Block' || fighter.state === 'Blockstun')
+        return heathcliffSprites.guard;
+      if (fighter.state === 'Dash' || fighter.state === 'Run' || fighter.state === 'Jump')
+        return heathcliffSprites.moving;
       if (fighter.state === 'Attack' && fighter.currentMove) {
         const move = fighter.currentMove;
-        const animation = heathcliffAnimations[move.data.animationKey] || heathcliffAnimations.skill1;
+        const animation =
+          heathcliffAnimations[move.data.animationKey] || heathcliffAnimations.skill1;
         const frames = animation.frames || [];
         if (frames.length) {
-          const duration = move.data.animationFrames || animation.animationFrames || fighter.moveTotalFrames;
-          const progress = clamp((move.frame - 1) / Math.max(1, duration), 0, 0.9999);
+          const duration =
+            move.data.animationFrames || animation.animationFrames || fighter.moveTotalFrames;
+          if (move.data.animationKey === 'bodysack' && move.frame < move.data.startup)
+            return heathcliffSprites.egoCharge;
+          const animationFrame =
+            move.data.animationKey === 'bodysack' ? move.frame - move.data.startup : move.frame - 1;
+          const progress = clamp(animationFrame / Math.max(1, duration), 0, 0.9999);
           return frames[Math.min(frames.length - 1, Math.floor(progress * frames.length))];
         }
       }
-      return (fighter.egoMeter || 0) >= HEATHCLIFF_EGO_CONFIG.maxGauge ? heathcliffSprites.egoCharge : heathcliffSprites.idle;
+      return (fighter.egoMeter || 0) >= HEATHCLIFF_EGO_CONFIG.maxGauge
+        ? heathcliffSprites.egoCharge
+        : heathcliffSprites.idle;
     }
     const spriteSet = enemySprites[fighter.drawKey] || enemySprites.club;
-    if (!fighter.alive || fighter.state === 'Knockdown') return spriteSet.dead || spriteSet.hurt || spriteSet.idle;
+    if (!fighter.alive || fighter.state === 'Knockdown')
+      return spriteSet.dead || spriteSet.hurt || spriteSet.idle;
     if (fighter.state === 'Hit') return spriteSet.hurt || spriteSet.idle;
-    if (fighter.state === 'Block' || fighter.state === 'Blockstun') return spriteSet.windup || spriteSet.idle;
+    if (fighter.state === 'Block' || fighter.state === 'Blockstun')
+      return spriteSet.windup || spriteSet.idle;
     if (fighter.state === 'Dash') return spriteSet.hurt || spriteSet.idle;
     if (fighter.state === 'Attack' && fighter.currentMove) {
       const frame = fighter.currentMove.frame;
       const move = fighter.currentMove.data;
       if (frame < move.startup) return spriteSet.windup || spriteSet.idle;
       if (fighter.drawKey === 'wolf') {
-        const key = move.id === 'wolfSlash' ? 'sever' : (move.id === 'enemyHeavy' ? 'mirageSlash' : 'attack');
+        const key =
+          move.id === 'wolfSlash' ? 'sever' : move.id === 'enemyHeavy' ? 'mirageSlash' : 'attack';
         return spriteSet[key] || spriteSet.attack || spriteSet.idle;
       }
       return spriteSet.attack || spriteSet.windup || spriteSet.idle;
@@ -1064,17 +1376,27 @@ export class RealtimeBattleMode {
     // while his idle/guard sheets are portrait canvases. Use a matching reference height for
     // horizontal poses so his body does not become shorter just because the lance is long.
     const isDon = fighter.drawKey === 'don';
-    const horizontalDonPose = isDon && (source?.includes('/base/skill') || source?.endsWith('/moving.png'));
-    let visualHeight = isDon ? (horizontalDonPose ? 330 : 254) : fighter.drawKey === 'wolf' ? 276 : fighter.drawKey === 'heathcliff' ? 252 : 218;
+    const horizontalDonPose =
+      isDon && (source?.includes('/base/skill') || source?.endsWith('/moving.png'));
+    let visualHeight = isDon
+      ? horizontalDonPose
+        ? 330
+        : 254
+      : fighter.drawKey === 'wolf'
+        ? 276
+        : fighter.drawKey === 'heathcliff'
+          ? 252
+          : 218;
     if (fighter.state === 'Knockdown' || !fighter.alive) visualHeight *= 0.78;
 
     const groundOffset = Math.max(0, fighter.groundY - (renderY + fighter.bodyHeight));
     const baseY = GROUND_Y + 4 - groundOffset;
-    const idleBob = fighter.state === 'Idle'
-      ? Math.sin(this.effectClock * 3.1 + phase) * 2.2
-      : 0;
+    const idleBob = fighter.state === 'Idle' ? Math.sin(this.effectClock * 3.1 + phase) * 2.2 : 0;
     const runBob = movingPose
-      ? Math.sin(this.effectClock * (fighter.state === 'Dash' ? 25 : 15) + phase + renderX * 0.018) * (1.4 + speedRatio * 1.8)
+      ? Math.sin(
+          this.effectClock * (fighter.state === 'Dash' ? 25 : 15) + phase + renderX * 0.018
+        ) *
+        (1.4 + speedRatio * 1.8)
       : 0;
     const bob = idleBob + runBob;
 
@@ -1121,8 +1443,18 @@ export class RealtimeBattleMode {
     ctx.globalAlpha = Math.max(0.07, 0.22 - groundOffset / 1050);
     ctx.fillStyle = '#020407';
     ctx.beginPath();
-    const roughWidth = isPlayer ? visualHeight * 0.34 : visualHeight * (fighter.drawKey === 'wolf' ? 0.48 : 0.45);
-    ctx.ellipse(renderX, GROUND_Y + 10, Math.max(24, roughWidth * (groundOffset > 0 ? 0.72 : 1)), 12 + Math.max(0, 14 - groundOffset * 0.03), 0, 0, Math.PI * 2);
+    const roughWidth = isPlayer
+      ? visualHeight * 0.34
+      : visualHeight * (fighter.drawKey === 'wolf' ? 0.48 : 0.45);
+    ctx.ellipse(
+      renderX,
+      GROUND_Y + 10,
+      Math.max(24, roughWidth * (groundOffset > 0 ? 0.72 : 1)),
+      12 + Math.max(0, 14 - groundOffset * 0.03),
+      0,
+      0,
+      Math.PI * 2
+    );
     ctx.fill();
     ctx.restore();
 
@@ -1145,7 +1477,15 @@ export class RealtimeBattleMode {
       // Bound wide poses horizontally but never shrink their height: the earlier uniform
       // max-width scale made the entire Don sprite shrink during attacks. Horizontal
       // compression is preferable to changing the character's floor/standing height.
-      const maxWidth = isDon ? (source?.endsWith('/moving.png') ? 520 : 460) : fighter.drawKey === 'wolf' ? 318 : fighter.drawKey === 'heathcliff' ? 400 : 218;
+      const maxWidth = isDon
+        ? source?.endsWith('/moving.png')
+          ? 520
+          : 460
+        : fighter.drawKey === 'wolf'
+          ? 318
+          : fighter.drawKey === 'heathcliff'
+            ? 400
+            : 218;
       if (width > maxWidth) width = maxWidth;
       const anchorX = this.#spriteAnchorX(fighter, src);
       ctx.save();
@@ -1164,7 +1504,8 @@ export class RealtimeBattleMode {
     ctx.restore();
 
     this.#drawSwingVfx(ctx, fighter, renderX, renderY);
-    if (fighter.drawKey === 'heathcliff') this.#drawHeathcliffVfx(ctx, fighter, renderX, baseY + bob, visualHeight);
+    if (fighter.drawKey === 'heathcliff')
+      this.#drawHeathcliffVfx(ctx, fighter, renderX, baseY + bob, visualHeight);
 
     // In the multi-enemy story encounter, unobtrusive labels keep each target identifiable.
     if (this.enemies.length > 1 && !isPlayer && fighter.alive) {
@@ -1212,19 +1553,19 @@ export class RealtimeBattleMode {
     // Anchor the visible body, not the center of long weapon trails in the source image.
     // This prevents Don's wide movement/skill poses from sliding away from their hurtbox.
     if (fighter.drawKey === 'don') {
-      if (source?.endsWith('/moving.png')) return 0.70;
+      if (source?.endsWith('/moving.png')) return 0.7;
       if (source?.includes('/don/base/skill')) return 0.38;
-      return 0.50;
+      return 0.5;
     }
     if (source?.endsWith('/club-idle.png')) return 0.68;
     if (source?.endsWith('/leader-idle.png')) return 0.63;
-    if (source?.endsWith('/elite-idle.png')) return 0.60;
+    if (source?.endsWith('/elite-idle.png')) return 0.6;
     if (fighter.drawKey === 'heathcliff') {
       if (source?.endsWith('/moving.png')) return 0.54;
       if (source?.includes('/skill')) return 0.53;
-      return 0.50;
+      return 0.5;
     }
-    return 0.50;
+    return 0.5;
   }
 
   #drawHeathcliffVfx(ctx, fighter, renderX, baseY, visualHeight) {
@@ -1241,7 +1582,7 @@ export class RealtimeBattleMode {
     const image = this._image(effect.src);
     if (!this._isReady(image)) return;
 
-    const isEgo = data.animationKey === 'ego';
+    const isEgo = data.isEgo || data.animationKey === 'ego';
     const height = isEgo ? Math.max(150, visualHeight * 0.95) : Math.max(110, visualHeight * 0.62);
     const width = Math.min(isEgo ? 510 : 380, height * (image.naturalWidth / image.naturalHeight));
     const centerX = renderX + fighter.facing * (fighter.bodyWidth * 0.82 + (isEgo ? 65 : 34));
@@ -1308,7 +1649,8 @@ export class RealtimeBattleMode {
     const activeProgress = clamp((frame - startupEnd) / Math.max(1, data.active), 0, 1);
     const reach = (data.range || data.hitboxWidth || 110) * (0.78 + activeProgress * 0.22);
     if (data.id === 'special' || data.id === 'donEgo') {
-      const effects = battleDonAnimations.justice?.effectFrames || [];
+      const animationKey = data.animationKey || 'justice';
+      const effects = battleDonAnimations[animationKey]?.effectFrames || [];
       const windows = data.hitWindows || [{ start: 0 }];
       windows.forEach((window, index) => {
         const impactFrame = data.startup + window.start;
@@ -1362,9 +1704,12 @@ export class RealtimeBattleMode {
       if (effect.kind === 'sprite') {
         const image = this._image(effect.src);
         if (!this._isReady(image)) continue;
-        ctx.save(); ctx.globalAlpha = fade;
-        const width = effect.width || 220; const height = effect.height || 150;
-        ctx.translate(effect.x, effect.y); ctx.scale(effect.facing || 1, 1);
+        ctx.save();
+        ctx.globalAlpha = fade;
+        const width = effect.width || 220;
+        const height = effect.height || 150;
+        ctx.translate(effect.x, effect.y);
+        ctx.scale(effect.facing || 1, 1);
         ctx.globalCompositeOperation = 'screen';
         ctx.drawImage(image, -width / 2, -height / 2, width, height);
         ctx.restore();
@@ -1442,15 +1787,30 @@ export class RealtimeBattleMode {
     ctx.textAlign = 'left';
     ctx.font = '900 12px system-ui,sans-serif';
     ctx.fillStyle = this.trainingMode ? '#8ddbc9' : '#f1d99b';
-    ctx.fillText(`${this.trainingMode ? 'TRAINING' : 'PLAYER'}  /  ${this.player.state.toUpperCase()}`, x + 12, y + 19);
+    ctx.fillText(
+      `${this.trainingMode ? 'TRAINING' : 'PLAYER'}  /  ${this.player.state.toUpperCase()}`,
+      x + 12,
+      y + 19
+    );
     ctx.font = '12px system-ui,sans-serif';
     ctx.fillStyle = '#f5f1e7';
     const move = this.player.currentMove;
-    ctx.fillText(move ? `${move.data.name} · ${move.frame}/${this.player.moveTotalFrames}f` : 'Neutral · Waiting for input', x + 12, y + 37);
+    ctx.fillText(
+      move
+        ? `${move.data.name} · ${move.frame}/${this.player.moveTotalFrames}f`
+        : 'Neutral · Waiting for input',
+      x + 12,
+      y + 37
+    );
     if (move) {
       const data = move.data;
       const frame = move.frame;
-      const phase = frame < data.startup ? 'STARTUP' : frame < data.startup + data.active ? 'ACTIVE' : 'RECOVERY';
+      const phase =
+        frame < data.startup
+          ? 'STARTUP'
+          : frame < data.startup + data.active
+            ? 'ACTIVE'
+            : 'RECOVERY';
       ctx.textAlign = 'right';
       ctx.fillStyle = phase === 'ACTIVE' ? '#ffd75e' : '#f7efe2';
       ctx.font = '900 11px system-ui,sans-serif';
@@ -1473,21 +1833,41 @@ export class RealtimeBattleMode {
     this.resultPanel.hidden = false;
     const localVersus = this.encounter === 'versus' && !!this.versusConfig?.localMultiplayer;
     const friendlySpar = this.encounter === 'heathcliff';
-    this.resultEyebrow.textContent = friendlySpar ? 'FRIENDLY SPAR COMPLETE' : (victory ? 'ENCOUNTER COMPLETE' : 'FIGHT OVER');
-    this.resultTitle.textContent = localVersus ? 'MATCH COMPLETE' : friendlySpar ? 'SPAR COMPLETE' : (victory ? 'VICTORY' : 'DEFEAT');
+    this.resultEyebrow.textContent = friendlySpar
+      ? 'FRIENDLY SPAR COMPLETE'
+      : victory
+        ? 'ENCOUNTER COMPLETE'
+        : 'FIGHT OVER';
+    this.resultTitle.textContent = localVersus
+      ? 'MATCH COMPLETE'
+      : friendlySpar
+        ? 'SPAR COMPLETE'
+        : victory
+          ? 'VICTORY'
+          : 'DEFEAT';
     this.resultCopy.textContent = this.seriesActive
-      ? `${localVersus ? (victory ? this.player?.name : this.enemies[0]?.name) : friendlySpar ? (victory ? 'Don' : (this.enemies[0]?.name || 'Heathcliff')) : (victory ? 'Don' : (this.enemies[0]?.name || 'Opponent'))} wins the best-of-three ${friendlySpar ? 'spar' : 'match'} ${Math.max(this.seriesScores.player, this.seriesScores.enemy)}–${Math.min(this.seriesScores.player, this.seriesScores.enemy)}. ${victory ? 'Two round coins secured.' : 'The opponent secured two round coins.'}`
+      ? `${localVersus ? (victory ? this.player?.name : this.enemies[0]?.name) : friendlySpar ? (victory ? 'Don' : this.enemies[0]?.name || 'Heathcliff') : victory ? 'Don' : this.enemies[0]?.name || 'Opponent'} wins the best-of-three ${friendlySpar ? 'spar' : 'match'} ${Math.max(this.seriesScores.player, this.seriesScores.enemy)}–${Math.min(this.seriesScores.player, this.seriesScores.enemy)}. ${victory ? 'Two round coins secured.' : 'The opponent secured two round coins.'}`
       : standalone
-        ? (training
+        ? training
           ? 'Training round complete. Reset, rematch, or return to the main menu.'
-          : (victory ? 'Victory. Rematch or return to the main menu.' : 'Defeat. Try again or return to the main menu.'))
-        : (victory
+          : victory
+            ? 'Victory. Rematch or return to the main menu.'
+            : 'Defeat. Try again or return to the main menu.'
+        : victory
           ? 'The path is clear. Continue the story when ready.'
-          : 'The opponent got the better of Don. Retry the encounter to try again.');
-    this.resultButton.textContent = standalone ? (training ? 'RESET TRAINING' : 'REMATCH') : (victory ? 'CONTINUE STORY' : 'RETRY ENCOUNTER');
+          : 'The opponent got the better of Don. Retry the encounter to try again.';
+    this.resultButton.textContent = standalone
+      ? training
+        ? 'RESET TRAINING'
+        : 'REMATCH'
+      : victory
+        ? 'CONTINUE STORY'
+        : 'RETRY ENCOUNTER';
     this.resultButton.classList.toggle('is-defeat', !victory);
     this.resultButton.focus?.();
-    return new Promise((resolve) => { this._resultResolver = resolve; });
+    return new Promise((resolve) => {
+      this._resultResolver = resolve;
+    });
   }
 
   dispose() {
@@ -1502,6 +1882,10 @@ export class RealtimeBattleMode {
   }
 }
 
-function clampEgoMeter(value, max) { return Math.max(0, Math.min(max, Number(value) || 0)); }
+function clampEgoMeter(value, max) {
+  return Math.max(0, Math.min(max, Number(value) || 0));
+}
 
-function encounterIsWolf(encounter) { return encounter === 'wolf'; }
+function encounterIsWolf(encounter) {
+  return encounter === 'wolf';
+}

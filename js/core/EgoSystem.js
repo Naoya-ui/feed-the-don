@@ -17,7 +17,7 @@ export class EgoSystem {
     const spCost = Math.max(0, Number(skill.spCost || 0));
     const currentSp = Number(battle.don?.sp || 0);
     const minSp = Number(battle.don?.minSp ?? -45);
-    if (currentSp - spCost < minSp) missing.SP = (minSp + spCost) - currentSp;
+    if (currentSp - spCost < minSp) missing.SP = minSp + spCost - currentSp;
 
     for (const [resource, costRaw] of Object.entries(skill.resourceCost || {})) {
       const cost = Math.max(0, Number(costRaw || 0));
