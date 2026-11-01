@@ -1640,7 +1640,8 @@ export class RealtimeBattleMode {
     const activeProgress = clamp((frame - startupEnd) / Math.max(1, data.active), 0, 1);
     const reach = (data.range || data.hitboxWidth || 110) * (0.78 + activeProgress * 0.22);
     if (data.id === 'special' || data.id === 'donEgo') {
-      const effects = battleDonAnimations.justice?.effectFrames || [];
+      const animationKey = data.animationKey || 'justice';
+      const effects = battleDonAnimations[animationKey]?.effectFrames || [];
       const windows = data.hitWindows || [{ start: 0 }];
       windows.forEach((window, index) => {
         const impactFrame = data.startup + window.start;

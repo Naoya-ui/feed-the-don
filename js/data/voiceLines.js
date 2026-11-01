@@ -26,11 +26,9 @@ export const VOICE_LINE_CATALOG = Object.freeze({
         `${DON_VOICE}battle_s3_10301_1_2.wav`,
         `${DON_VOICE}battle_s3_10301_1_3.wav`,
       ]),
-      // La Sangre's existing indexed cinematic cues remain unchanged.
+      // Dedicated La Sangre E.G.O awakening callout from the supplied audio pack.
       laSangre: Object.freeze([
-        'assets/audio/don-skills/030_donquixote_base_skill3-1_a_v1.wav',
-        'assets/audio/don-skills/030_donquixote_base_skill3-2_a_v1.wav',
-        'assets/audio/don-skills/030_donquixote_base_skill3-3_a_v1.wav',
+        'assets/audio/don-skills/la-sangre/battle_awaken_20301_1.wav',
       ]),
     }),
     events: Object.freeze({

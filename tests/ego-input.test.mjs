@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import { existsSync } from 'node:fs';
 import { Fighter, MOVE_DATA } from '../js/fighting/Fighter.js';
 import { heathcliffAnimations } from '../js/data/heathcliff.js';
+import { battleDonAnimations } from '../js/data/characters.js';
 import { VOICE_LINE_CATALOG } from '../js/data/voiceLines.js';
 import { VERSUS_ROSTER } from '../js/data/versusRoster.js';
 
@@ -74,4 +75,19 @@ assert.equal(fighter.egoFormActive, true, 'I / Numpad 5 activates the E.G.O pres
 assert.equal(fighter.egoMeter, 0, 'E.G.O activation spends the full gauge');
 assert.equal(fighter.egoActivationCount, 1);
 assert.equal(fighter.currentMove.data.isEgo, true);
-console.log('PASS ego-input: E.G.O key starts the selected Bodysack skill and spends gauge');
+const donEgo = MOVE_DATA.donEgo;
+const laSangreVoice = VOICE_LINE_CATALOG.don.attacks.laSangre;
+assert.equal(donEgo.animationKey, 'laSangre', 'Don E.G.O uses its dedicated La Sangre animation');
+assert.equal(donEgo.sfxPath, 'assets/audio/don-skills/la-sangre/DQ_EGO_AFTER7.wav');
+assert.equal(laSangreVoice[0], 'assets/audio/don-skills/la-sangre/battle_awaken_20301_1.wav');
+assert.equal(battleDonAnimations.laSangre.frames.length, 19);
+for (const src of [
+  ...battleDonAnimations.laSangre.frames,
+  ...battleDonAnimations.laSangre.effectFrames.map((effect) => effect.src),
+  ...laSangreVoice,
+  donEgo.sfxPath,
+  donEgo.cinematicPath,
+]) {
+  assert.ok(existsSync(new URL(`../${src}`, import.meta.url)), `La Sangre asset exists: ${src}`);
+}
+console.log('PASS ego-input: Bodysack and La Sangre E.G.O assets and mappings are complete');

@@ -86,6 +86,25 @@ export const battleDonAnimations = {
     hitTimes: [0.34, 0.62, 0.86],
     css: 'skill3',
   },
+  laSangre: {
+    // Base-form Don E.G.O frames from the supplied 2030111 sprite folder.
+    frames: Array.from(
+      { length: 19 },
+      (_, index) => `assets/images/battle/don/la-sangre/skill1_${index + 1}.png`
+    ),
+    effectFrames: [
+      { src: 'assets/images/battle/don/la-sangre/skill1_3_e1.png', activeOffset: 0 },
+      { src: 'assets/images/battle/don/la-sangre/skill1_3_e2.png', activeOffset: 2 },
+      { src: 'assets/images/battle/don/la-sangre/skill1_5_e.png', activeOffset: 4 },
+      { src: 'assets/images/battle/don/la-sangre/skill1_6_e.png', activeOffset: 5 },
+      { src: 'assets/images/battle/don/la-sangre/skill1_15_e.png', activeOffset: 9 },
+      { src: 'assets/images/battle/don/la-sangre/skill_16_Foot.png', activeOffset: 8 },
+      { src: 'assets/images/battle/don/la-sangre/skill1_19_e.png', activeOffset: 11 },
+    ],
+    duration: 1700,
+    hitTimes: [0.34, 0.78],
+    css: 'ego',
+  },
 };
 
 export const battleUiIcons = {

@@ -318,11 +318,7 @@ const DON_SKILL_SFX = {
     'assets/audio/don-skills/030_donquixote_base_skill3-2_a_v1.wav',
     'assets/audio/don-skills/030_donquixote_base_skill3-3_a_v1.wav',
   ],
-  laSangre: [
-    'assets/audio/don-skills/030_donquixote_base_skill3-1_a_v1.wav',
-    'assets/audio/don-skills/030_donquixote_base_skill3-2_a_v1.wav',
-    'assets/audio/don-skills/030_donquixote_base_skill3-3_a_v1.wav',
-  ],
+  laSangre: ['assets/audio/don-skills/la-sangre/DQ_EGO_AFTER7.wav'],
 };
 
 const ENEMY_ATTACK_SFX = {
