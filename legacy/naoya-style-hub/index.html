@@ -4,7 +4,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
     <title>Naoya Style Hub</title>
-    <link rel="stylesheet" href="style.css" />
+    <link rel="stylesheet" href="css/style.css" />
     <link
       href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap"
       rel="stylesheet"
@@ -36,55 +36,28 @@
           <img src="../../assets/avatar.jpg" class="avatar" />
           <h1>Naoya</h1>
           <p>Food Mercernary / Coder</p>
-          <span id="discordStatus" class="online">
-            <span></span> Loading...
-          </span>
+          <span id="discordStatus" class="online"> <span></span> Loading... </span>
         </div>
         <div class="now-playing">
           <small>click on slider to run music</small>
           <strong>♫ BGM / LOCAL</strong>
           <span
             id="volumeText"
-            style="
-              display: block;
-              font-size: 11px;
-              margin-top: 6px;
-              color: #a8acb6;
-            "
+            style="display: block; font-size: 11px; margin-top: 6px; color: #a8acb6"
             >Volume: 24%</span
           >
 
-          <input
-            id="volume"
-            type="range"
-            min="0"
-            max="100"
-            value="24"
-            class="custom-range"
-          />
+          <input id="volume" type="range" min="0" max="100" value="24" class="custom-range" />
 
-          <audio
-            id="music"
-            src="assets/audio/bus_theme.mp3"
-            autoplay
-            loop
-          ></audio>
+          <audio id="music" src="../../assets/audio/bus_theme.mp3" autoplay loop></audio>
         </div>
 
         <nav>
-          <button class="nav active" data-page="home">
-            ⌂ <span>HOME</span>
-          </button>
+          <button class="nav active" data-page="home">⌂ <span>HOME</span></button>
           <button class="nav" data-page="about">◉ <span>ABOUT</span></button>
-          <button class="nav" data-page="artwork">
-            ▧ <span>GALLERY</span>
-          </button>
-          <button class="nav" data-page="notepad">
-            ✎ <span>NOTEPAD</span>
-          </button>
-          <button class="nav" data-page="contact">
-            ◌ <span>AFK ZONE</span>
-          </button>
+          <button class="nav" data-page="artwork">▧ <span>GALLERY</span></button>
+          <button class="nav" data-page="notepad">✎ <span>NOTEPAD</span></button>
+          <button class="nav" data-page="contact">◌ <span>AFK ZONE</span></button>
         </nav>
       </aside>
 
@@ -141,11 +114,7 @@
 
             <!-- Link TikTok -->
             <a href="https://www.tiktok.com/@iggar0392?lang=vi-VN">
-              <img
-                src="../../assets/icons/tiktok.jpeg"
-                class="social-icon"
-                alt="TikTok"
-              />
+              <img src="../../assets/icons/tiktok.jpeg" class="social-icon" alt="TikTok" />
               <div>
                 <strong>Tiktok</strong>
                 <small>@iggar0392</small>
@@ -168,12 +137,11 @@
             <article class="card">
               <header>ABOUT ME</header>
               <p class="copy">
-                Hello, I am Naoya (Maskguy) . I am a beginner coder building a
-                small personal corner on the web.
+                Hello, I am Naoya (Maskguy) . I am a beginner coder building a small personal corner
+                on the web.
               </p>
               <div class="tags">
-                <span>#dark_fantasy</span><span>#digital_core</span
-                ><span>#naoya</span>
+                <span>#dark_fantasy</span><span>#digital_core</span><span>#naoya</span>
               </div>
             </article>
             <article class="card">
@@ -193,11 +161,7 @@
                 <strong>Limbus Company</strong>
                 <small>ACTIVE - Turn-based RPG</small>
               </div>
-              <img
-                src="../../assets/icons/limbus.jpeg"
-                class="game-logo"
-                alt="Limbus Logo"
-              />
+              <img src="../../assets/icons/limbus.jpeg" class="game-logo" alt="Limbus Logo" />
             </div>
 
             <!-- Game 02 -->
@@ -207,11 +171,7 @@
                 <strong>Genshin Impact</strong>
                 <small>ACTIVE - Open World</small>
               </div>
-              <img
-                src="../../assets/icons/genshin.jpeg"
-                class="game-logo"
-                alt="Genshin Logo"
-              />
+              <img src="../../assets/icons/genshin.jpeg" class="game-logo" alt="Genshin Logo" />
             </div>
 
             <!-- Game 03 -->
@@ -221,11 +181,7 @@
                 <strong>SMT:Persona/Megami Ibunruku Persona</strong>
                 <small>COMPLETED - Turn-base RPG</small>
               </div>
-              <img
-                src="../../assets/icons/Persona.jpeg"
-                class="game-logo"
-                alt="Persona Logo"
-              />
+              <img src="../../assets/icons/Persona.jpeg" class="game-logo" alt="Persona Logo" />
             </div>
 
             <!-- Game 04 -->
@@ -321,23 +277,48 @@
                       <h3 id="trackTitle">City Ambient BGM</h3>
                       <small id="trackMeta">320kbps · Stereo</small>
                     </div>
-                    <div class="audio-status"><span id="audioStatusDot"></span><span id="audioStatus">PAUSED</span></div>
+                    <div class="audio-status">
+                      <span id="audioStatusDot"></span><span id="audioStatus">PAUSED</span>
+                    </div>
                   </div>
 
                   <div class="audio-progress-row">
                     <span id="currentTime">0:00</span>
-                    <input id="progressBar" type="range" min="0" max="100" value="0" step="0.1" aria-label="Music progress" />
+                    <input
+                      id="progressBar"
+                      type="range"
+                      min="0"
+                      max="100"
+                      value="0"
+                      step="0.1"
+                      aria-label="Music progress"
+                    />
                     <span id="duration">0:00</span>
                   </div>
 
                   <div class="audio-controls">
-                    <button id="prevTrack" class="player-btn small" type="button" title="Previous">⏮</button>
-                    <button id="playBtn" class="player-btn main" type="button" title="Play">▶</button>
-                    <button id="nextTrack" class="player-btn small" type="button" title="Next">⏭</button>
-                    <button id="muteBtn" class="player-btn small" type="button" title="Mute">🔊</button>
+                    <button id="prevTrack" class="player-btn small" type="button" title="Previous">
+                      ⏮
+                    </button>
+                    <button id="playBtn" class="player-btn main" type="button" title="Play">
+                      ▶
+                    </button>
+                    <button id="nextTrack" class="player-btn small" type="button" title="Next">
+                      ⏭
+                    </button>
+                    <button id="muteBtn" class="player-btn small" type="button" title="Mute">
+                      🔊
+                    </button>
                     <div class="mini-volume">
                       <span>VOL</span>
-                      <input id="playerVolume" type="range" min="0" max="100" value="24" aria-label="Player volume" />
+                      <input
+                        id="playerVolume"
+                        type="range"
+                        min="0"
+                        max="100"
+                        value="24"
+                        aria-label="Player volume"
+                      />
                     </div>
                     <div class="audio-wave" aria-hidden="true">
                       <i></i><i></i><i></i><i></i><i></i>
@@ -358,11 +339,7 @@
             </div>
           </div>
           <article class="card">
-            <textarea
-              id="note"
-              rows="6"
-              placeholder="write something..."
-            ></textarea>
+            <textarea id="note" rows="6" placeholder="write something..."></textarea>
             <div class="note-actions">
               <span>Saved locally in your browser</span>
               <button id="add">ADD</button>
@@ -382,15 +359,9 @@
 
             <!-- Khung thông tin -->
             <div class="afk-card">
-              <div class="afk-row">
-                <span>OPERATOR</span><strong>Naoya</strong>
-              </div>
-              <div class="afk-row">
-                <span>ORIGIN</span><strong>Vietnam</strong>
-              </div>
-              <div class="afk-row">
-                <span>STATUS</span><strong>AFK / exploring</strong>
-              </div>
+              <div class="afk-row"><span>OPERATOR</span><strong>Naoya</strong></div>
+              <div class="afk-row"><span>ORIGIN</span><strong>Vietnam</strong></div>
+              <div class="afk-row"><span>STATUS</span><strong>AFK / exploring</strong></div>
             </div>
 
             <!-- Nút liên hệ -->
@@ -406,6 +377,6 @@
         </section>
       </main>
     </div>
-    <script src="script.js"></script>
+    <script src="js/script.js"></script>
   </body>
 </html>
