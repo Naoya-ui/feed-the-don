@@ -30,15 +30,25 @@ assert.match(
   'desktop health bars are visibly larger'
 );
 assert.match(css, /\.rt-skill-chip\.is-latest/, 'most recent skill icon is highlighted');
+assert.match(css, /\.rt-skill-chip \.rt-skill-frame/, 'Limbus-style colored frame overlays skill art');
+assert.match(css, /data-character='heathcliff'/, 'Heathcliff frame uses its own accent tint');
+assert.ok(
+  existsSync(new URL('../assets/images/battle/skill-frames/frame-base.png', import.meta.url)),
+  'colored frame overlay source exists'
+);
+assert.ok(
+  existsSync(new URL('../assets/fonts/Pretendard-Regular.ttf', import.meta.url)),
+  'the selected local UI font exists'
+);
 
 const checks = [
-  ['don', { id: 'light', name: 'Joust' }, 'joust-icon.png', 'S1'],
-  ['don', { id: 'heavy', name: 'Gallop' }, 'gallop-icon.png', 'S2'],
-  ['don', { id: 'special', name: 'Justice' }, 'justice-icon.png', 'S3'],
-  ['don', { id: 'donEgo', name: 'La Sangre de Sancho', isEgo: true }, 'justice-badge.png', 'EGO'],
-  ['heathcliff', { id: 'heathcliffSkill1', name: 'Bat Strike' }, 'skill1_1.png', 'S1'],
-  ['heathcliff', { id: 'heathcliffSkill2', name: 'Ruthless Swing' }, 'skill2_1.png', 'S2'],
-  ['heathcliff', { id: 'heathcliffEgo', name: 'E.G.O Burst' }, 'ego-sigil.png', 'EGO'],
+  ['don', { id: 'light', name: 'Joust' }, 'skill1.png', 'S1'],
+  ['don', { id: 'heavy', name: 'Gallop' }, 'skill2.png', 'S2'],
+  ['don', { id: 'special', name: 'Justice' }, 'skill3.png', 'S3'],
+  ['don', { id: 'donEgo', name: 'La Sangre de Sancho', isEgo: true }, 'skill4-alt.png', 'EGO'],
+  ['heathcliff', { id: 'heathcliffSkill1', name: 'Bat Strike' }, 'skill1.png', 'S1'],
+  ['heathcliff', { id: 'heathcliffSkill2', name: 'Ruthless Swing' }, 'skill2.png', 'S2'],
+  ['heathcliff', { id: 'heathcliffEgo', name: 'E.G.O Burst' }, 'skill4.png', 'EGO'],
   [
     'heathcliff',
     { id: 'heathcliffBodysack', name: 'Bodysack · Base Form E.G.O', isEgo: true },

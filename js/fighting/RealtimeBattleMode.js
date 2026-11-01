@@ -39,22 +39,23 @@ export function getSkillIconForMove(drawKey, move = {}) {
   const name = String(move.name || '').toLowerCase();
   const isEgo = !!move.isEgo || id.includes('ego') || name.includes('e.g.o');
   if (key === 'don') {
-    if (isEgo) return 'assets/images/battle/skills/justice-badge.png';
+    if (isEgo && id.includes('ego'))
+      return 'assets/images/battle/skill-icons/don/skill4-alt.png';
     if (id.includes('heavy') || id.includes('gallop') || name.includes('gallop'))
-      return 'assets/images/battle/skills/gallop-icon.png';
+      return 'assets/images/battle/skill-icons/don/skill2.png';
     if (id.includes('special') || id.includes('justice') || name.includes('justice'))
-      return 'assets/images/battle/skills/justice-icon.png';
-    return 'assets/images/battle/skills/joust-icon.png';
+      return 'assets/images/battle/skill-icons/don/skill3.png';
+    return 'assets/images/battle/skill-icons/don/skill1.png';
   }
   if (key === 'heathcliff') {
     if (id === 'heathcliffbodysack')
       return 'assets/images/ego/heathcliff/bodysack/20701_awaken_profile.png';
-    if (isEgo) return 'assets/images/battle/heathcliff/ego-sigil.png';
+    if (isEgo) return 'assets/images/battle/skill-icons/heathcliff/skill4.png';
     if (id.includes('skill3') || name.includes('savage') || name.includes('special'))
-      return 'assets/images/battle/heathcliff/skill3_1.png';
+      return 'assets/images/battle/skill-icons/heathcliff/skill3.png';
     if (id.includes('skill2') || id.includes('heavy') || name.includes('swing'))
-      return 'assets/images/battle/heathcliff/skill2_1.png';
-    return 'assets/images/battle/heathcliff/skill1_1.png';
+      return 'assets/images/battle/skill-icons/heathcliff/skill2.png';
+    return 'assets/images/battle/skill-icons/heathcliff/skill1.png';
   }
   if (key === 'wolf') {
     if (id.includes('mirage') || name.includes('mirage'))
@@ -761,14 +762,22 @@ export class RealtimeBattleMode {
         'aria-label',
         `${item.name}${index === history.length - 1 ? ', most recent' : ''}`
       );
+      chip.dataset.character = fighter.drawKey || 'club';
       const image = document.createElement('img');
+      image.className = 'rt-skill-icon';
       image.src = item.icon;
       image.alt = '';
       image.loading = 'eager';
       image.draggable = false;
+      const frame = document.createElement('img');
+      frame.className = 'rt-skill-frame';
+      frame.src = 'assets/images/battle/skill-frames/frame-base.png';
+      frame.alt = '';
+      frame.setAttribute('aria-hidden', 'true');
+      frame.draggable = false;
       const label = document.createElement('b');
       label.textContent = item.shortLabel;
-      chip.append(image, label);
+      chip.append(image, frame, label);
       container.append(chip);
     });
   }

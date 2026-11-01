@@ -718,6 +718,27 @@
   image-rendering: auto;
   pointer-events: none;
 }
+.rt-skill-chip .rt-skill-icon {
+  position: relative;
+  z-index: 1;
+}
+.rt-skill-chip .rt-skill-frame {
+  position: absolute;
+  z-index: 2;
+  inset: -5px;
+  width: calc(100% + 10px);
+  height: calc(100% + 10px);
+  object-fit: contain;
+  opacity: 0.9;
+  filter: sepia(1) saturate(3.8) hue-rotate(342deg) brightness(1.08);
+  mix-blend-mode: screen;
+}
+.rt-skill-chip[data-character='heathcliff'] .rt-skill-frame {
+  filter: sepia(0.7) saturate(2.4) hue-rotate(168deg) brightness(1.15);
+}
+.rt-skill-chip[data-character='don'] .rt-skill-frame {
+  filter: sepia(0.9) saturate(3.5) hue-rotate(320deg) brightness(1.08);
+}
 .rt-skill-chip b {
   position: absolute;
   right: -3px;
@@ -730,7 +751,7 @@
   background: #20190f;
   text-align: center;
   font:
-    900 7px/1 system-ui,
+    900 8px/1 'Bebas Kai', system-ui,
     sans-serif;
   letter-spacing: 0.02em;
 }

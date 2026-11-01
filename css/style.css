@@ -1,3 +1,54 @@
+@font-face {
+  font-family: 'Bebas Kai';
+  src: url('../assets/fonts/BebasKai.ttf') format('truetype');
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Corporate Logo';
+  src: url('../assets/fonts/Corporate-Logo-Bold-ver2.otf') format('opentype');
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Excelsior Sans';
+  src: url('../assets/fonts/ExcelsiorSans.ttf') format('truetype');
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Higashi Ome Gothic';
+  src: url('../assets/fonts/HigashiOme-Gothic-C-1.3.ttf') format('truetype');
+  font-display: swap;
+}
+@font-face {
+  font-family: 'KOTRA Bold';
+  src: url('../assets/fonts/KOTRA_BOLD.ttf') format('truetype');
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Liberation Sans Local';
+  src: url('../assets/fonts/LiberationSans.ttf') format('truetype');
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Mikodacs';
+  src: url('../assets/fonts/Mikodacs.otf') format('opentype');
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Perfect DOS VGA';
+  src: url('../assets/fonts/PerfectDOSVGA437.ttf') format('truetype');
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Pretendard';
+  src: url('../assets/fonts/Pretendard-Regular.ttf') format('truetype');
+  font-display: swap;
+}
+@font-face {
+  font-family: 'SCDream';
+  src: url('../assets/fonts/SCDream5.otf') format('opentype');
+  font-display: swap;
+}
+
 :root {
   --ink: #e7e3d9;
   --muted: #a9a39a;
@@ -23,6 +74,7 @@ body {
 }
 body {
   font-family:
+    'Pretendard',
     Inter,
     ui-sans-serif,
     system-ui,
@@ -30,6 +82,11 @@ body {
     BlinkMacSystemFont,
     'Segoe UI',
     sans-serif;
+}
+h1,
+h2,
+h3 {
+  font-family: 'Bebas Kai', 'Corporate Logo', Georgia, serif;
 }
 button,
 input {
