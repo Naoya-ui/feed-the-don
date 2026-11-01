@@ -6,13 +6,13 @@ export const MOVE_DATA = Object.freeze({
   // `hitboxCenterY` is a ratio of Fighter body height so the spear box tracks the weapon.
   light: {
     id: 'light', animationKey: 'joust', name: 'Joust', startup: 5, active: 4, recovery: 11,
-    damage: 15, hitstun: 14, blockstun: 8, knockback: 255, hitstop: 3,
+    damage: 10, hitstun: 14, blockstun: 8, knockback: 255, hitstop: 3,
     hitboxWidth: 218, hitboxHeight: 68, hitboxCenterY: 0.12, range: 218, chip: 1,
     lungeStartFrame: 3, lungeEndFrame: 9, lungeSpeed: 235,
   },
   heavy: {
     id: 'heavy', animationKey: 'gallop', name: 'Gallop', startup: 8, active: 8, recovery: 18,
-    damage: 28, hitstun: 19, blockstun: 10, knockback: 205, hitstop: 4,
+    damage: 20, hitstun: 19, blockstun: 10, knockback: 205, hitstop: 4,
     hitboxWidth: 252, hitboxHeight: 76, hitboxCenterY: 0.12, range: 252, chip: 2,
     // Two distinct thrust pulses inside the active frames. Each deals half damage.
     hitWindows: [
@@ -22,11 +22,20 @@ export const MOVE_DATA = Object.freeze({
     lungeStartFrame: 6, lungeEndFrame: 18, lungeSpeed: 335,
   },
   special: {
-    id: 'special', animationKey: 'justice', name: 'Justice', startup: 14, active: 9, recovery: 28,
-    damage: 48, hitstun: 36, blockstun: 18, knockback: 690, hitstop: 8,
-    // Justice is a forward sliding lance sweep; the lower, broad box follows the slide.
-    hitboxWidth: 286, hitboxHeight: 112, hitboxCenterY: 0.22, range: 286, chip: 5,
-    lungeStartFrame: 7, lungeEndFrame: 25, lungeSpeed: 505,
+    id: 'special', animationKey: 'justice', name: 'Justice · Skill 3', startup: 10, active: 28, recovery: 28, superArmor: true, cooldownFrames: 1200,
+    damage: 15, hitstun: 30, blockstun: 18, knockback: 390, hitstop: 5,
+    hitboxWidth: 286, hitboxHeight: 112, hitboxCenterY: 0.22, range: 286, chip: 5, animationFrames: 38,
+    hitWindows: [
+      { start: 0, end: 3, damage: 15 },
+      { start: 12, end: 15, damage: 15 },
+      { start: 23, end: 26, damage: 15 },
+    ],
+    faceOpponentAt: [16, 23],
+    movementPhases: [
+      { start: 7, end: 16, direction: 'forward', speed: 900 },
+      { start: 16, end: 22, direction: 'away', speed: 380 },
+      { start: 23, end: 34, direction: 'forward', speed: 640 },
+    ],
   },
   donEgo: {
     id: 'donEgo', animationKey: 'justice', name: 'La Sangre de Sancho', isEgo: true,
@@ -36,10 +45,22 @@ export const MOVE_DATA = Object.freeze({
     hitWindows: [{ start: 0, end: 5, damageMultiplier: 0.45 }, { start: 7, end: 12, damageMultiplier: 0.55 }],
   },
   heathcliffSkill3: {
-    id: 'heathcliffSkill3', animationKey: 'skill2', name: 'Savage Swing',
-    startup: 16, active: 8, recovery: 32, damage: 34, hitstun: 25, blockstun: 13,
-    knockback: 460, hitstop: 5, hitboxWidth: 285, hitboxHeight: 140, hitboxCenterY: 0.39,
-    range: 290, chip: 3, lungeStartFrame: 12, lungeEndFrame: 25, lungeSpeed: 335,
+    id: 'heathcliffSkill3', animationKey: 'ego', name: 'Quick Suppression · Skill 3',
+    startup: 8, active: 30, recovery: 34, superArmor: true, cooldownFrames: 1200, damage: 10, hitstun: 25, blockstun: 13,
+    knockback: 440, hitstop: 5, hitboxWidth: 285, hitboxHeight: 145, hitboxCenterY: 0.39,
+    range: 300, chip: 3, animationFrames: 54,
+    hitWindows: [
+      { start: 0, end: 2, damage: 10 },
+      { start: 6, end: 8, damage: 10 },
+      { start: 12, end: 14, damage: 10 },
+      { start: 18, end: 20, damage: 10 },
+      { start: 25, end: 29, damage: 20 },
+    ],
+    movementPhases: [
+      { start: 7, end: 18, direction: 'forward', speed: 500 },
+      { start: 18, end: 23, direction: 'away', speed: 360 },
+      { start: 23, end: 38, direction: 'forward', speed: 720 },
+    ],
   },
   enemyLight: {
     id: 'enemyLight', name: 'Enemy Strike', startup: 23, active: 5, recovery: 34,
@@ -60,25 +81,34 @@ export const MOVE_DATA = Object.freeze({
   heathcliffSkill1: {
     id: 'heathcliffSkill1', animationKey: 'skill1', name: 'Bat Strike',
     startup: 10, active: 6, recovery: 22,
-    damage: 19, hitstun: 18, blockstun: 10, knockback: 325, hitstop: 4,
+    damage: 10, hitstun: 18, blockstun: 10, knockback: 325, hitstop: 4,
     hitboxWidth: 198, hitboxHeight: 112, hitboxCenterY: 0.34, range: 205, chip: 2,
     lungeStartFrame: 8, lungeEndFrame: 15, lungeSpeed: 210, animationFrames: 24,
   },
   heathcliffSkill2: {
     id: 'heathcliffSkill2', animationKey: 'skill2', name: 'Ruthless Swing',
-    startup: 14, active: 10, recovery: 28,
-    damage: 30, hitstun: 24, blockstun: 12, knockback: 455, hitstop: 5,
+    startup: 14, active: 18, recovery: 28,
+    damage: 11, hitstun: 24, blockstun: 12, knockback: 455, hitstop: 5,
     hitboxWidth: 260, hitboxHeight: 145, hitboxCenterY: 0.39, range: 265, chip: 3,
+    knockdownOnHit: true, knockdownFrames: 34,
     hitWindows: [
-      { start: 1, end: 4, damageMultiplier: 0.48 },
-      { start: 6, end: 9, damageMultiplier: 0.52 },
+      { start: 0, end: 3, damageMultiplier: 1 },
+      { start: 13, end: 16, damageMin: 8, damageMax: 11 },
     ],
     lungeStartFrame: 11, lungeEndFrame: 24, lungeSpeed: 310, animationFrames: 35,
+  },
+  heathcliffBodysack: {
+    id: 'heathcliffBodysack', animationKey: 'ego', name: 'Bodysack · E.G.O', isEgo: true,
+    startup: 18, active: 18, recovery: 42, damage: 72, hitstun: 42, blockstun: 22,
+    knockback: 820, hitstop: 9, hitboxWidth: 370, hitboxHeight: 190, hitboxCenterY: 0.42,
+    range: 370, chip: 8, lungeStartFrame: 8, lungeEndFrame: 31, lungeSpeed: 510,
+    hitWindows: [{ start: 0, end: 5, damageMultiplier: 0.45 }, { start: 9, end: 14, damageMultiplier: 0.55 }],
+    animationFrames: 54,
   },
   heathcliffEgo: {
     id: 'heathcliffEgo', animationKey: 'ego', name: 'E.G.O Burst',
     startup: 24, active: 14, recovery: 45,
-    damage: 66, hitstun: 42, blockstun: 22, knockback: 740, hitstop: 9,
+    damage: 20, hitstun: 42, blockstun: 22, knockback: 740, hitstop: 9,
     hitboxWidth: 365, hitboxHeight: 185, hitboxCenterY: 0.39, range: 365, chip: 8,
     hitWindows: [
       { start: 1, end: 4, damageMultiplier: 0.55 },
@@ -140,7 +170,7 @@ export class Fighter {
     this.gravity = gravity;
     this.jumpSpeed = jumpSpeed;
     this.aiIndex = aiIndex;
-    this.controls = { left: 'a', right: 'd', jump: 'w', guard: 's', light: 'j', heavy: 'k', special: 'u', dash: 'l', ...(controls || {}) };
+    this.controls = { left: 'a', right: 'd', jump: 'w', guard: 's', light: 'j', heavy: 'k', special: 'u', ego: 'i', dash: 'l', ...(controls || {}) };
     this.lightMoveData = lightMoveData || MOVE_DATA.light;
     this.heavyMoveData = heavyMoveData || MOVE_DATA.heavy;
     this.specialMoveData = specialMoveData || MOVE_DATA.special;
@@ -149,6 +179,9 @@ export class Fighter {
     this.egoMeter = 0;
     this.egoMeterMax = 100;
     this.egoActivationCount = 0;
+    this.egoFormActive = false;
+    this.egoSpriteSet = null;
+    this.skill3CooldownFrames = 0;
     this.stateMachine = new StateMachine('Idle', {
       Idle: ['Run', 'Jump', 'Dash', 'Attack', 'Hit', 'Block', 'Blockstun', 'Knockdown'],
       Run: ['Idle', 'Jump', 'Dash', 'Attack', 'Hit', 'Block', 'Blockstun', 'Knockdown'],
@@ -158,10 +191,11 @@ export class Fighter {
       Hit: ['Idle', 'Run', 'Jump', 'Blockstun', 'Knockdown'],
       Block: ['Idle', 'Run', 'Hit', 'Blockstun', 'Knockdown'],
       Blockstun: ['Idle', 'Hit', 'Knockdown'],
-      Knockdown: [],
+      Knockdown: ['Idle', 'Hit', 'Blockstun'],
     });
     this.currentMove = null;
     this.hitstunFrames = 0;
+    this.knockdownFrames = 0;
     this.blockstunFrames = 0;
     this.dashFrames = 0;
     this.dashCooldownFrames = 0;
@@ -189,17 +223,30 @@ export class Fighter {
     return this.currentMove ? this.currentMove.data.startup + this.currentMove.data.active + this.currentMove.data.recovery : 0;
   }
 
+  /** Atomically swap visual pose sources; body dimensions and collision boxes never change. */
+  activateEgoForm(spriteSet = null) {
+    if (!this.egoEquipped || this.egoMeter < this.egoMeterMax) return false;
+    this.egoSpriteSet = spriteSet || this.egoSpriteSet;
+    this.egoFormActive = true;
+    this.egoMeter = 0;
+    this.egoActivationCount += 1;
+    return true;
+  }
+
   canAct() {
     return this.alive && this.hitstunFrames <= 0 && this.blockstunFrames <= 0 && !this.currentMove && this.dashFrames <= 0;
   }
 
   beginAttack(moveData) {
-    if (!this.canAct() || !moveData) return false;
+    if (!this.canAct() || !moveData || (moveData.cooldownFrames && this.skill3CooldownFrames > 0)) return false;
+    if (moveData.cooldownFrames) this.skill3CooldownFrames = moveData.cooldownFrames;
     this.blockHeld = false;
     this.currentMove = {
       data: { ...moveData },
       frame: 0,
       hitTargets: new Set(),
+      hitWindowDamages: Array.isArray(moveData.hitWindows) ? moveData.hitWindows.map((window) => Number.isFinite(window.damageMin) && Number.isFinite(window.damageMax)
+        ? Math.floor(Math.random() * (window.damageMax - window.damageMin + 1)) + window.damageMin : null) : [],
     };
     this.state = 'Attack';
     this.vx *= 0.28;
@@ -211,7 +258,7 @@ export class Fighter {
     this.dashDirection = Math.sign(direction) || this.facing;
     this.dashFrames = 9;
     this.dashCooldownFrames = 31;
-    this.invulnerableFrames = 5;
+    this.invulnerableFrames = 0;
     this.vx = this.dashDirection * 780;
     this.blockHeld = false;
     this.state = 'Dash';
@@ -224,6 +271,7 @@ export class Fighter {
     this.previousY = this.y;
     this.stateMachine.tick();
     if (this.dashCooldownFrames > 0) this.dashCooldownFrames -= 1;
+    if (this.skill3CooldownFrames > 0) this.skill3CooldownFrames -= 1;
     if (this.invulnerableFrames > 0) this.invulnerableFrames -= 1;
     if (this.flashFrames > 0) this.flashFrames -= 1;
 
@@ -231,6 +279,15 @@ export class Fighter {
       this.state = 'Knockdown';
       this.vx = approach(this.vx, 0, this.friction * dt);
       this.#integrate(dt, bounds);
+      return;
+    }
+
+    if (this.knockdownFrames > 0) {
+      this.knockdownFrames -= 1;
+      this.state = 'Knockdown';
+      this.vx = approach(this.vx, 0, this.friction * 0.6 * dt);
+      this.#integrate(dt, bounds);
+      if (this.knockdownFrames <= 0) this.state = 'Idle';
       return;
     }
 
@@ -258,9 +315,16 @@ export class Fighter {
       this.state = 'Attack';
       const move = this.currentMove.data;
       const frame = this.currentMove.frame;
+      if (Array.isArray(move.faceOpponentAt) && move.faceOpponentAt.includes(frame) && Number.isFinite(this.opponentX)) {
+        this.facing = Math.sign(this.opponentX - this.x) || this.facing;
+      }
+      const motionPhase = Array.isArray(move.movementPhases) ? move.movementPhases.find((phase) => frame >= phase.start && frame < phase.end) : null;
       const lungeStart = Number.isFinite(move.lungeStartFrame) ? move.lungeStartFrame : move.startup;
       const lungeEnd = Number.isFinite(move.lungeEndFrame) ? move.lungeEndFrame : move.startup;
-      if (frame >= lungeStart && frame < lungeEnd) {
+      if (motionPhase) {
+        const direction = motionPhase.direction === 'away' ? -this.facing : this.facing;
+        this.vx = approach(this.vx, direction * motionPhase.speed, this.acceleration * 2 * dt);
+      } else if (frame >= lungeStart && frame < lungeEnd) {
         // Moves with a lunge (especially Justice) glide forward over several frames rather
         // than teleporting one frame or stopping abruptly. Clamp to arena bounds below.
         this.vx = approach(this.vx, this.facing * (move.lungeSpeed || 235), this.acceleration * 1.6 * dt);
@@ -310,16 +374,12 @@ export class Fighter {
       // the selected E.G.O; otherwise that same button performs the fighter's normal Skill 3.
       if (!this.blockHeld) {
         const specialKey = this.controls.special;
-        if (input.hasBufferedPress(specialKey)) {
-          const canManifestEgo = this.egoEquipped && this.egoMoveData && this.egoMeter >= this.egoMeterMax;
-          const selectedSpecial = canManifestEgo ? this.egoMoveData : this.specialMoveData;
-          if (this.beginAttack(selectedSpecial)) {
-            input.consumePress(specialKey);
-            if (canManifestEgo) {
-              this.egoMeter = 0;
-              this.egoActivationCount += 1;
-            }
-          }
+        const egoKey = this.controls.ego;
+        const canManifestEgo = this.egoEquipped && this.egoMoveData && this.egoMeter >= this.egoMeterMax;
+        if (input.hasBufferedPress(egoKey) && canManifestEgo) {
+          if (this.activateEgoForm() && this.beginAttack(this.egoMoveData)) input.consumePress(egoKey);
+        } else if (input.hasBufferedPress(specialKey)) {
+          if (this.beginAttack(this.specialMoveData)) input.consumePress(specialKey);
         } else if (input.hasBufferedPress(this.controls.heavy) && this.beginAttack(this.heavyMoveData)) {
           input.consumePress(this.controls.heavy);
         } else if (input.hasBufferedPress(this.controls.light) && this.beginAttack(this.lightMoveData)) {
@@ -366,7 +426,7 @@ export class Fighter {
 
   getAttackBox() {
     if (!this.currentMove) return null;
-    const { data, frame, hitTargets } = this.currentMove;
+    const { data, frame, hitTargets, hitWindowDamages = [] } = this.currentMove;
     if (frame < data.startup || frame >= data.startup + data.active) return null;
 
     // Single-hit moves are active for their full active window but can only hit each target
@@ -390,7 +450,7 @@ export class Fighter {
       width,
       height,
       data,
-      damage: Math.max(1, Math.round(data.damage * damageMultiplier)),
+      damage: Math.max(1, hitWindowDamages[windowIndex] ?? data.hitWindows?.[windowIndex]?.damage ?? Math.round(data.damage * damageMultiplier)),
       windowIndex,
       hitTargets,
     };
@@ -401,15 +461,16 @@ export class Fighter {
     return Math.sign(attackerX - this.x) === this.facing;
   }
 
-  receiveHit({ attackerX, damage, move, blocked = false, allowFrameTrade = false }) {
-    if ((!this.alive && !allowFrameTrade) || this.invulnerableFrames > 0) return { applied: false, damage: 0, blocked };
+  receiveHit({ attackerX, damage, move, hitIndex = 0, blocked = false, allowFrameTrade = false }) {
+    if ((!this.alive && !allowFrameTrade) || (this.invulnerableFrames > 0 && this.dashFrames <= 0)) return { applied: false, damage: 0, blocked };
     const actualDamage = Math.max(0, Math.round(damage));
     const previousHp = this.hp;
     this.combatant.hp = Math.max(0, previousHp - actualDamage);
     this.lastDamage = previousHp - this.hp;
     this.lastWasBlocked = blocked;
     this.flashFrames = blocked ? 4 : 8;
-    this.currentMove = null;
+    const superArmor = !!this.currentMove?.data?.superArmor;
+    if (!superArmor) this.currentMove = null;
 
     const direction = this.x >= attackerX ? 1 : -1;
     if (blocked) {
@@ -418,11 +479,15 @@ export class Fighter {
       this.vx = direction * (move.knockback || 0) * 0.16;
       this.state = 'Blockstun';
     } else {
-      this.hitstunFrames = Math.max(this.hitstunFrames, move.hitstun || 12);
+      if (!superArmor) this.hitstunFrames = Math.max(this.hitstunFrames, move.hitstun || 12);
+      if (!blocked && move.knockdownOnHit && hitIndex === 0) {
+        this.knockdownFrames = Math.max(this.knockdownFrames, move.knockdownFrames || 30);
+        this.hitstunFrames = 0;
+      }
       this.blockstunFrames = 0;
       this.vx = direction * (move.knockback || 0);
       if (this.onGround) this.vy = -115;
-      this.state = this.hp <= 0 ? 'Knockdown' : 'Hit';
+      this.state = this.hp <= 0 || this.knockdownFrames > 0 ? 'Knockdown' : (superArmor ? 'Attack' : 'Hit');
     }
     return { applied: true, damage: this.lastDamage, blocked };
   }

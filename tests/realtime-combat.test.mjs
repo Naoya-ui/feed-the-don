@@ -19,7 +19,7 @@ for (let i = 0; i < MOVE_DATA.light.startup - 1; i += 1) {
 don.update(dt, null, bounds); // frame reaches first active frame
 const first = CombatSystem.resolve([don], [enemy]);
 assert.equal(first.length, 1, 'active hitbox should connect to overlapping hurtbox');
-assert.equal(enemy.hp, 85, 'move damage is deterministic');
+assert.equal(enemy.hp, 90, 'Skill 1 applies the rebalanced 10 raw damage');
 assert.equal(enemy.state, 'Hit');
 for (let i = 0; i < 3; i += 1) {
   don.update(dt, null, bounds);
@@ -64,8 +64,8 @@ tradeB.beginAttack(MOVE_DATA.light);
 for (let i = 0; i < MOVE_DATA.light.startup; i += 1) { tradeA.update(dt, null, bounds); tradeB.update(dt, null, bounds); }
 const tradeEvents = CombatSystem.resolve([tradeA, tradeB], [tradeA, tradeB]);
 assert.equal(tradeEvents.length, 2, 'simultaneous attacks both resolve on the same frame');
-assert.equal(tradeA.hp, 25);
-assert.equal(tradeB.hp, 25);
+assert.equal(tradeA.hp, 30);
+assert.equal(tradeB.hp, 30);
 
 // Don's three distinct moves must keep three separate animation keys and frame profiles.
 assert.equal(MOVE_DATA.light.animationKey, 'joust');
@@ -75,7 +75,7 @@ assert.ok(MOVE_DATA.special.startup > MOVE_DATA.heavy.startup, 'Justice has a re
 assert.ok(MOVE_DATA.special.recovery > MOVE_DATA.heavy.recovery, 'Justice has a meaningful recovery commitment');
 assert.ok(MOVE_DATA.light.hitboxWidth >= 200 && MOVE_DATA.light.hitboxHeight < 90, 'Joust has a long, narrow lance hitbox');
 assert.equal(MOVE_DATA.heavy.hitWindows.length, 2, 'Gallop has two separate thrust pulses');
-assert.ok(MOVE_DATA.special.lungeSpeed > 400, 'Justice uses a natural forward slide');
+assert.equal(MOVE_DATA.special.movementPhases.length, 3, 'Justice has entry, cross-through, and follow-through movement phases');
 
 // Gallop must hit the same target twice in separate windows, not once per active frame.
 const gallopTargetData = { hp: 100, maxHp: 100 };
@@ -88,18 +88,57 @@ for (let i = 0; i < MOVE_DATA.heavy.startup + MOVE_DATA.heavy.active + 1; i += 1
   gallopEvents.push(...CombatSystem.resolve([gallopDon], [gallopTarget]));
 }
 assert.equal(gallopEvents.length, 2, 'Gallop deals exactly two hits');
-assert.deepEqual(gallopEvents.map((event) => event.damage), [14, 14], 'Gallop divides damage over its two thrusts');
-assert.equal(gallopTarget.hp, 72, 'two Gallop thrusts apply the intended total damage');
+assert.deepEqual(gallopEvents.map((event) => event.damage), [10, 10], 'Gallop divides its 20 damage over two thrusts');
+assert.equal(gallopTarget.hp, 80, 'two Gallop thrusts apply 20 total damage');
 
 const slide = new Fighter({ id: 'justice-slide', team: 'player', combatant: { hp: 100, maxHp: 100 }, x: 400, groundY: 560, facing: 1 });
 assert.equal(slide.beginAttack(MOVE_DATA.special), true);
 const beforeSlide = slide.x;
-for (let i = 0; i < MOVE_DATA.special.lungeEndFrame; i += 1) slide.update(dt, null, bounds);
+for (let i = 0; i < 18; i += 1) slide.update(dt, null, bounds);
 assert.ok(slide.x > beforeSlide + 35, 'Justice glides forward over multiple simulation frames');
 
 const thirdSkillData = { hp: 100, maxHp: 100 };
 const thirdSkill = new Fighter({ id: 'third-skill', name: 'Don', team: 'player', combatant: thirdSkillData, x: 400, groundY: 560 });
 assert.equal(thirdSkill.beginAttack(MOVE_DATA.special), true, 'third skill move can be started by the fighter system');
-assert.equal(thirdSkill.currentMove.data.name, 'Justice');
+assert.equal(thirdSkill.currentMove.data.name, 'Justice · Skill 3');
 
-console.log('PASS realtime-combat: AABB, spear-sized hitboxes, frame data, three Don skills, two-hit Gallop, chip guard, evasion, hitstun, simultaneous trade');
+// Heathcliff Groundbreaker is a two-beat combo: 11 damage + a single 8–11 follow-up,
+// with the target held in Knockdown between the two hit windows.
+const hc = new Fighter({ id: 'hc', team: 'player', combatant: { hp: 100, maxHp: 100 }, x: 400, groundY: 560, facing: 1, heavyMoveData: MOVE_DATA.heathcliffSkill2 });
+const hcTarget = new Fighter({ id: 'hc-target', team: 'enemy', combatant: { hp: 100, maxHp: 100 }, x: 560, groundY: 560, facing: -1 });
+hc.beginAttack(MOVE_DATA.heathcliffSkill2);
+let hcHits = [];
+for (let frame = 1; frame <= MOVE_DATA.heathcliffSkill2.startup + 16; frame += 1) {
+  hc.update(dt, null, bounds);
+  hcHits.push(...CombatSystem.resolve([hc], [hcTarget]));
+}
+assert.equal(hcHits.length, 2, 'Groundbreaker lands exactly two hits');
+assert.equal(hcHits[0].damage, 11, 'first Groundbreaker hit deals 11');
+assert.ok(hcHits[1].damage >= 8 && hcHits[1].damage <= 11, 'follow-up randomly deals 8–11');
+assert.equal(hcTarget.hp, 100 - hcHits[0].damage - hcHits[1].damage);
+
+// L dash is movement only; it does not manufacture invulnerability frames.
+const dashing = new Fighter({ id: 'dashing', team: 'player', combatant: { hp: 100, maxHp: 100 }, x: 400, groundY: 560 });
+assert.equal(dashing.beginDash(), true);
+assert.equal(dashing.invulnerableFrames, 0);
+
+// Verify the full K/U choreography connects every scheduled hit while fighters move in live frames.
+for (const [move, expectedHits, expectedDamage] of [
+  [MOVE_DATA.special, [15, 15, 15], 45],
+  [MOVE_DATA.heathcliffSkill3, [10, 10, 10, 10, 20], 60],
+]) {
+  const actor = new Fighter({ id: `actor-${move.id}`, team: 'player', combatant: { hp: 100, maxHp: 100 }, x: 400, groundY: 560, facing: 1 });
+  const target = new Fighter({ id: `target-${move.id}`, team: 'enemy', combatant: { hp: 1000, maxHp: 1000 }, x: 560, groundY: 560, facing: -1 });
+  actor.beginAttack(move);
+  const hits = [];
+  for (let frame = 0; frame < actor.moveTotalFrames + 1; frame += 1) {
+    actor.opponentX = target.x;
+    actor.update(dt, null, bounds);
+    target.update(dt, null, bounds);
+    hits.push(...CombatSystem.resolve([actor], [target]));
+  }
+  assert.deepEqual(hits.map((event) => event.damage), expectedHits, `${move.name} connects its designed hit sequence`);
+  assert.equal(target.hp, 1000 - expectedDamage, `${move.name} total damage matches its move definition`);
+}
+
+console.log('PASS realtime-combat: rebalanced skills, complete multi-hit choreography, dash without i-frames, knockdown combo, trade');

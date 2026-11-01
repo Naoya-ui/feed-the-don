@@ -13,7 +13,8 @@ assert.match(html, /id=\"storyModeView\"[\s\S]*?id=\"newGameBtn\"[\s\S]*?id=\"co
 assert.doesNotMatch(html, /id=\"rtAutoDuel\"|id=\"rtDebugBoxes\"/, 'battle HUD no longer exposes auto battle or a hitbox checkbox');
 assert.match(html, /id=\"showHitboxSettingRow\"[^>]*hidden[\s\S]*?id=\"showHitboxSetting\"/, 'hitbox toggle is in the Settings modal and hidden by default');
 assert.match(main, /els\.showHitboxSettingRow\.hidden = !realtimeBattleActive/, 'hitbox option is shown only during real-time combat');
-assert.match(main, /startStandaloneRealtime\(\"versus\", config\)/, 'Versus launches selected local multiplayer loadouts');
+assert.match(main, /startStandaloneRealtime\('versus', config\)/, 'Versus selection adapts its locked P1/P2 loadouts into the realtime battle engine');
+assert.match(main, /new CharacterSelect\(/, 'Versus uses the dedicated dual-cursor CharacterSelect module');
 assert.match(main, /startStandaloneRealtime\(\"training\"\)/, 'Training launches the practice arena');
 assert.match(realtime, /this\.standaloneMode && this\.input\.consumePress\('escape'\)/, 'Escape exits standalone modes');
 assert.doesNotMatch(realtime, /autoDuel|AUTO DUEL|AUTO BATTLE SIMULATION/, 'automatic player control was removed from the real-time engine');

@@ -1,4 +1,5 @@
 import { InputHandler } from './InputHandler.js';
+import { AssetLoader } from '../core/AssetLoader.js';
 import { GamepadInputAdapter } from './GamepadInput.js';
 import { GameLoop } from './GameLoop.js';
 import { Fighter, MOVE_DATA } from './Fighter.js';
@@ -113,6 +114,7 @@ export class RealtimeBattleMode {
     this.playerEgoLabel = root.querySelector('#rtPlayerEgoLabel');
     this.playerSkillHistory = root.querySelector('#rtPlayerSkillHistory');
     this.skillHistory = new Map();
+    this.enemyHudRefs = new Map();
     this.enemyHud = root.querySelector('#rtEnemyHud');
     this.message = root.querySelector('#rtMessage');
     this.fightLabel = root.querySelector('#rtEncounterLabel');
@@ -128,6 +130,8 @@ export class RealtimeBattleMode {
     this.seriesHud = root.querySelector('#rtSeriesScore');
     this.liveStatus = root.querySelector('#rtLiveStatus');
     this.fpsStatus = root.querySelector('#rtFpsStatus');
+    this.timerLabel = root.querySelector('#rtTimer');
+    this.remainingSeconds = Infinity;
     this.battle = null;
     this.encounter = 'bandit';
     this.player = null;
@@ -145,7 +149,7 @@ export class RealtimeBattleMode {
     this.openingCardFrames = 0;
     this.aiActionCounter = 0;
     // Fixed positions and phase offsets make the atmospheric particles reproducible.
-    this.ambientParticles = Array.from({ length: 34 }, (_, index) => ({
+    this.ambientParticles = Array.from({ length: 14 }, (_, index) => ({
       x: (index * 197 + 73) % LOGICAL_WIDTH,
       y: (index * 127 + 41) % LOGICAL_HEIGHT,
       size: 0.7 + (index % 4) * 0.45,
@@ -211,6 +215,7 @@ export class RealtimeBattleMode {
         ...(animation.frames || []),
         ...(animation.effectFrames || []).map((frame) => frame.src),
       ]),
+      ...Object.values(VERSUS_ROSTER).flatMap((character) => character.egos.map((ego) => ego.preview).filter(Boolean)),
       this._background.src,
     ];
     [...new Set(paths.filter(Boolean))].forEach((src) => this._image(src));
@@ -219,9 +224,9 @@ export class RealtimeBattleMode {
   _image(src) {
     if (!src) return null;
     if (this._assets.has(src)) return this._assets.get(src);
-    const image = new Image();
+    const image = AssetLoader.imageCache.get(src) || new Image();
     image.decoding = 'async';
-    image.src = src;
+    if (!image.src) image.src = src;
     this._assets.set(src, image);
     return image;
   }
@@ -232,6 +237,10 @@ export class RealtimeBattleMode {
     if (this._disposed) throw new Error('RealtimeBattleMode was disposed.');
     this.battle = battle;
     this.encounter = encounter;
+    const bossEncounter = encounter === 'wolf';
+    const versusSeconds = Number(this.versusConfig?.timeLimit ?? 99);
+    this.remainingSeconds = bossEncounter || (encounter === 'versus' && versusSeconds === 0) ? Infinity : encounter === 'versus' ? versusSeconds : 99;
+    this.#renderTimer();
     this.seriesActive = encounter === 'wolf' || encounter === 'heathcliff' || encounter === 'versus';
     this.seriesScores = { player: 0, enemy: 0 };
     this.seriesRound = 1;
@@ -270,12 +279,14 @@ export class RealtimeBattleMode {
     this.setMessage(encounter === 'training'
       ? 'TRAINING — Practice JOUST (J), GALLOP (K), JUSTICE (U), dash (L) and guard (S). Press ESC to leave.'
       : encounter === 'heathcliff'
-        ? 'HEATHCLIFF // E.G.O GAUGE BUILDS WHEN ATTACKS CONNECT OR ARE GUARDED. DON: J/K/U, A/D, W, S, L.'
+        ? 'HEATHCLIFF: “What are you grinning at, tin-can?” DON: “A noble challenger! Let justice ring!” Heathcliff snarls and charges—Don braces for the clash.'
         : 'READY — FIGHT!  A/D Move · W Jump · S Guard · J Joust · K Gallop · U Justice · L Dash');
     this.runningRound = true;
     this.loop.start();
     return new Promise((resolve) => { this.roundResolver = resolve; });
   }
+
+  #renderTimer() { if (this.timerLabel) this.timerLabel.textContent = Number.isFinite(this.remainingSeconds) ? String(Math.ceil(this.remainingSeconds)).padStart(2, '0') : '∞'; }
 
   /** Pause simulation while the in-battle Settings modal is open. */
   pause() {
@@ -383,11 +394,12 @@ export class RealtimeBattleMode {
       lightMoveData: p1IsHeathcliff ? MOVE_DATA.heathcliffSkill1 : MOVE_DATA.light,
       heavyMoveData: p1IsHeathcliff ? MOVE_DATA.heathcliffSkill2 : MOVE_DATA.heavy,
       specialMoveData: p1IsHeathcliff ? MOVE_DATA.heathcliffSkill3 : MOVE_DATA.special,
-      egoMoveData: p1Ego?.id === 'none' ? null : (p1IsHeathcliff ? MOVE_DATA.heathcliffEgo : MOVE_DATA.donEgo),
-      egoEquipped: !!p1Ego && p1Ego.id !== 'none',
+      egoMoveData: p1Ego?.id === 'none' ? (this.encounter === 'heathcliff' ? (p1IsHeathcliff ? MOVE_DATA.heathcliffBodysack : MOVE_DATA.donEgo) : null) : (p1IsHeathcliff ? (p1Ego?.id === 'bodysack' ? MOVE_DATA.heathcliffBodysack : MOVE_DATA.heathcliffEgo) : MOVE_DATA.donEgo),
+      egoEquipped: (!!p1Ego && p1Ego.id !== 'none') || (this.encounter === 'heathcliff' && !p1IsHeathcliff),
     });
     this.player.drawKey = p1DrawKey;
     this.player.egoId = p1Ego?.id || 'none';
+    this.player.egoPreviewPath = p1Ego?.preview || (this.encounter === 'heathcliff' && !p1IsHeathcliff ? 'assets/images/ego/don/la-sangre-preview.gif' : null);
     if (this.playerNameLabel) this.playerNameLabel.textContent = this.player.name.toUpperCase();
     if (this.playerIdentityLabel) this.playerIdentityLabel.textContent = p1Roster?.identity?.name || 'JOUST / GALLOP / JUSTICE';
     if (this.playerEgoName) this.playerEgoName.textContent = p1Ego?.id && p1Ego.id !== 'none' ? p1Ego.name : 'E.G.O';
@@ -421,11 +433,12 @@ export class RealtimeBattleMode {
         lightMoveData: isHeathcliff ? MOVE_DATA.heathcliffSkill1 : MOVE_DATA.light,
         heavyMoveData: isHeathcliff ? MOVE_DATA.heathcliffSkill2 : MOVE_DATA.heavy,
         specialMoveData: isHeathcliff ? MOVE_DATA.heathcliffSkill3 : MOVE_DATA.special,
-        egoMoveData: p2Ego?.id === 'none' ? null : (isHeathcliff ? MOVE_DATA.heathcliffEgo : MOVE_DATA.donEgo),
+        egoMoveData: p2Ego?.id === 'none' ? null : (isHeathcliff ? (p2Ego?.id === 'bodysack' ? MOVE_DATA.heathcliffBodysack : MOVE_DATA.heathcliffEgo) : MOVE_DATA.donEgo),
         egoEquipped: !!p2Ego && p2Ego.id !== 'none',
       });
       fighter.drawKey = drawKey;
       fighter.egoId = p2Ego?.id || 'none';
+      fighter.egoPreviewPath = p2Ego?.preview || null;
       fighter.egoMeter = 0;
       fighter.egoMeterMax = 100;
       fighter.aiCooldownFrames = 54 + index * 24;
@@ -442,6 +455,20 @@ export class RealtimeBattleMode {
     this.#renderSkillHistory(this.player);
     this.initialHP.set('don', don.hp);
     this.battle.enemies.forEach((enemy) => this.initialHP.set(`enemy-${enemy.id}`, enemy.hp));
+  }
+
+  /** Register late-supplied E.G.O pose paths; preload before attaching to avoid frame hitching. */
+  async setEgoSpriteSet(characterId, spriteSet) {
+    const fighter = this.fighters.find((item) => item.drawKey === characterId && (item.team === 'player' || item.team === 'player2'));
+    if (!fighter || !spriteSet || typeof spriteSet !== 'object') return false;
+    const paths = Object.values(spriteSet).flatMap((value) => Array.isArray(value) ? value : [value]).filter((value) => typeof value === 'string');
+    await Promise.all(paths.map((src) => new Promise((resolve) => {
+      const image = this._image(src);
+      if (!image || image.complete) return resolve();
+      image.addEventListener('load', resolve, { once: true }); image.addEventListener('error', resolve, { once: true });
+    })));
+    fighter.egoSpriteSet = spriteSet;
+    return true;
   }
 
   setControlsConfig(config = {}) {
@@ -467,6 +494,7 @@ export class RealtimeBattleMode {
   #renderEnemyHud() {
     if (!this.enemyHud) return;
     this.enemyHud.replaceChildren();
+    this.enemyHudRefs.clear();
     for (const fighter of this.enemies) {
       const card = document.createElement('div');
       card.className = 'rt-enemy-card';
@@ -484,13 +512,17 @@ export class RealtimeBattleMode {
       const fill = document.createElement('i');
       fill.className = 'rt-hp-fill rt-enemy-hp-fill';
       fill.dataset.hpFill = fighter.id;
-      fill.style.width = `${(fighter.hp / fighter.maxHp) * 100}%`;
+      fill.style.width = '100%';
+      fill.style.transformOrigin = 'left center';
+      fill.style.transform = `scaleX(${clamp(fighter.hp / fighter.maxHp, 0, 1)})`;
       track.append(fill);
       const skillHistory = document.createElement('div');
       skillHistory.className = 'rt-skill-history';
       skillHistory.dataset.skillHistory = fighter.id;
       skillHistory.setAttribute('aria-label', `${fighter.name} recent skills`);
       card.append(label, value, track, skillHistory);
+      let cachedEgoFill = null;
+      let cachedEgoLabel = null;
       if (fighter.egoEquipped || (fighter.drawKey === 'heathcliff' && this.encounter === 'heathcliff')) {
         const egoMeter = document.createElement('div');
         egoMeter.className = 'rt-ego-meter';
@@ -500,13 +532,18 @@ export class RealtimeBattleMode {
         egoName.textContent = 'E.G.O';
         const egoValue = document.createElement('strong');
         egoValue.dataset.egoLabel = fighter.id;
+        egoValue.setAttribute('data-ego-label', fighter.id);
+        cachedEgoLabel = egoValue;
         egoValue.textContent = '0%';
         egoHeader.append(egoName, egoValue);
         const egoTrack = document.createElement('div');
         egoTrack.className = 'rt-ego-track';
         const egoFill = document.createElement('i');
         egoFill.dataset.egoFill = fighter.id;
-        egoFill.style.width = `${((fighter.egoMeter || 0) / HEATHCLIFF_EGO_CONFIG.maxGauge) * 100}%`;
+        egoFill.setAttribute('data-ego-fill', fighter.id);
+        cachedEgoFill = egoFill;
+        egoFill.style.transform = `scaleX(${((fighter.egoMeter || 0) / HEATHCLIFF_EGO_CONFIG.maxGauge)})`;
+        egoFill.style.width = '100%'; egoFill.style.transformOrigin = 'left center';
         egoTrack.append(egoFill);
         const egoHint = document.createElement('small');
         egoHint.className = 'rt-ego-hint';
@@ -515,6 +552,7 @@ export class RealtimeBattleMode {
         card.append(egoMeter);
       }
       this.enemyHud.append(card);
+      this.enemyHudRefs.set(fighter.id, { fill, label: value, card, skillHistory, egoFill: cachedEgoFill, egoLabel: cachedEgoLabel });
       this.#renderSkillHistory(fighter);
     }
   }
@@ -572,6 +610,13 @@ export class RealtimeBattleMode {
   update(dt) {
     if (!this.runningRound || !this.battle) return;
     this.effectClock += dt;
+    this.hudRefreshTimer = (this.hudRefreshTimer || 0) + dt;
+    if (this.hudRefreshTimer >= 0.12) { this.hudRefreshTimer = 0; this.#updateHud(); }
+    if (Number.isFinite(this.remainingSeconds)) {
+      this.remainingSeconds = Math.max(0, this.remainingSeconds - dt);
+      this.#renderTimer();
+      if (this.remainingSeconds <= 0) { this.#endRound(this.player.hp >= (this.enemies[0]?.hp || 0) ? 'victory' : 'defeat'); return; }
+    }
     this.cameraShake = Math.max(0, this.cameraShake - 36 * dt);
     this.egoCutinFrames = Math.max(0, this.egoCutinFrames - 1);
     this.openingCardFrames = Math.max(0, this.openingCardFrames - 1);
@@ -617,6 +662,8 @@ export class RealtimeBattleMode {
     const previousMoveIds = new Map(this.fighters.map((fighter) => [fighter.id, fighter.currentMove?.data?.id ?? null]));
     // Don keeps the last direction the player chose with A/D. Do not auto-turn toward an
     // opponent while standing still; the player may deliberately face either way.
+    const opponent = this.enemies.filter((enemy) => enemy.alive).sort((a, b) => Math.abs(a.x - target.x) - Math.abs(b.x - target.x))[0];
+    target.opponentX = opponent?.x;
     target.update(dt, this.input, ARENA_BOUNDS);
     for (const enemy of this.enemies) this.#updateEnemy(enemy, target, dt);
     for (const fighter of this.fighters) {
@@ -624,6 +671,11 @@ export class RealtimeBattleMode {
       const previousId = previousMoveIds.get(fighter.id) ?? null;
       if (move && move.id !== previousId) {
         this.#recordSkillUse(fighter, move);
+        if (move.isEgo || move.id === 'donEgo' || move.id === 'heathcliffEgo' || move.id === 'heathcliffBodysack') {
+          this.egoCutinImage = this._image(fighter.egoPreviewPath || (fighter.drawKey === 'heathcliff' ? heathcliffSprites.egoCutin : 'assets/images/battle/ego/frame-art.png'));
+          this.egoCutinLabel = `${fighter.name.toUpperCase()} · ${move.name.toUpperCase()}`;
+          this.egoCutinFrames = 90;
+        }
         this.onMoveStart({ attacker: fighter, move, encounter: this.encounter });
       }
     }
@@ -632,7 +684,6 @@ export class RealtimeBattleMode {
     const hitEvents = CombatSystem.resolve(combatants, combatants, (event) => this.#onHit(event));
     if (hitEvents.length) this.#updateHud();
     this.input.advanceFrame();
-    this.#updateHud();
 
     if (!target.alive) {
       if (this.seriesActive) this.#completeSeriesRound('enemy');
@@ -646,6 +697,7 @@ export class RealtimeBattleMode {
   }
 
   #updateEnemy(enemy, player, dt) {
+    enemy.opponentX = player.x;
     if (enemy.team === 'player2') {
       enemy.update(dt, this.input, ARENA_BOUNDS);
       return;
@@ -737,6 +789,13 @@ export class RealtimeBattleMode {
       return;
     }
 
+    // Impact overlays are anchored to the actual collision event (not a guessed timeout),
+    // so multi-hit animation, hitstop and follow-up frames stay in lockstep.
+    if (!event.blocked && event.attacker?.drawKey === 'heathcliff' && event.move?.id === 'heathcliffSkill2') {
+      this.effects.push({ kind: 'sprite', src: event.hitIndex === 0 ? heathcliffAnimations.skill2.effectFrames[0].src : heathcliffAnimations.skill2.effectFrames.at(-1).src,
+        x: event.target.x, y: event.target.y + event.target.bodyHeight * 0.62, facing: event.attacker.facing,
+        width: 250, height: 170, at: this.effectClock, duration: 0.22 });
+    }
     if (this.encounter !== 'versus') chargeHeathcliffEgoFromEvent(event);
     if (this.encounter === 'versus' && !event.evaded) {
       if (event.attacker?.egoEquipped) event.attacker.egoMeter = clampEgoMeter((event.attacker.egoMeter || 0) + (event.blocked ? 8 : 12), 100);
@@ -746,7 +805,7 @@ export class RealtimeBattleMode {
     this.hitstopFrames = Math.max(this.hitstopFrames, event.hitstop || (event.blocked ? 1 : 0));
     // Regular hits/blocks use hitstop and hit VFX, but never shake the whole screen.
     // Only Don's original third skill (U / Justice) keeps the dramatic camera shake.
-    if (event.move?.id === 'special' || event.move?.id === 'donEgo' || event.move?.id === 'heathcliffEgo') {
+    if (event.move?.id === 'special' || event.move?.id === 'donEgo' || event.move?.id === 'heathcliffEgo' || event.move?.id === 'heathcliffBodysack') {
       const shakeStrength = event.blocked ? 3.5 : 9 + Math.min(5, event.damage * 0.07);
       this.cameraShake = Math.max(this.cameraShake, shakeStrength);
     }
@@ -782,27 +841,28 @@ export class RealtimeBattleMode {
   }
 
   #updateHud() {
-    if (this.playerBar) this.playerBar.style.width = `${clamp((this.player?.hp || 0) / (this.player?.maxHp || 1) * 100, 0, 100)}%`;
+    if (this.playerBar) this.playerBar.style.transform = `scaleX(${clamp((this.player?.hp || 0) / (this.player?.maxHp || 1), 0, 1)})`;
     if (this.playerHpLabel && this.player) this.playerHpLabel.textContent = `${this.player.hp} / ${this.player.maxHp}`;
     if (this.playerEgoMeter && this.player) {
       this.playerEgoMeter.hidden = !this.player.egoEquipped;
       const meter = clampEgoMeter(this.player.egoMeter || 0, 100);
-      if (this.playerEgoFill) this.playerEgoFill.style.width = `${meter}%`;
+      if (this.playerEgoFill) this.playerEgoFill.style.transform = `scaleX(${meter / 100})`;
       if (this.playerEgoLabel) this.playerEgoLabel.textContent = `${meter}%`;
       this.playerEgoMeter.classList.toggle('is-ego-ready', meter >= 100);
     }
     for (const fighter of this.enemies) {
-      const fill = this.enemyHud?.querySelector?.(`[data-hp-fill="${safeId(fighter.id)}"]`);
-      const label = this.enemyHud?.querySelector?.(`[data-hp-label="${safeId(fighter.id)}"]`);
-      if (fill) fill.style.width = `${clamp(fighter.hp / fighter.maxHp * 100, 0, 100)}%`;
+      const refs = this.enemyHudRefs.get(fighter.id);
+      const fill = refs?.fill;
+      const label = refs?.label;
+      if (fill) fill.style.transform = `scaleX(${clamp(fighter.hp / fighter.maxHp, 0, 1)})`;
       if (label) label.textContent = `${fighter.hp}/${fighter.maxHp}`;
-      const card = this.enemyHud?.querySelector?.(`[data-enemy-id="${safeId(fighter.id)}"]`);
+      const card = refs?.card;
       if (card) card.classList.toggle('is-defeated', !fighter.alive);
       if (fighter.egoEquipped || (fighter.drawKey === 'heathcliff' && this.encounter === 'heathcliff')) {
         const meter = clampEgoMeter(fighter.egoMeter || 0, 100);
-        const egoFill = this.enemyHud?.querySelector?.(`[data-ego-fill="${safeId(fighter.id)}"]`);
-        const egoLabel = this.enemyHud?.querySelector?.(`[data-ego-label="${safeId(fighter.id)}"]`);
-        if (egoFill) egoFill.style.width = `${meter}%`;
+        const egoFill = refs?.egoFill;
+        const egoLabel = refs?.egoLabel;
+        if (egoFill) egoFill.style.transform = `scaleX(${meter / 100})`;
         if (egoLabel) egoLabel.textContent = `${meter}%`;
         if (card) card.classList.toggle('is-ego-ready', meter >= HEATHCLIFF_EGO_CONFIG.maxGauge);
       }
@@ -923,6 +983,14 @@ export class RealtimeBattleMode {
   }
 
   #spriteFor(fighter) {
+    // E.G.O sheets are optional until supplied. Once loaded, choose an E.G.O pose without
+    // changing bodyWidth/bodyHeight, hurtboxes, or the canvas's logical scale.
+    if (fighter.egoFormActive && fighter.egoSpriteSet) {
+      const poseKey = fighter.state === 'Attack' && fighter.currentMove ? (fighter.currentMove.data.animationKey || 'attack') : fighter.state.toLowerCase();
+      const pose = fighter.egoSpriteSet[poseKey] || fighter.egoSpriteSet.idle;
+      if (Array.isArray(pose) && pose.length) return pose[Math.floor(this.effectClock * 12) % pose.length];
+      if (typeof pose === 'string') return pose;
+    }
     if (fighter.drawKey === 'don') {
       if (fighter.state === 'Knockdown' || !fighter.alive) return battleDonSprites.dead;
       if (fighter.state === 'Hit') return battleDonSprites.hurt;
@@ -936,8 +1004,9 @@ export class RealtimeBattleMode {
         const animation = battleDonAnimations[animationKey];
         const frames = animation?.frames || [];
         if (frames.length) {
+          const animationDuration = fighter.currentMove.data.animationFrames || fighter.moveTotalFrames;
           const frame = Math.max(0, Math.min(frames.length - 1,
-            Math.floor((fighter.currentMove.frame / Math.max(1, fighter.moveTotalFrames)) * frames.length)));
+            Math.floor((fighter.currentMove.frame / Math.max(1, animationDuration)) * frames.length)));
           return frames[frame];
         }
       }
@@ -1188,8 +1257,8 @@ export class RealtimeBattleMode {
 
   #drawEgoCutin(ctx) {
     if (this.egoCutinFrames <= 0) return;
-    const image = this._heathcliffEgoCutin;
-    const progress = this.egoCutinFrames / 54;
+    const image = this.egoCutinImage || this._heathcliffEgoCutin;
+    const progress = this.egoCutinFrames / 90;
     const edgeFade = Math.min(1, (1 - progress) * 8 + 0.16, progress * 8 + 0.16);
     const alpha = clamp(edgeFade, 0, 0.94);
     const x = 700;
@@ -1209,7 +1278,7 @@ export class RealtimeBattleMode {
     ctx.fillStyle = '#d6aaff';
     ctx.textAlign = 'left';
     ctx.font = '1000 15px system-ui,sans-serif';
-    ctx.fillText('HEATHCLIFF  //  E.G.O ACTIVATION', x + 13, y + height - 10);
+    ctx.fillText(this.egoCutinLabel || 'E.G.O  //  ACTIVATION', x + 13, y + height - 10);
     ctx.restore();
   }
 
@@ -1239,22 +1308,25 @@ export class RealtimeBattleMode {
     const activeProgress = clamp((frame - startupEnd) / Math.max(1, data.active), 0, 1);
     const reach = (data.range || data.hitboxWidth || 110) * (0.78 + activeProgress * 0.22);
     if (data.id === 'special' || data.id === 'donEgo') {
-      const justice = battleDonAnimations.justice;
-      for (const fx of justice?.effectFrames || []) {
-        const fxFrame = data.startup + fx.activeOffset;
-        if (frame < fxFrame || frame > fxFrame + 1) continue;
+      const effects = battleDonAnimations.justice?.effectFrames || [];
+      const windows = data.hitWindows || [{ start: 0 }];
+      windows.forEach((window, index) => {
+        const impactFrame = data.startup + window.start;
+        if (frame < impactFrame || frame > impactFrame + 2) return;
+        const fx = effects[index % Math.max(1, effects.length)];
+        if (!fx) return;
         const image = this._image(fx.src);
-        if (!this._isReady(image)) continue;
+        if (!this._isReady(image)) return;
         const fxHeight = 78;
         const fxWidth = fxHeight * (image.naturalWidth / image.naturalHeight);
         ctx.save();
         ctx.translate(originX + fighter.facing * 54, originY - 8);
         ctx.scale(fighter.facing, 1);
-        ctx.globalAlpha = 0.92 - Math.abs(frame - fxFrame) * 0.25;
+        ctx.globalAlpha = 0.92 - Math.abs(frame - impactFrame) * 0.2;
         ctx.globalCompositeOperation = 'screen';
         ctx.drawImage(image, -fxWidth * 0.28, -fxHeight * 0.5, Math.min(370, fxWidth), fxHeight);
         ctx.restore();
-      }
+      });
     }
     ctx.save();
     ctx.translate(originX, originY);
@@ -1287,6 +1359,17 @@ export class RealtimeBattleMode {
       const age = this.effectClock - effect.at;
       const progress = clamp(age / effect.duration, 0, 1);
       const fade = 1 - progress;
+      if (effect.kind === 'sprite') {
+        const image = this._image(effect.src);
+        if (!this._isReady(image)) continue;
+        ctx.save(); ctx.globalAlpha = fade;
+        const width = effect.width || 220; const height = effect.height || 150;
+        ctx.translate(effect.x, effect.y); ctx.scale(effect.facing || 1, 1);
+        ctx.globalCompositeOperation = 'screen';
+        ctx.drawImage(image, -width / 2, -height / 2, width, height);
+        ctx.restore();
+        continue;
+      }
       if (effect.kind === 'impact') {
         const radius = 12 + progress * 55;
         ctx.save();

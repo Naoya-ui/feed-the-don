@@ -74,7 +74,7 @@ mode.player.x=400;
 mode.enemies[0].x=500;
 win.emit('keydown',{key:'j',repeat:false});
 for(let i=0;i<6;i++) mode.update(1/60);
-assert.equal(battle.enemies[0].hp,5,'the real-time orchestration connects input, frame data, hitbox and live battle HP');
+assert.equal(battle.enemies[0].hp,10,'the real-time orchestration applies the rebalanced 10-damage Skill 1');
 assert.equal(moveStartEvents[0]?.move.animationKey, 'joust', 'Don Joust voice event is emitted at move startup');
 assert.equal(moveStartEvents.length, 1, 'one voice event is emitted for the single Joust startup, not on every active frame');
 assert.equal(roundStartEvents[0]?.round, 1, 'the real-time engine publishes the round-start event for contextual voice lines');

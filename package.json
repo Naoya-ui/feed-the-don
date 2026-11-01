@@ -4,7 +4,8 @@
   "type": "module",
   "scripts": {
     "test": "npm run test:realtime",
-    "test:realtime": "node tests/realtime-input.test.mjs && node tests/gamepad-input.test.mjs && node tests/realtime-game-loop.test.mjs && node tests/realtime-state-machine.test.mjs && node tests/realtime-combat.test.mjs && node tests/menu-structure.test.mjs && node tests/realtime-mode.test.mjs && node tests/fighting-hud.test.mjs && node tests/voice-line-manager.test.mjs && node tests/don-voice-pack.test.mjs && node tests/limbus-library.test.mjs && node tests/heathcliff-ego.test.mjs && node tests/heathcliff-encounter.test.mjs",
-    "test:legacy": "node tests/combat-core-smoke.mjs"
+    "test:realtime": "node tests/realtime-input.test.mjs && node tests/gamepad-input.test.mjs && node tests/realtime-game-loop.test.mjs && node tests/realtime-state-machine.test.mjs && node tests/realtime-combat.test.mjs && node tests/ego-input.test.mjs && node tests/menu-structure.test.mjs && node tests/realtime-mode.test.mjs && node tests/fighting-hud.test.mjs && node tests/voice-line-manager.test.mjs && node tests/don-voice-pack.test.mjs && node tests/limbus-library.test.mjs && node tests/heathcliff-ego.test.mjs && node tests/heathcliff-encounter.test.mjs",
+    "test:legacy": "node tests/combat-core-smoke.mjs",
+    "assets:manifest": "node scripts/build-asset-manifest.mjs"
   }
 }
