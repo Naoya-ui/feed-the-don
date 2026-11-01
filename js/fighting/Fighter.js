@@ -111,7 +111,7 @@ export const MOVE_DATA = Object.freeze({
   },
   heathcliffSkill3: {
     id: 'heathcliffSkill3',
-    animationKey: 'ego',
+    animationKey: 'skill3',
     name: 'Quick Suppression · Skill 3',
     startup: 8,
     active: 30,
@@ -246,8 +246,9 @@ export const MOVE_DATA = Object.freeze({
   },
   heathcliffBodysack: {
     id: 'heathcliffBodysack',
-    animationKey: 'ego',
-    name: 'Bodysack · E.G.O',
+    animationKey: 'bodysack',
+    cinematicPath: 'assets/images/ego/heathcliff/bodysack-preview.gif',
+    name: 'Bodysack · Base Form E.G.O',
     isEgo: true,
     startup: 18,
     active: 18,

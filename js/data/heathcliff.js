@@ -15,6 +15,20 @@ export const heathcliffSprites = Object.freeze({
   egoSigil: `${ROOT}ego-sigil.png`,
 });
 
+const heathcliffSkill3Frames = Object.freeze({
+  frames: frames('skill3', 16),
+  animationFrames: 54,
+  effectFrames: [
+    { src: `${ROOT}skill3_2_e.png`, at: 0.08 },
+    { src: `${ROOT}skill3_4_e.png`, at: 0.22 },
+    { src: `${ROOT}skill3_5_e.png`, at: 0.36 },
+    { src: `${ROOT}skill3_8_e.png`, at: 0.5 },
+    { src: `${ROOT}skill3_11_e.png`, at: 0.66 },
+    { src: `${ROOT}skill3_14_e.png`, at: 0.82 },
+    { src: `${ROOT}skill3_15_e.png`, at: 0.94 },
+  ],
+});
+
 export const heathcliffAnimations = Object.freeze({
   skill1: Object.freeze({
     frames: frames('skill1', 4),
@@ -33,21 +47,11 @@ export const heathcliffAnimations = Object.freeze({
       { src: `${ROOT}skill2_4_e.png`, at: 0.82 },
     ],
   }),
-  // The provided skill-3 sequence is used as Heathcliff's E.G.O cinematic attack.
-  // The separate *_e sprites are layered as slash/effect frames over the character.
-  ego: Object.freeze({
-    frames: frames('skill3', 16),
-    animationFrames: 54,
-    effectFrames: [
-      { src: `${ROOT}skill3_2_e.png`, at: 0.08 },
-      { src: `${ROOT}skill3_4_e.png`, at: 0.22 },
-      { src: `${ROOT}skill3_5_e.png`, at: 0.36 },
-      { src: `${ROOT}skill3_8_e.png`, at: 0.5 },
-      { src: `${ROOT}skill3_11_e.png`, at: 0.66 },
-      { src: `${ROOT}skill3_14_e.png`, at: 0.82 },
-      { src: `${ROOT}skill3_15_e.png`, at: 0.94 },
-    ],
-  }),
+  // The base-form Bodysack GIF is the move-specific cinematic. Keep separate keys so
+  // its combat timing and presentation can evolve independently of ordinary Skill 3.
+  skill3: heathcliffSkill3Frames,
+  bodysack: heathcliffSkill3Frames,
+  ego: heathcliffSkill3Frames,
 });
 
 export const HEATHCLIFF_EGO_CONFIG = Object.freeze({

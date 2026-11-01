@@ -47,8 +47,8 @@ export const VERSUS_ROSTER = Object.freeze({
       }),
       Object.freeze({
         id: 'bodysack',
-        name: 'Bodysack',
-        description: 'Heathcliff E.G.O · Bodysack',
+        name: 'Bodysack · Base Form',
+        description: 'Base-form Heathcliff E.G.O move · Bodysack',
         preview: 'assets/images/ego/heathcliff/bodysack-preview.gif',
       }),
       Object.freeze({

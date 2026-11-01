@@ -856,7 +856,8 @@ export class RealtimeBattleMode {
           move.id === 'heathcliffBodysack'
         ) {
           this.egoCutinImage = this._image(
-            fighter.egoPreviewPath ||
+            move.cinematicPath ||
+              fighter.egoPreviewPath ||
               (fighter.drawKey === 'heathcliff'
                 ? heathcliffSprites.egoCutin
                 : 'assets/images/battle/ego/frame-art.png')
@@ -1566,7 +1567,7 @@ export class RealtimeBattleMode {
     const image = this._image(effect.src);
     if (!this._isReady(image)) return;
 
-    const isEgo = data.animationKey === 'ego';
+    const isEgo = data.isEgo || data.animationKey === 'ego';
     const height = isEgo ? Math.max(150, visualHeight * 0.95) : Math.max(110, visualHeight * 0.62);
     const width = Math.min(isEgo ? 510 : 380, height * (image.naturalWidth / image.naturalHeight));
     const centerX = renderX + fighter.facing * (fighter.bodyWidth * 0.82 + (isEgo ? 65 : 34));
