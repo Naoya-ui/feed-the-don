@@ -9,8 +9,8 @@
     <meta name="theme-color" content="#0b0d10" />
     <title>Raise Don Quixote — HTML Edition</title>
     <link rel="icon" href="assets/images/ui/window-icon.png" />
-    <link rel="stylesheet" href="css/style.css?v=71-main-modes" />
-    <link rel="stylesheet" href="css/realtime-battle.css?v=melty-select-v1" />
+    <link rel="stylesheet" href="css/style.css?v=melty-versus-loading-v3" />
+    <link rel="stylesheet" href="css/realtime-battle.css?v=versus-select-icons-v3" />
   </head>
   <body>
     <section id="assetLoadingScreen" class="asset-loading-screen" role="status" aria-live="polite">
@@ -109,6 +109,25 @@
         <div class="lc60-loading-grid"></div>
         <img class="lc60-loading-gear lc60-loading-gear-a" src="assets/images/battle/ui/v60/start-gear.png" alt="" />
         <img class="lc60-loading-gear lc60-loading-gear-b" src="assets/images/battle/ui/v60/end-gear.png" alt="" />
+        <div class="lc60-versus-loading" aria-hidden="true">
+          <img class="lc60-versus-fullbody lc60-versus-fullbody-p1" id="versusLoadingP1Sprite" alt="" />
+          <img class="lc60-versus-fullbody lc60-versus-fullbody-p2" id="versusLoadingP2Sprite" alt="" />
+          <aside class="lc60-versus-rail lc60-versus-rail-p1">
+            <small>PLAYER ONE</small>
+            <strong id="versusLoadingP1Name">DON QUIXOTE</strong>
+            <span id="versusLoadingP1Ego">LA SANGRE DE SANCHO</span>
+          </aside>
+          <div class="lc60-versus-center">
+            <i class="lc60-versus-aura"></i>
+            <span>VS</span>
+            <small>LOCAL VERSUS</small>
+          </div>
+          <aside class="lc60-versus-rail lc60-versus-rail-p2">
+            <small>PLAYER TWO</small>
+            <strong id="versusLoadingP2Name">HEATHCLIFF</strong>
+            <span id="versusLoadingP2Ego">BODYSACK · BASE FORM</span>
+          </aside>
+        </div>
         <div class="lc60-loading-copy">
           <small id="battleLoadingArea">FOREST // OUTSKIRTS</small>
           <h2 id="battleLoadingTitle">HOSTILE ENCOUNTER</h2>
@@ -557,6 +576,6 @@
       ></audio>
     </main>
 
-    <script type="module" src="js/main.js?v=full-moveset-choreo-v3"></script>
+    <script type="module" src="js/main.js?v=versus-combat-ego-v3"></script>
   </body>
 </html>

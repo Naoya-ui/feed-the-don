@@ -76,7 +76,7 @@ export class CombatSystem {
       const allBlocked = hits.every((hit) => hit.blocked);
       const dominant = hits.slice().sort((a, b) => b.damage - a.damage)[0];
       const totalDamage = hits.reduce((sum, hit) => sum + hit.damage, 0);
-      target.receiveHit({
+      const result = target.receiveHit({
         attackerX: dominant.attackerX,
         damage: totalDamage,
         move: dominant.move,
@@ -84,19 +84,32 @@ export class CombatSystem {
         blocked: allBlocked,
         allowFrameTrade: true,
       });
+      let remainingDamage = Math.max(0, Number(result?.damage) || 0);
+      for (const hit of hits) {
+        hit.dealtDamage = Math.min(hit.damage, remainingDamage);
+        remainingDamage -= hit.dealtDamage;
+      }
     }
 
     const events = [
-      ...pending.map((hit) => ({
-        attacker: hit.attacker,
-        target: hit.target,
-        move: hit.move,
-        blocked: hit.blocked,
-        evaded: false,
-        damage: hit.damage,
-        hitIndex: hit.hitIndex,
-        hitstop: hit.move.hitstop || 0,
-      })),
+      ...pending.map((hit) => {
+        const dealtDamage = hit.dealtDamage ?? hit.damage;
+        const healed = !hit.blocked && hit.move.lifestealRatio
+          ? (hit.attacker.heal?.(Math.round(dealtDamage * hit.move.lifestealRatio)) || 0)
+          : 0;
+        return {
+          attacker: hit.attacker,
+          target: hit.target,
+          move: hit.move,
+          blocked: hit.blocked,
+          evaded: false,
+          damage: hit.damage,
+          dealtDamage,
+          healed,
+          hitIndex: hit.hitIndex,
+          hitstop: hit.move.hitstop || 0,
+        };
+      }),
       ...evaded,
     ];
     for (const event of events) onHit(event);

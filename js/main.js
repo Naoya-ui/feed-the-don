@@ -401,7 +401,11 @@ function playRealtimeMoveVoice({ attacker, move }) {
       maxVoices: 2,
       minIntervalMs: 40,
     });
-  } else if (attacker.drawKey === 'don' && (move.isEgo || move.id === 'donEgo')) {
+  } else if (
+    attacker.drawKey === 'don' &&
+    (move.isEgo || move.id === 'donEgo') &&
+    move.id !== 'donEgo'
+  ) {
     playDonSkillHitSfx('laSangre', 0);
   }
 }
@@ -409,6 +413,19 @@ function playRealtimeMoveVoice({ attacker, move }) {
 function playRealtimeReactionVoice(event) {
   const target = event?.target;
   if (!target) return;
+  if (
+    !event.blocked &&
+    !event.evaded &&
+    event.attacker?.drawKey === 'don' &&
+    event.move?.id === 'donEgo' &&
+    event.move.sfxPath
+  ) {
+    void audioEngine.playSFX('don:laSangre:pierce', event.move.sfxPath, {
+      volume: masterVolume() * 0.92,
+      maxVoices: 1,
+      minIntervalMs: 300,
+    });
+  }
 
   // Use the supplied LCB "kill" line only when Don defeats a target but the
   // encounter still has another living opponent. The final KO is followed by
@@ -3503,12 +3520,31 @@ async function showWaveTransition() {
   await delay(900);
 }
 
-async function showBattleLoading(encounter = 'bandit') {
+async function showBattleLoading(encounter = 'bandit', versusConfig = null) {
   if (!els.battleLoading) return;
   const wolf = encounter === 'wolf';
   const heathcliff = encounter === 'heathcliff';
   const versus = encounter === 'versus';
   const training = encounter === 'training';
+  els.battleLoading.classList.toggle('is-versus-loading', versus);
+  if (versus) {
+    const p1 = getVersusCharacter(versusConfig?.player1?.characterId || 'don');
+    const p2 = getVersusCharacter(versusConfig?.player2?.characterId || 'heathcliff');
+    const p1Ego = getVersusEgo(p1.id, versusConfig?.player1?.egoId || p1.egos[0]?.id);
+    const p2Ego = getVersusEgo(p2.id, versusConfig?.player2?.egoId || p2.egos[0]?.id);
+    const p1Name = document.getElementById('versusLoadingP1Name');
+    const p2Name = document.getElementById('versusLoadingP2Name');
+    const p1EgoName = document.getElementById('versusLoadingP1Ego');
+    const p2EgoName = document.getElementById('versusLoadingP2Ego');
+    const p1Sprite = document.getElementById('versusLoadingP1Sprite');
+    const p2Sprite = document.getElementById('versusLoadingP2Sprite');
+    if (p1Name) p1Name.textContent = p1.name;
+    if (p2Name) p2Name.textContent = p2.name;
+    if (p1EgoName) p1EgoName.textContent = p1Ego?.name || '';
+    if (p2EgoName) p2EgoName.textContent = p2Ego?.name || '';
+    if (p1Sprite) p1Sprite.src = p1.fullBody || p1.portrait;
+    if (p2Sprite) p2Sprite.src = p2.fullBody || p2.portrait;
+  }
   if (els.battleLoadingArea)
     els.battleLoadingArea.textContent =
       wolf || heathcliff
@@ -3549,13 +3585,36 @@ async function showBattleLoading(encounter = 'bandit') {
     if (els.battleLoadingBar) els.battleLoadingBar.style.width = `${progress}%`;
     if (els.battleLoadingPercent)
       els.battleLoadingPercent.textContent = `${String(progress).padStart(2, '0')}%`;
-    await rawDelay(progress === 100 ? 180 : 80 + Math.round(progress * 0.45));
+    await rawDelay(
+      versus
+        ? progress === 100
+          ? 650
+          : 200
+        : progress === 100
+          ? 180
+          : 80 + Math.round(progress * 0.45)
+    );
   }
   els.battleLoading.classList.add('is-leaving');
   await rawDelay(360);
   els.battleLoading.hidden = true;
   els.battleLoading.classList.remove('is-leaving');
   syncGlobalSettingsButton();
+}
+
+async function showVersusScreen(p1, p2, initCombatScene = () => {}) {
+  const toLoadout = (player) => {
+    const rawCharacterId = player?.characterId || player?.character || player;
+    const characterId = rawCharacterId === 'don_quixote' ? 'don' : rawCharacterId;
+    const character = getVersusCharacter(characterId || 'don');
+    return {
+      characterId: character.id,
+      egoId: player?.egoId || player?.ego || character.egos[0]?.id,
+    };
+  };
+  const config = { player1: toLoadout(p1), player2: toLoadout(p2) };
+  await showBattleLoading('versus', config);
+  return initCombatScene();
 }
 
 async function startBattleTutorial(encounter = 'bandit') {
@@ -3671,7 +3730,7 @@ async function startBattleTutorial(encounter = 'bandit') {
 }
 
 /** Standalone Versus and Training use the same renderer/combat modules as story encounters. */
-async function startStandaloneRealtime(mode = 'versus', versusConfig = null) {
+async function startStandaloneRealtime(mode = 'versus', versusConfig = null, { skipLoading = false } = {}) {
   if (standaloneStarting || realtimeBattleActive) return;
   standaloneStarting = true;
   const training = mode === 'training';
@@ -3686,7 +3745,7 @@ async function startStandaloneRealtime(mode = 'versus', versusConfig = null) {
     els.dialogueBox.hidden = true;
     closeChoices();
     els.battleResult.hidden = true;
-    await showBattleLoading(training ? 'training' : 'versus');
+    if (!skipLoading) await showBattleLoading(training ? 'training' : 'versus', versusConfig);
 
     els.battleScreen.hidden = false;
     els.battleScreen.classList.add('rt-active');
@@ -4500,7 +4559,9 @@ const characterSelect = new CharacterSelect({
       player1: { characterId: toCombatantId(selection.p1.character), egoId: selection.p1.ego },
       player2: { characterId: toCombatantId(selection.p2.character), egoId: selection.p2.ego },
     };
-    await startStandaloneRealtime('versus', config);
+    await showVersusScreen(selection.p1, selection.p2, () =>
+      startStandaloneRealtime('versus', config, { skipLoading: true })
+    );
   },
 });
 

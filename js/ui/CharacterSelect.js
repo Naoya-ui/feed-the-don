@@ -293,10 +293,11 @@ export class CharacterSelect {
     const identity = this.root.querySelector(p1 ? '#mbP1Identity' : '#mbP2Identity');
     const phaseLabel = this.root.querySelector(p1 ? '#mbP1Phase' : '#mbP2Phase');
     const egoList = this.root.querySelector(p1 ? '#mbP1Egos' : '#mbP2Egos');
-    const path =
+    const selectedEgo =
       state.phase === 'ego' || state.phase === 'locked'
-        ? this.#egos(state).find((ego) => ego.id === state.egoId)?.preview
+        ? this.#egos(state).find((ego) => ego.id === state.egoId)
         : null;
+    const path = selectedEgo?.icon || selectedEgo?.preview || null;
     const nextSrc = path || character.fullBody || character.portrait;
     if (img.dataset.src !== nextSrc) {
       img.classList.add('is-changing');
@@ -330,6 +331,14 @@ export class CharacterSelect {
         tile.type = 'button';
         tile.dataset.egoId = ego.id;
         tile.className = `mb-ego-choice${index === state.egoCursor ? ' is-ego-cursor' : ''}${state.egoId === ego.id ? ' is-ego-selected' : ''}`;
+        if (ego.icon) {
+          const icon = document.createElement('img');
+          icon.className = 'mb-ego-icon';
+          icon.src = ego.icon;
+          icon.alt = '';
+          icon.setAttribute('aria-hidden', 'true');
+          tile.append(icon);
+        }
         const label = document.createElement('span');
         label.textContent = ego.name;
         const hint = document.createElement('small');

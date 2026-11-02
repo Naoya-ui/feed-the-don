@@ -86,30 +86,37 @@ export const MOVE_DATA = Object.freeze({
   donEgo: {
     id: 'donEgo',
     animationKey: 'laSangre',
+    iconPath: 'assets/images/battle/skill-icons/don/skill4-alt.png',
     cinematicPath: 'assets/images/ego/don/la-sangre-preview.gif',
     sfxPath: 'assets/audio/don-skills/la-sangre/DQ_EGO_AFTER7.wav',
     name: 'La Sangre de Sancho',
     isEgo: true,
-    startup: 22,
-    active: 14,
-    recovery: 46,
-    damage: 64,
-    hitstun: 44,
-    blockstun: 23,
+    damageType: 'pierce',
+    prepAnimationKey: 'laSangrePrep',
+    prepAnimationFrames: 24,
+    chargeStartFrame: 24,
+    chargeEndFrame: 36,
+    startup: 36,
+    active: 8,
+    recovery: 26,
+    animationFrames: 70,
+    damage: 35,
+    lifestealRatio: 0.5,
+    hitstun: 42,
+    blockstun: 20,
     knockback: 790,
     hitstop: 9,
-    hitboxWidth: 390,
-    hitboxHeight: 158,
-    hitboxCenterY: 0.23,
-    range: 390,
-    chip: 9,
-    lungeStartFrame: 9,
-    lungeEndFrame: 38,
-    lungeSpeed: 535,
-    hitWindows: [
-      { start: 0, end: 5, damageMultiplier: 0.45 },
-      { start: 7, end: 12, damageMultiplier: 0.55 },
-    ],
+    hitboxWidth: 286,
+    hitboxHeight: 112,
+    hitboxCenterY: 0.22,
+    range: 360,
+    chip: 5,
+    chargeToOpponent: true,
+    chargeStopDistance: 72,
+    maxChargeSpeed: 4600,
+    returnToOriginStartFrame: 44,
+    returnToOriginEndFrame: 62,
+    hitWindows: [{ start: 0, end: 8, damage: 35 }],
   },
   heathcliffSkill3: {
     id: 'heathcliffSkill3',
@@ -445,6 +452,19 @@ export class Fighter {
     return true;
   }
 
+  /** Start the equipped E.G.O as a simulation-driven move (not a DOM timeout animation). */
+  executeEGO(moveData = this.egoMoveData) {
+    if (!this.egoEquipped || this.egoMeter < this.egoMeterMax || !this.canAct()) return false;
+    if (!this.beginAttack(moveData)) return false;
+    return this.activateEgoForm();
+  }
+
+  heal(amount) {
+    const before = this.hp;
+    this.combatant.hp = Math.min(this.maxHp, before + Math.max(0, Math.round(amount || 0)));
+    return this.combatant.hp - before;
+  }
+
   canAct() {
     return (
       this.alive &&
@@ -463,6 +483,7 @@ export class Fighter {
     this.currentMove = {
       data: { ...moveData },
       frame: 0,
+      originX: this.x,
       hitTargets: new Set(),
       hitWindowDamages: Array.isArray(moveData.hitWindows)
         ? moveData.hitWindows.map((window) =>
@@ -550,11 +571,46 @@ export class Fighter {
       const motionPhase = Array.isArray(move.movementPhases)
         ? move.movementPhases.find((phase) => frame >= phase.start && frame < phase.end)
         : null;
+      const chargeActive =
+        move.chargeToOpponent &&
+        frame >= move.chargeStartFrame &&
+        frame < move.chargeEndFrame &&
+        Number.isFinite(this.opponentX);
+      const returnActive =
+        move.returnToOrigin !== false &&
+        Number.isFinite(move.returnToOriginStartFrame) &&
+        frame >= move.returnToOriginStartFrame &&
+        frame < move.returnToOriginEndFrame;
       const lungeStart = Number.isFinite(move.lungeStartFrame)
         ? move.lungeStartFrame
         : move.startup;
       const lungeEnd = Number.isFinite(move.lungeEndFrame) ? move.lungeEndFrame : move.startup;
-      if (motionPhase) {
+      if (chargeActive) {
+        this.facing = Math.sign(this.opponentX - this.x) || this.facing;
+        const targetX = clamp(
+          this.opponentX - this.facing * (move.chargeStopDistance || 72),
+          bounds.minX,
+          bounds.maxX
+        );
+        const framesLeft = Math.max(1, move.chargeEndFrame - frame);
+        this.vx = clamp((targetX - this.x) / (framesLeft * dt), -move.maxChargeSpeed, move.maxChargeSpeed);
+      } else if (move.chargeToOpponent && frame === move.chargeEndFrame) {
+        this.vx = 0;
+      } else if (returnActive) {
+        const framesLeft = Math.max(1, move.returnToOriginEndFrame - frame);
+        this.vx = clamp(
+          (this.currentMove.originX - this.x) / (framesLeft * dt),
+          -move.maxChargeSpeed,
+          move.maxChargeSpeed
+        );
+      } else if (
+        move.returnToOrigin !== false &&
+        Number.isFinite(move.returnToOriginEndFrame) &&
+        frame >= move.returnToOriginEndFrame
+      ) {
+        this.x = this.currentMove.originX;
+        this.vx = 0;
+      } else if (motionPhase) {
         const direction = motionPhase.direction === 'away' ? -this.facing : this.facing;
         this.vx = approach(this.vx, direction * motionPhase.speed, this.acceleration * 2 * dt);
       } else if (frame >= lungeStart && frame < lungeEnd) {
@@ -615,8 +671,7 @@ export class Fighter {
         const canManifestEgo =
           this.egoEquipped && this.egoMoveData && this.egoMeter >= this.egoMeterMax;
         if (input.hasBufferedPress(egoKey) && canManifestEgo) {
-          if (this.activateEgoForm() && this.beginAttack(this.egoMoveData))
-            input.consumePress(egoKey);
+          if (this.executeEGO(this.egoMoveData)) input.consumePress(egoKey);
         } else if (input.hasBufferedPress(specialKey)) {
           if (this.beginAttack(this.specialMoveData)) input.consumePress(specialKey);
         } else if (
