@@ -330,6 +330,14 @@ export class CharacterSelect {
         tile.type = 'button';
         tile.dataset.egoId = ego.id;
         tile.className = `mb-ego-choice${index === state.egoCursor ? ' is-ego-cursor' : ''}${state.egoId === ego.id ? ' is-ego-selected' : ''}`;
+        if (ego.icon) {
+          const icon = document.createElement('img');
+          icon.className = 'mb-ego-icon';
+          icon.src = ego.icon;
+          icon.alt = '';
+          icon.setAttribute('aria-hidden', 'true');
+          tile.append(icon);
+        }
         const label = document.createElement('span');
         label.textContent = ego.name;
         const hint = document.createElement('small');

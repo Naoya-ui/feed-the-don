@@ -86,6 +86,7 @@ export const MOVE_DATA = Object.freeze({
   donEgo: {
     id: 'donEgo',
     animationKey: 'laSangre',
+    iconPath: 'assets/images/battle/skill-icons/don/skill4-alt.png',
     cinematicPath: 'assets/images/ego/don/la-sangre-preview.gif',
     sfxPath: 'assets/audio/don-skills/la-sangre/DQ_EGO_AFTER7.wav',
     name: 'La Sangre de Sancho',

@@ -22,6 +22,7 @@ export const VERSUS_ROSTER = Object.freeze({
         id: 'la-sangre',
         name: 'La Sangre de Sancho',
         description: 'Build E.G.O by fighting. Press I to manifest La Sangre de Sancho at 100%.',
+        icon: 'assets/images/battle/skill-icons/don/skill4-alt.png',
         preview: 'assets/images/ego/don/la-sangre-preview.gif',
       }),
     ]),

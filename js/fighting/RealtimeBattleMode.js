@@ -38,6 +38,7 @@ export function getSkillIconForMove(drawKey, move = {}) {
   const id = String(move.id || '').toLowerCase();
   const name = String(move.name || '').toLowerCase();
   const isEgo = !!move.isEgo || id.includes('ego') || name.includes('e.g.o');
+  if (move.iconPath) return move.iconPath;
   if (key === 'don') {
     if (isEgo && id.includes('ego'))
       return 'assets/images/battle/skill-icons/don/skill4-alt.png';

@@ -1423,7 +1423,15 @@
   text-align: left;
   cursor: pointer;
 }
+.mb-ego-choice .mb-ego-icon {
+  flex: 0 0 34px;
+  width: 34px;
+  height: 34px;
+  object-fit: contain;
+  filter: drop-shadow(0 0 5px #e2a33788);
+}
 .mb-ego-choice span {
+  flex: 1;
   font: 900 10px system-ui;
 }
 .mb-ego-choice small {

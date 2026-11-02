@@ -77,6 +77,9 @@ assert.equal(fighter.egoActivationCount, 1);
 assert.equal(fighter.currentMove.data.isEgo, true);
 const donEgo = MOVE_DATA.donEgo;
 const laSangreVoice = VOICE_LINE_CATALOG.don.attacks.laSangre;
+const donEgoOption = VERSUS_ROSTER.don.egos.find((ego) => ego.id === 'la-sangre');
+assert.equal(donEgo.iconPath, 'assets/images/battle/skill-icons/don/skill4-alt.png');
+assert.equal(donEgoOption?.icon, donEgo.iconPath, 'Don E.G.O selector and move use the same icon');
 assert.equal(donEgo.animationKey, 'laSangre', 'Don E.G.O uses its dedicated La Sangre animation');
 assert.equal(donEgo.sfxPath, 'assets/audio/don-skills/la-sangre/DQ_EGO_AFTER7.wav');
 assert.equal(laSangreVoice[0], 'assets/audio/don-skills/la-sangre/battle_awaken_20301_1.wav');
@@ -86,6 +89,8 @@ for (const src of [
   ...battleDonAnimations.laSangre.effectFrames.map((effect) => effect.src),
   ...laSangreVoice,
   donEgo.sfxPath,
+  donEgo.iconPath,
+  donEgoOption?.icon,
   donEgo.cinematicPath,
 ]) {
   assert.ok(existsSync(new URL(`../${src}`, import.meta.url)), `La Sangre asset exists: ${src}`);
