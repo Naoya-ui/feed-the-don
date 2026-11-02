@@ -91,3 +91,7 @@ assert.match(
   /globalSettingsButton\.hidden = !!\(els\.battleLoading && !els\.battleLoading\.hidden\)/,
   'global Settings button is hidden only during loading'
 );
+assert.match(html, /class="lc60-versus-loading"/, 'versus loading has its own animated match-up scene');
+assert.match(html, /versusLoadingP1Name[\s\S]*versusLoadingP2Name/, 'versus loading labels both selected fighters');
+assert.match(main, /classList\.toggle\('is-versus-loading', versus\)/, 'versus loading activates its dedicated theme');
+assert.match(main, /versusLoadingP1Ego/, 'loading scene shows the selected E.G.O names');

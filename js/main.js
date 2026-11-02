@@ -3503,12 +3503,27 @@ async function showWaveTransition() {
   await delay(900);
 }
 
-async function showBattleLoading(encounter = 'bandit') {
+async function showBattleLoading(encounter = 'bandit', versusConfig = null) {
   if (!els.battleLoading) return;
   const wolf = encounter === 'wolf';
   const heathcliff = encounter === 'heathcliff';
   const versus = encounter === 'versus';
   const training = encounter === 'training';
+  els.battleLoading.classList.toggle('is-versus-loading', versus);
+  if (versus) {
+    const p1 = getVersusCharacter(versusConfig?.player1?.characterId || 'don');
+    const p2 = getVersusCharacter(versusConfig?.player2?.characterId || 'heathcliff');
+    const p1Ego = getVersusEgo(p1.id, versusConfig?.player1?.egoId || p1.egos[0]?.id);
+    const p2Ego = getVersusEgo(p2.id, versusConfig?.player2?.egoId || p2.egos[0]?.id);
+    const p1Name = document.getElementById('versusLoadingP1Name');
+    const p2Name = document.getElementById('versusLoadingP2Name');
+    const p1EgoName = document.getElementById('versusLoadingP1Ego');
+    const p2EgoName = document.getElementById('versusLoadingP2Ego');
+    if (p1Name) p1Name.textContent = p1.name;
+    if (p2Name) p2Name.textContent = p2.name;
+    if (p1EgoName) p1EgoName.textContent = p1Ego?.name || '';
+    if (p2EgoName) p2EgoName.textContent = p2Ego?.name || '';
+  }
   if (els.battleLoadingArea)
     els.battleLoadingArea.textContent =
       wolf || heathcliff
@@ -3686,7 +3701,7 @@ async function startStandaloneRealtime(mode = 'versus', versusConfig = null) {
     els.dialogueBox.hidden = true;
     closeChoices();
     els.battleResult.hidden = true;
-    await showBattleLoading(training ? 'training' : 'versus');
+    await showBattleLoading(training ? 'training' : 'versus', versusConfig);
 
     els.battleScreen.hidden = false;
     els.battleScreen.classList.add('rt-active');
