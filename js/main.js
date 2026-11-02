@@ -3564,7 +3564,15 @@ async function showBattleLoading(encounter = 'bandit', versusConfig = null) {
     if (els.battleLoadingBar) els.battleLoadingBar.style.width = `${progress}%`;
     if (els.battleLoadingPercent)
       els.battleLoadingPercent.textContent = `${String(progress).padStart(2, '0')}%`;
-    await rawDelay(progress === 100 ? 180 : 80 + Math.round(progress * 0.45));
+    await rawDelay(
+      versus
+        ? progress === 100
+          ? 650
+          : 180
+        : progress === 100
+          ? 180
+          : 80 + Math.round(progress * 0.45)
+    );
   }
   els.battleLoading.classList.add('is-leaving');
   await rawDelay(360);
