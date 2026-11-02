@@ -78,6 +78,14 @@ assert.equal(fighter.currentMove.data.isEgo, true);
 const donEgo = MOVE_DATA.donEgo;
 const laSangreVoice = VOICE_LINE_CATALOG.don.attacks.laSangre;
 const donEgoOption = VERSUS_ROSTER.don.egos.find((ego) => ego.id === 'la-sangre');
+assert.equal(VERSUS_ROSTER.don.portrait, 'assets/images/battle/don/base/idle.png');
+assert.equal(VERSUS_ROSTER.heathcliff.portrait, 'assets/images/battle/heathcliff/idle.png');
+for (const character of Object.values(VERSUS_ROSTER)) {
+  assert.ok(character.egos.every((ego) => ego.id !== 'none'), `${character.name} has no No E.G.O option`);
+  for (const ego of character.egos)
+    if (ego.icon)
+      assert.ok(existsSync(new URL(`../${ego.icon}`, import.meta.url)), `${ego.name} icon exists`);
+}
 assert.equal(donEgo.iconPath, 'assets/images/battle/skill-icons/don/skill4-alt.png');
 assert.equal(donEgoOption?.icon, donEgo.iconPath, 'Don E.G.O selector and move use the same icon');
 assert.equal(donEgo.animationKey, 'laSangre', 'Don E.G.O uses its dedicated La Sangre animation');

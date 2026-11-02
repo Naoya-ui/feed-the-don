@@ -293,10 +293,11 @@ export class CharacterSelect {
     const identity = this.root.querySelector(p1 ? '#mbP1Identity' : '#mbP2Identity');
     const phaseLabel = this.root.querySelector(p1 ? '#mbP1Phase' : '#mbP2Phase');
     const egoList = this.root.querySelector(p1 ? '#mbP1Egos' : '#mbP2Egos');
-    const path =
+    const selectedEgo =
       state.phase === 'ego' || state.phase === 'locked'
-        ? this.#egos(state).find((ego) => ego.id === state.egoId)?.preview
+        ? this.#egos(state).find((ego) => ego.id === state.egoId)
         : null;
+    const path = selectedEgo?.icon || selectedEgo?.preview || null;
     const nextSrc = path || character.fullBody || character.portrait;
     if (img.dataset.src !== nextSrc) {
       img.classList.add('is-changing');
