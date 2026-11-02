@@ -926,6 +926,7 @@ export class RealtimeBattleMode {
     }
 
     const dx = player.x - enemy.x;
+    enemy.opponentX = player.x;
     const distance = Math.abs(dx);
     enemy.facing = dx >= 0 ? 1 : -1;
     const playerMove = player.currentMove;
@@ -1042,6 +1043,28 @@ export class RealtimeBattleMode {
         );
     }
     const kind = event.blocked ? 'block' : 'hit';
+    if (event.move?.id === 'donEgo' && !event.blocked) {
+      this.effects.push({
+        kind: 'blood',
+        x: event.target.x,
+        y: event.target.y + event.target.bodyHeight * 0.38,
+        facing: event.attacker.facing,
+        at: this.effectClock,
+        duration: 0.5,
+      });
+    }
+    if (event.healed > 0) {
+      this.effects.push({
+        kind: 'heal',
+        x: event.attacker.x,
+        y: event.attacker.y + event.attacker.bodyHeight * 0.28,
+        text: `+${event.healed}`,
+        detail: 'LIFESTEAL',
+        at: this.effectClock,
+        duration: 0.72,
+        damage: event.healed,
+      });
+    }
     this.hitstopFrames = Math.max(this.hitstopFrames, event.hitstop || (event.blocked ? 1 : 0));
     // Regular hits/blocks use hitstop and hit VFX, but never shake the whole screen.
     // Only Don's original third skill (U / Justice) keeps the dramatic camera shake.
@@ -1292,12 +1315,18 @@ export class RealtimeBattleMode {
       if (fighter.state === 'Attack' && fighter.currentMove) {
         // Read animationKey from the move data so Joust, Gallop and Justice each use
         // the correct original frame sequence rather than collapsing skill 2 into skill 3.
-        const animationKey = fighter.currentMove.data.animationKey || 'joust';
+        const move = fighter.currentMove;
+        const isEgoPrep =
+          move.data.prepAnimationKey && move.frame < move.data.chargeStartFrame;
+        const animationKey = isEgoPrep
+          ? move.data.prepAnimationKey
+          : move.data.animationKey || 'joust';
         const animation = battleDonAnimations[animationKey];
         const frames = animation?.frames || [];
         if (frames.length) {
-          const animationDuration =
-            fighter.currentMove.data.animationFrames || fighter.moveTotalFrames;
+          const animationDuration = isEgoPrep
+            ? move.data.prepAnimationFrames || move.data.chargeStartFrame
+            : move.data.animationFrames || fighter.moveTotalFrames;
           const frame = Math.max(
             0,
             Math.min(
@@ -1716,6 +1745,34 @@ export class RealtimeBattleMode {
         ctx.restore();
         continue;
       }
+      if (effect.kind === 'blood') {
+        ctx.save();
+        ctx.translate(effect.x, effect.y);
+        ctx.scale(effect.facing || 1, 1);
+        ctx.globalAlpha = fade * 0.88;
+        ctx.fillStyle = '#b31d2b';
+        ctx.strokeStyle = '#6d111f';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.ellipse(0, 0, 15 + progress * 8, 9 + progress * 4, 0, 0, Math.PI * 2);
+        ctx.fill();
+        for (let index = 0; index < 12; index += 1) {
+          const angle = -1.28 + (index / 11) * 2.36 + Math.sin(index * 5.1) * 0.1;
+          const distance = 24 + ((index * 17) % 39) + progress * 28;
+          const radius = 2 + ((index * 7) % 5) * (1 - progress * 0.42);
+          const x = Math.cos(angle) * distance;
+          const y = Math.sin(angle) * distance * 0.72;
+          ctx.beginPath();
+          ctx.moveTo(Math.cos(angle) * 10, Math.sin(angle) * 7);
+          ctx.lineTo(x, y);
+          ctx.stroke();
+          ctx.beginPath();
+          ctx.ellipse(x, y, radius * 1.25, radius * 0.72, angle, 0, Math.PI * 2);
+          ctx.fill();
+        }
+        ctx.restore();
+        continue;
+      }
       if (effect.kind === 'impact') {
         const radius = 12 + progress * 55;
         ctx.save();
@@ -1748,6 +1805,11 @@ export class RealtimeBattleMode {
         ctx.font = '1000 18px system-ui,sans-serif';
         ctx.fillStyle = '#b6f0ff';
         ctx.strokeStyle = '#08262e';
+        ctx.lineWidth = 5;
+      } else if (effect.kind === 'heal') {
+        ctx.font = '1000 18px system-ui,sans-serif';
+        ctx.fillStyle = '#88ffc1';
+        ctx.strokeStyle = '#063820';
         ctx.lineWidth = 5;
       } else if (effect.kind === 'block') {
         ctx.font = '1000 17px system-ui,sans-serif';

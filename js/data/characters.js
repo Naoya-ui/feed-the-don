@@ -86,6 +86,16 @@ export const battleDonAnimations = {
     hitTimes: [0.34, 0.62, 0.86],
     css: 'skill3',
   },
+  laSangrePrep: {
+    frames: [
+      'assets/images/battle/don/la-sangre/skill1_1.png',
+      'assets/images/battle/don/la-sangre/skill1_2.png',
+      'assets/images/battle/don/la-sangre/skill1_3.png',
+      'assets/images/battle/don/la-sangre/skill1_4.png',
+    ],
+    duration: 400,
+    css: 'ego-prep',
+  },
   laSangre: {
     // Base-form Don E.G.O frames from the supplied 2030111 sprite folder.
     frames: Array.from(

@@ -39,8 +39,8 @@ assert.match(
 );
 assert.match(
   main,
-  /startStandaloneRealtime\('versus', config\)/,
-  'Versus selection adapts its locked P1/P2 loadouts into the realtime battle engine'
+  /startStandaloneRealtime\('versus', config, \{ skipLoading: true \}\)/,
+  'Versus selection adapts locked P1/P2 loadouts into combat after the VS intro'
 );
 assert.match(
   main,
@@ -94,4 +94,8 @@ assert.match(
 assert.match(html, /class="lc60-versus-loading"/, 'versus loading has its own animated match-up scene');
 assert.match(html, /versusLoadingP1Name[\s\S]*versusLoadingP2Name/, 'versus loading labels both selected fighters');
 assert.match(main, /classList\.toggle\('is-versus-loading', versus\)/, 'versus loading activates its dedicated theme');
+assert.match(main, /async function showVersusScreen\(p1, p2, initCombatScene/, 'VS transition awaits before combat initialization');
 assert.match(main, /versusLoadingP1Ego/, 'loading scene shows the selected E.G.O names');
+const style = readFileSync(new URL('../css/style.css', import.meta.url), 'utf8');
+assert.match(style, /@keyframes lc60VersusSlideP1/, 'P1 full-body art slides in from the left');
+assert.match(style, /@keyframes lc60VersusSlideP2/, 'P2 full-body art slides in from the right');

@@ -16777,6 +16777,9 @@ body.lc4-targeting #battleScreen .lc4-intent {
 }
 
 /* Melty-inspired versus loading: black starfield, violet side plates, and a cold central pulse. */
+.lc60-versus-loading {
+  display: none;
+}
 .lc60-loading.is-versus-loading {
   color: #d6d2ff;
   background: #010105;
@@ -16799,8 +16802,51 @@ body.lc4-targeting #battleScreen .lc4-intent {
   display: block;
   overflow: hidden;
 }
+.lc60-versus-fullbody {
+  position: absolute;
+  z-index: 1;
+  bottom: 2vh;
+  width: auto;
+  height: min(68vh, 520px);
+  max-width: 28vw;
+  object-fit: contain;
+  opacity: 0;
+  filter: drop-shadow(0 10px 28px #817bff55) saturate(0.85);
+  animation-duration: 1.1s;
+  animation-timing-function: cubic-bezier(0.16, 0.72, 0.24, 1);
+  animation-fill-mode: forwards;
+}
+.lc60-versus-fullbody-p1 {
+  left: clamp(92px, 15vw, 220px);
+  animation-name: lc60VersusSlideP1;
+}
+.lc60-versus-fullbody-p2 {
+  right: clamp(92px, 15vw, 220px);
+  animation-name: lc60VersusSlideP2;
+}
+@keyframes lc60VersusSlideP1 {
+  from {
+    opacity: 0;
+    transform: translateX(-120vw);
+  }
+  to {
+    opacity: 0.93;
+    transform: translateX(0);
+  }
+}
+@keyframes lc60VersusSlideP2 {
+  from {
+    opacity: 0;
+    transform: translateX(120vw) scaleX(-1);
+  }
+  to {
+    opacity: 0.93;
+    transform: translateX(0) scaleX(-1);
+  }
+}
 .lc60-versus-rail {
   position: absolute;
+  z-index: 3;
   top: 3px;
   bottom: 3px;
   width: clamp(78px, 12vw, 170px);
@@ -16869,6 +16915,7 @@ body.lc4-targeting #battleScreen .lc4-intent {
 }
 .lc60-versus-center {
   position: absolute;
+  z-index: 2;
   inset: 0 14%;
   display: grid;
   place-content: center;

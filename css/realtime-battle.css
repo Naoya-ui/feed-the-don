@@ -1267,9 +1267,12 @@
   display: block;
   width: 100%;
   height: calc(100% - 16px);
-  object-fit: cover;
-  object-position: top center;
-  filter: saturate(0.82);
+  padding: 2px;
+  object-fit: contain;
+  object-position: center bottom;
+  image-rendering: auto;
+  background: radial-gradient(ellipse at center bottom, #51447477, #11101a 76%);
+  filter: saturate(0.92) drop-shadow(0 3px 6px #0009);
   transition: filter 0.12s ease;
 }
 .mb-character-tile small {

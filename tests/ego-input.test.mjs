@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import { existsSync } from 'node:fs';
 import { Fighter, MOVE_DATA } from '../js/fighting/Fighter.js';
+import { CombatSystem } from '../js/fighting/CombatSystem.js';
 import { heathcliffAnimations } from '../js/data/heathcliff.js';
 import { battleDonAnimations } from '../js/data/characters.js';
 import { VOICE_LINE_CATALOG } from '../js/data/voiceLines.js';
@@ -103,4 +104,44 @@ for (const src of [
 ]) {
   assert.ok(existsSync(new URL(`../${src}`, import.meta.url)), `La Sangre asset exists: ${src}`);
 }
-console.log('PASS ego-input: Bodysack and La Sangre E.G.O assets and mappings are complete');
+const donTest = new Fighter({
+  id: 'don-ego-test',
+  name: 'Don Quixote',
+  team: 'player',
+  combatant: { hp: 60, maxHp: 100 },
+  x: 230,
+  groundY: 584,
+  facing: 1,
+  bodyWidth: 72,
+  bodyHeight: 150,
+  egoMoveData: MOVE_DATA.donEgo,
+  egoEquipped: true,
+});
+donTest.drawKey = 'don';
+donTest.egoMeter = 100;
+donTest.opponentX = 400;
+assert.equal(donTest.executeEGO(), true, 'Don manifests La Sangre with a full gauge');
+for (let frame = 0; frame < MOVE_DATA.donEgo.chargeEndFrame - 1; frame += 1)
+  donTest.update(1 / 60, null, { minX: 72, maxX: 1208 });
+assert.ok(donTest.x > 300, 'Don completes the fast charge toward the target');
+const targetTest = new Fighter({
+  id: 'ego-target-test',
+  name: 'Target',
+  team: 'enemy',
+  combatant: { hp: 100, maxHp: 100 },
+  x: 400,
+  groundY: 584,
+  facing: -1,
+  bodyWidth: 72,
+  bodyHeight: 150,
+});
+donTest.update(1 / 60, null, { minX: 72, maxX: 1208 });
+const egoHit = CombatSystem.resolve([donTest, targetTest], [donTest, targetTest])[0];
+assert.equal(egoHit?.damage, 35, 'La Sangre deals the configured Pierce damage');
+assert.equal(egoHit?.healed, 18, 'La Sangre restores half the damage dealt');
+assert.equal(donTest.hp, 78);
+assert.ok(targetTest.vx > 0, 'the target receives E.G.O knockback');
+for (let frame = donTest.currentMove.frame; frame < MOVE_DATA.donEgo.returnToOriginEndFrame; frame += 1)
+  donTest.update(1 / 60, null, { minX: 72, maxX: 1208 });
+assert.ok(Math.abs(donTest.x - 230) < 1, 'Don returns to his starting position');
+console.log('PASS ego-input: E.G.O assets, selector mapping, Don charge, Pierce, lifesteal and return');
