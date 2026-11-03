@@ -1617,3 +1617,25 @@
 .mb-ego-choice {
   min-height: 34px;
 }
+
+/* Keep select-grid idle sprites readable while giving the fighter a restrained breathing loop. */
+#mbCharacterGrid .mb-character-tile > img {
+  transform-origin: 50% 88%;
+  animation: mbCharacterIdleBreath 3.2s ease-in-out infinite;
+  will-change: transform;
+}
+@keyframes mbCharacterIdleBreath {
+  0%,
+  100% {
+    transform: translateY(0) scale(1);
+  }
+  50% {
+    transform: translateY(-2px) scale(1.018);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  #mbCharacterGrid .mb-character-tile > img {
+    animation: none;
+    will-change: auto;
+  }
+}

@@ -8,6 +8,12 @@ assert.match(main, /async function startHeathcliffEncounter\(/, 'Story has a Hea
 assert.match(main, /if \(!state\.heathcliffBattleWon\) await startHeathcliffEncounter\(\)/, 'Wolf victory leads to Heathcliff');
 assert.match(main, /function makeHeathcliffBattleState\(/, 'Heathcliff has a dedicated battle state');
 assert.match(main, /heathcliffBattleWon/, 'Heathcliff result is saved for story progression');
+assert.match(main, /async function playHeathcliffBusRestScene\(/, 'Heathcliff victory returns Don and Heathcliff to a bus rest scene');
+assert.match(main, /state\.currentLocation = 'Bus'/, 'post-spar scene sets the bus as current location');
+assert.match(main, /heathcliffBusRestSeen: false/, 'bus conversation completion is persisted');
+assert.match(main, /const donRestChoice = await choose\(/, 'player chooses a dialogue line for Don');
+assert.match(main, /const heathcliffRestChoice = await choose\(/, 'player chooses a dialogue line for Heathcliff');
+assert.match(main, /state\.scene === 'heathcliffBusRest'/, 'saved games resume the bus conversation safely');
 assert.match(mode, /HEATHCLIFF_EGO_CONFIG\.maxGauge/, 'AI checks the full E.G.O gauge');
 assert.match(mode, /MOVE_DATA\.heathcliffEgo/, 'AI automatically activates E.G.O');
 assert.match(mode, /data-ego-fill/, 'E.G.O meter is displayed in enemy HUD');

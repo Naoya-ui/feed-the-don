@@ -569,6 +569,7 @@ function makeInitialState() {
     heathcliffIntroSeen: false,
     heathcliffBattleSeen: false,
     heathcliffBattleWon: false,
+    heathcliffBusRestSeen: false,
     battleIntroSeen: false,
     backpackOpened: false,
     tutorialActive: true,
@@ -3911,7 +3912,66 @@ async function startHeathcliffEncounter() {
   setCharacter('idle');
   state.scene = 'heathcliffAfterBattle';
   saveCheckpoint();
+  if (victory && !state.heathcliffBusRestSeen) await playHeathcliffBusRestScene();
   return !!victory;
+}
+
+async function playHeathcliffBusRestScene() {
+  state.scene = 'heathcliffBusRest';
+  state.lastLocation = 'Forest';
+  state.currentLocation = 'Bus';
+  state.mapUnlocked.Bus = true;
+  saveCheckpoint();
+  updateHUD();
+  setBackground('bus');
+  setCharacter('idle');
+  setHeathcliffCharacter(false);
+
+  await say('', 'Back on the bus, the sparring partners finally have a moment to rest.');
+  setCharacter('idle');
+  await say('Don Quixote', 'Whew! A spirited bout indeed. I am ready to hear your thoughts, ' + state.playerName + '.');
+  const donRestChoice = await choose([
+    { label: 'Are you all right after that fight?', value: 'check-on-don' },
+    { label: 'Your lance work was incredible!', value: 'praise-don' },
+    { label: 'Let us rest before we head out.', value: 'suggest-rest' },
+  ]);
+  setCharacter('idle');
+  if (donRestChoice === 'check-on-don') {
+    await say(state.playerName, 'Are you all right after that fight?');
+    await say('Don Quixote', 'Quite! A brief rest, and I shall be ready to charge toward our next adventure!');
+  } else if (donRestChoice === 'praise-don') {
+    await say(state.playerName, 'Your lance work was incredible!');
+    await say('Don Quixote', 'You noticed? Ha! I shall accept that praise in the name of chivalry!');
+  } else {
+    await say(state.playerName, 'Let us rest before we head out.');
+    await say('Don Quixote', 'A prudent plan. Even a knight must recover before the next quest.');
+  }
+
+  setHeathcliffCharacter(true);
+  await say('Heathcliff', 'You done admiring the scenery? Pick what you actually want to ask.');
+  const heathcliffRestChoice = await choose([
+    { label: 'That was a good spar. Want to do it again sometime?', value: 'spar-again' },
+    { label: 'Did I push you too hard?', value: 'check-on-heathcliff' },
+    { label: 'Thanks for going easy on me.', value: 'thank-heathcliff' },
+  ]);
+  setHeathcliffCharacter(true);
+  if (heathcliffRestChoice === 'spar-again') {
+    await say(state.playerName, 'That was a good spar. Want to do it again sometime?');
+    await say('Heathcliff', 'Maybe. Don’t get smug about it. You still have plenty to learn.');
+  } else if (heathcliffRestChoice === 'check-on-heathcliff') {
+    await say(state.playerName, 'Did I push you too hard?');
+    await say('Heathcliff', 'I’m fine. You should worry more about keeping yourself on your feet.');
+  } else {
+    await say(state.playerName, 'Thanks for going easy on me.');
+    await say('Heathcliff', 'Don’t flatter yourself. Next time, I won’t hold back.');
+  }
+  setHeathcliffCharacter(false);
+  setCharacter('happy');
+  await say('Don Quixote', 'Then it is settled! We rest together, and ride toward the next adventure refreshed!');
+  setCharacter('idle');
+  state.heathcliffBusRestSeen = true;
+  state.scene = 'heathcliffAfterBattle';
+  saveCheckpoint();
 }
 
 async function playWolfIntroConversation() {
@@ -3941,6 +4001,8 @@ async function forestEncounter() {
       await startWolfBattleEncounter();
     } else if (!state.heathcliffBattleWon) {
       await startHeathcliffEncounter();
+    } else if (!state.heathcliffBusRestSeen) {
+      await playHeathcliffBusRestScene();
     } else {
       setCharacter('happy');
       await say(
@@ -4162,7 +4224,13 @@ async function resumeSavedGame(saved) {
   showNotice('Save loaded.');
 
   // Resume from stable checkpoints only; story text is intentionally replayed from the nearest section.
-  if (
+  if (state.scene === 'heathcliffBusRest') {
+    state.currentLocation = 'Bus';
+    setBackground('bus');
+    setCharacter('idle');
+    await playHeathcliffBusRestScene();
+    await mapLoop();
+  } else if (
     [
       'forestBattle',
       'forestEncounter',

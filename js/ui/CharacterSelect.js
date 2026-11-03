@@ -140,7 +140,7 @@ export class CharacterSelect {
         tile.dataset.characterId = character.id;
         tile.setAttribute('aria-label', character.name);
         const img = document.createElement('img');
-        img.src = character.avatar || character.portrait;
+        img.src = character.idleSprite || character.avatar || character.portrait;
         img.alt = '';
         img.draggable = false;
         const label = document.createElement('small');
@@ -297,8 +297,8 @@ export class CharacterSelect {
       state.phase === 'ego' || state.phase === 'locked'
         ? this.#egos(state).find((ego) => ego.id === state.egoId)
         : null;
-    const path = selectedEgo?.icon || selectedEgo?.preview || null;
-    const nextSrc = path || character.fullBody || character.portrait;
+    // Phase 2 stays lightweight: show a still E.G.O icon only; never fall back to an animated preview.
+    const nextSrc = selectedEgo?.icon || character.idleSprite || character.fullBody || character.portrait;
     if (img.dataset.src !== nextSrc) {
       img.classList.add('is-changing');
       const apply = () => {
