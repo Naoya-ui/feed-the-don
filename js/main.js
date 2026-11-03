@@ -3658,19 +3658,23 @@ async function startBattleTutorial(encounter = 'bandit') {
   els.backpackBtn.hidden = true;
   els.battleResult.hidden = true;
   els.battleScreen.hidden = true;
-  const storyOpponent = isHeathcliffEncounter
-    ? { characterId: 'heathcliff', egoId: 'bodysack' }
-    : isWolfEncounter
-      ? {
+  // Use the VS reveal for named character/boss fights, but keep routine NPC and
+  // bandit encounters on their compact loading screen.
+  if (isWolfEncounter || isHeathcliffEncounter) {
+    const storyOpponent = isHeathcliffEncounter
+      ? { characterId: 'heathcliff', egoId: 'bodysack' }
+      : {
           name: 'WOLF',
           egoName: 'THE HUNT',
           fullBody: 'assets/images/characters/wolf.png',
-        }
-      : { name: 'BANDIT CREW', egoName: 'FOREST AMBUSH' };
-  await showBattleLoading('story-versus', {
-    player1: { characterId: 'don', egoId: 'la-sangre' },
-    player2: storyOpponent,
-  });
+        };
+    await showBattleLoading('story-versus', {
+      player1: { characterId: 'don', egoId: 'la-sangre' },
+      player2: storyOpponent,
+    });
+  } else {
+    await showBattleLoading(encounter);
+  }
   els.battleScreen.hidden = false;
   els.battleScreen.classList.add('rt-active');
   const rtArena = document.getElementById('realtimeArena');

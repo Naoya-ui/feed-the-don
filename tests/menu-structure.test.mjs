@@ -45,7 +45,8 @@ assert.match(
   /startStandaloneRealtime\('versus', config, \{ skipLoading: true \}\)/,
   'Versus selection adapts locked P1/P2 loadouts into combat after the VS intro'
 );
-assert.match(main, /await showBattleLoading\('story-versus'/, 'story fights also show the VS intro before combat');
+assert.match(main, /if \(isWolfEncounter \|\| isHeathcliffEncounter\) \{[\s\S]*?await showBattleLoading\('story-versus'/, 'named story character fights show the VS intro');
+assert.match(main, /\} else \{\s*await showBattleLoading\(encounter\);\s*\}/, 'bandit and routine NPC fights keep their standard loading screen');
 assert.match(main, /const storyVersus = encounter === 'story-versus'/, 'story loading activates the same VS screen treatment');
 assert.match(
   main,
