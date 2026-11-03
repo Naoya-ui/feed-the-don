@@ -10,6 +10,7 @@ const realtime = readFileSync(
 const fighter = readFileSync(new URL('../js/fighting/Fighter.js', import.meta.url), 'utf8');
 const characterSelect = readFileSync(new URL('../js/ui/CharacterSelect.js', import.meta.url), 'utf8');
 const realtimeCss = readFileSync(new URL('../css/realtime-battle.css', import.meta.url), 'utf8');
+const styleCss = readFileSync(new URL('../css/style.css', import.meta.url), 'utf8');
 
 const requiredMainButtons = ['storyModeBtn', 'versusModeBtn', 'trainingModeBtn', 'settingsModeBtn'];
 for (const id of requiredMainButtons)
@@ -49,6 +50,9 @@ assert.match(
   /new CharacterSelect\(/,
   'Versus uses the dedicated dual-cursor CharacterSelect module'
 );
+assert.match(styleCss, /\.lc60-versus-center\s*\{[^}]*inset:\s*0;/, 'VS overlay fills the loading screen so its title can center on the viewport');
+assert.match(styleCss, /\.lc60-versus-center > span\s*\{[^}]*left:\s*50%;[^}]*top:\s*50%;/, 'VS title is anchored at the exact center');
+assert.match(styleCss, /@keyframes lc60VersusReveal[\s\S]*?opacity:\s*0;[\s\S]*?scale\(0\.24\)/, 'VS title fades and scales in from its center');
 assert.match(characterSelect, /character\.idleSprite \|\| character\.avatar/, 'grid prefers character idle sprites');
 assert.match(characterSelect, /selectedEgo\?\.icon \|\| character\.idleSprite/, 'E.G.O preview uses a static icon, never the animated preview');
 assert.doesNotMatch(characterSelect, /selectedEgo\?\.icon \|\| selectedEgo\?\.preview/, 'animated E.G.O preview GIFs are not displayed in Phase 2');

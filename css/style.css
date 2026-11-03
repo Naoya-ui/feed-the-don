@@ -16916,11 +16916,8 @@ body.lc4-targeting #battleScreen .lc4-intent {
 .lc60-versus-center {
   position: absolute;
   z-index: 2;
-  inset: 0 14%;
-  display: grid;
-  place-content: center;
-  justify-items: center;
-  gap: 12px;
+  inset: 0;
+  pointer-events: none;
   text-align: center;
 }
 .lc60-versus-center::before {
@@ -16948,23 +16945,29 @@ body.lc4-targeting #battleScreen .lc4-intent {
   filter: blur(2px);
   animation: lc60VersusPulse 2.4s ease-in-out infinite;
 }
-.lc60-versus-center > span,
-.lc60-versus-center > small {
-  position: relative;
-  z-index: 1;
-}
 .lc60-versus-center > span {
-  color: #e6e3ff;
-  font: 400 clamp(36px, 7vw, 76px)/1 'Bebas Kai', sans-serif;
-  letter-spacing: 0.24em;
-  padding-left: 0.24em;
-  text-shadow: 0 0 8px #9690ff, 0 0 32px #6962ff;
-  animation: lc60VersusTitle 2.4s ease-in-out infinite;
+  position: absolute;
+  z-index: 1;
+  left: 50%;
+  top: 50%;
+  color: #f0eeff;
+  font: 400 clamp(64px, 11vw, 148px)/0.9 'Bebas Kai', sans-serif;
+  letter-spacing: 0.12em;
+  padding-left: 0.12em;
+  text-shadow: 0 0 10px #b3aeff, 0 0 34px #7770ff, 0 0 72px #554dff99;
+  transform: translate(-50%, -50%);
+  transform-origin: center;
+  animation: lc60VersusReveal 760ms cubic-bezier(0.16, 0.82, 0.24, 1) 180ms both;
 }
 .lc60-versus-center > small {
-  color: #7773bf;
+  position: absolute;
+  z-index: 1;
+  left: 50%;
+  top: calc(50% + clamp(54px, 7.4vw, 94px));
+  color: #9993e2;
   font: 700 8px/1 'Perfect DOS VGA', monospace;
   letter-spacing: 0.38em;
+  transform: translateX(-50%);
 }
 .lc60-loading.is-versus-loading .lc60-loading-copy {
   position: absolute;
@@ -17004,10 +17007,29 @@ body.lc4-targeting #battleScreen .lc4-intent {
     transform: translate(-50%, -50%) scale(1.16);
   }
 }
-@keyframes lc60VersusTitle {
-  50% {
-    opacity: 0.7;
-    transform: scale(0.97);
+@keyframes lc60VersusReveal {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.24) rotate(-9deg);
+    filter: blur(8px);
+  }
+  68% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1.14) rotate(1deg);
+    filter: blur(0);
+  }
+  100% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1) rotate(0);
+    filter: blur(0);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .lc60-versus-center > span {
+    animation: none;
+    opacity: 1;
+    filter: none;
+    transform: translate(-50%, -50%) scale(1);
   }
 }
 @keyframes lc60VersusStarDrift {
@@ -17028,6 +17050,12 @@ body.lc4-targeting #battleScreen .lc4-intent {
     font-size: 6px;
   }
   .lc60-versus-center {
-    inset-inline: 16%;
+    inset: 0;
+  }
+  .lc60-versus-center > span {
+    font-size: clamp(58px, 16vw, 96px);
+  }
+  .lc60-versus-center > small {
+    top: calc(50% + 54px);
   }
 }
