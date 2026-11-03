@@ -45,12 +45,15 @@ assert.match(
   /startStandaloneRealtime\('versus', config, \{ skipLoading: true \}\)/,
   'Versus selection adapts locked P1/P2 loadouts into combat after the VS intro'
 );
+assert.match(main, /await showBattleLoading\('story-versus'/, 'story fights also show the VS intro before combat');
+assert.match(main, /const storyVersus = encounter === 'story-versus'/, 'story loading activates the same VS screen treatment');
 assert.match(
   main,
   /new CharacterSelect\(/,
   'Versus uses the dedicated dual-cursor CharacterSelect module'
 );
 assert.match(html, /css\/style\.css\?v=melty-versus-loading-v4/, 'Versus CSS changes use a fresh cache-busting version');
+assert.match(html, /js\/main\.js\?v=story-versus-intro-v4/, 'story VS integration uses a fresh JavaScript cache key');
 assert.match(styleCss, /\.lc60-versus-center\s*\{[^}]*inset:\s*0;/, 'VS overlay fills the loading screen so its title can center on the viewport');
 assert.match(styleCss, /\.lc60-versus-center > span\s*\{[^}]*left:\s*50%;[^}]*top:\s*50%;/, 'VS title is anchored at the exact center');
 assert.match(styleCss, /@keyframes lc60VersusReveal[\s\S]*?opacity:\s*0;[\s\S]*?scale\(0\.24\)/, 'VS title fades and scales in from its center');

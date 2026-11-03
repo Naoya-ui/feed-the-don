@@ -3525,26 +3525,40 @@ async function showBattleLoading(encounter = 'bandit', versusConfig = null) {
   if (!els.battleLoading) return;
   const wolf = encounter === 'wolf';
   const heathcliff = encounter === 'heathcliff';
-  const versus = encounter === 'versus';
+  const storyVersus = encounter === 'story-versus';
+  const versus = encounter === 'versus' || storyVersus;
   const training = encounter === 'training';
   els.battleLoading.classList.toggle('is-versus-loading', versus);
   if (versus) {
-    const p1 = getVersusCharacter(versusConfig?.player1?.characterId || 'don');
-    const p2 = getVersusCharacter(versusConfig?.player2?.characterId || 'heathcliff');
-    const p1Ego = getVersusEgo(p1.id, versusConfig?.player1?.egoId || p1.egos[0]?.id);
-    const p2Ego = getVersusEgo(p2.id, versusConfig?.player2?.egoId || p2.egos[0]?.id);
+    const resolveFighterCard = (data) => {
+      const character = data?.characterId ? getVersusCharacter(data.characterId) : null;
+      const ego = character
+        ? getVersusEgo(character.id, data?.egoId || character.egos[0]?.id)
+        : null;
+      return {
+        name: data?.name || character?.name || 'OPPONENT',
+        egoName: data?.egoName || ego?.name || '',
+        sprite: data?.fullBody || character?.fullBody || character?.portrait || '',
+      };
+    };
+    const player1 = resolveFighterCard(versusConfig?.player1);
+    const player2 = resolveFighterCard(versusConfig?.player2);
     const p1Name = document.getElementById('versusLoadingP1Name');
     const p2Name = document.getElementById('versusLoadingP2Name');
     const p1EgoName = document.getElementById('versusLoadingP1Ego');
     const p2EgoName = document.getElementById('versusLoadingP2Ego');
     const p1Sprite = document.getElementById('versusLoadingP1Sprite');
     const p2Sprite = document.getElementById('versusLoadingP2Sprite');
-    if (p1Name) p1Name.textContent = p1.name;
-    if (p2Name) p2Name.textContent = p2.name;
-    if (p1EgoName) p1EgoName.textContent = p1Ego?.name || '';
-    if (p2EgoName) p2EgoName.textContent = p2Ego?.name || '';
-    if (p1Sprite) p1Sprite.src = p1.fullBody || p1.portrait;
-    if (p2Sprite) p2Sprite.src = p2.fullBody || p2.portrait;
+    if (p1Name) p1Name.textContent = player1.name;
+    if (p2Name) p2Name.textContent = player2.name;
+    if (p1EgoName) p1EgoName.textContent = player1.egoName;
+    if (p2EgoName) p2EgoName.textContent = player2.egoName;
+    for (const [image, src] of [[p1Sprite, player1.sprite], [p2Sprite, player2.sprite]]) {
+      if (!image) continue;
+      image.hidden = !src;
+      if (src) image.src = src;
+      else image.removeAttribute('src');
+    }
   }
   if (els.battleLoadingArea)
     els.battleLoadingArea.textContent =
@@ -3644,7 +3658,19 @@ async function startBattleTutorial(encounter = 'bandit') {
   els.backpackBtn.hidden = true;
   els.battleResult.hidden = true;
   els.battleScreen.hidden = true;
-  await showBattleLoading(encounter);
+  const storyOpponent = isHeathcliffEncounter
+    ? { characterId: 'heathcliff', egoId: 'bodysack' }
+    : isWolfEncounter
+      ? {
+          name: 'WOLF',
+          egoName: 'THE HUNT',
+          fullBody: 'assets/images/characters/wolf.png',
+        }
+      : { name: 'BANDIT CREW', egoName: 'FOREST AMBUSH' };
+  await showBattleLoading('story-versus', {
+    player1: { characterId: 'don', egoId: 'la-sangre' },
+    player2: storyOpponent,
+  });
   els.battleScreen.hidden = false;
   els.battleScreen.classList.add('rt-active');
   const rtArena = document.getElementById('realtimeArena');
