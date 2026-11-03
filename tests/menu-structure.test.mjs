@@ -8,6 +8,8 @@ const realtime = readFileSync(
   'utf8'
 );
 const fighter = readFileSync(new URL('../js/fighting/Fighter.js', import.meta.url), 'utf8');
+const characterSelect = readFileSync(new URL('../js/ui/CharacterSelect.js', import.meta.url), 'utf8');
+const realtimeCss = readFileSync(new URL('../css/realtime-battle.css', import.meta.url), 'utf8');
 
 const requiredMainButtons = ['storyModeBtn', 'versusModeBtn', 'trainingModeBtn', 'settingsModeBtn'];
 for (const id of requiredMainButtons)
@@ -47,6 +49,10 @@ assert.match(
   /new CharacterSelect\(/,
   'Versus uses the dedicated dual-cursor CharacterSelect module'
 );
+assert.match(characterSelect, /character\.idleSprite \|\| character\.avatar/, 'grid prefers character idle sprites');
+assert.match(characterSelect, /selectedEgo\?\.icon \|\| character\.idleSprite/, 'E.G.O preview uses a static icon, never the animated preview');
+assert.doesNotMatch(characterSelect, /selectedEgo\?\.icon \|\| selectedEgo\?\.preview/, 'animated E.G.O preview GIFs are not displayed in Phase 2');
+assert.match(realtimeCss, /@keyframes mbCharacterIdleBreath/, 'idle sprites gently breathe in the select grid');
 assert.match(
   main,
   /startStandaloneRealtime\(['\"]training['\"]\)/,
